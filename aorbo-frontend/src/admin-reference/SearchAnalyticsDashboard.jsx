@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import Chart from 'chart.js/auto';
+import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import './SearchAnalyticsDashboard.css';
 
 // Converted from aorboweb/templates/admin/searchlog_changelist.html
@@ -8,10 +8,12 @@ import './SearchAnalyticsDashboard.css';
 //
 // Props mirror the template context Django's admin view builds today:
 // totalSearches, topQuery/topQueryCount, topTag/topTagCount,
-// topTrek/topTrekCount, availableYears, selectedYear, plus the four
-// chart data arrays. `period` drives which filter pill is active and
-// is read/written via the ?period= query param, same as the original
-// server-rendered links.
+// topTrek/topTrekCount, availableYears, plus the four chart data arrays.
+// `period` drives which filter button is active and is read/written via the
+// ?period= query param, same as the original server-rendered links.
+//
+// AdminDashboard.jsx renders its own page header, so this component only
+// renders the filter row, metrics cards, charts, and a bottom divider.
 export default function SearchAnalyticsDashboard({
   totalSearches,
   topQuery,
@@ -88,22 +90,28 @@ export default function SearchAnalyticsDashboard({
     return () => tagChart?.destroy();
   }, [tagLabels, tagData]);
 
-  const isYearActive = period === 'year' || period === 'custom_year';
+  const yearGroupActive = period === 'year' || period === 'custom_year';
 
   return (
     <div className="analytics-wrap">
+      {/* FILTER ROW */}
       <div className="analytics-filter">
-        <button className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>
+        <button type="button" className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>
           Today
         </button>
-        <button className={period === '7days' ? 'active' : ''} onClick={() => setPeriod('7days')}>
+        <button type="button" className={period === '7days' ? 'active' : ''} onClick={() => setPeriod('7days')}>
           Last 7 days
         </button>
-        <button className={period === '30days' ? 'active' : ''} onClick={() => setPeriod('30days')}>
+        <button
+          type="button"
+          className={period === '30days' || !period ? 'active' : ''}
+          onClick={() => setPeriod('30days')}
+        >
           Last 30 days
         </button>
-        <div className={`year-group ${isYearActive ? 'active' : ''}`}>
-          <button className="year-btn" onClick={() => setPeriod('year')}>
+
+        <div className={`year-group ${yearGroupActive ? 'active' : ''}`}>
+          <button type="button" className="year-btn" onClick={() => setPeriod('year')}>
             This Year
           </button>
           <select
@@ -118,11 +126,13 @@ export default function SearchAnalyticsDashboard({
             ))}
           </select>
         </div>
-        <button className={period === 'all' ? 'active' : ''} onClick={() => setPeriod('all')}>
+
+        <button type="button" className={period === 'all' ? 'active' : ''} onClick={() => setPeriod('all')}>
           All time
         </button>
       </div>
 
+      {/* METRICS GRID */}
       <div className="analytics-metrics">
         <div className="analytics-metric">
           <p className="analytics-metric-label">Total searches</p>
@@ -148,6 +158,7 @@ export default function SearchAnalyticsDashboard({
         </div>
       </div>
 
+      {/* CHARTS GRID */}
       <div className="analytics-charts">
         <div className="analytics-card">
           <p className="analytics-card-title">Top Viewed Treks</p>
@@ -163,6 +174,7 @@ export default function SearchAnalyticsDashboard({
         </div>
       </div>
 
+      {/* BOTTOM DIVIDER */}
       <hr className="analytics-divider" />
     </div>
   );

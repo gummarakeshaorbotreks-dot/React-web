@@ -1,19 +1,62 @@
-.analytics-wrap { padding: 1.5rem 0 2rem; }
-.analytics-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
-.analytics-metric { background: #f8f9fa; border-radius: 8px; padding: 1rem; border: 1px solid #e9ecef; }
-.analytics-metric-label { font-size: 12px; color: #6c757d; margin: 0 0 4px; }
-.analytics-metric-value { font-size: 22px; font-weight: 600; color: #212529; margin: 0; }
-.analytics-metric-sub { font-size: 11px; color: #adb5bd; margin: 2px 0 0; }
-.analytics-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-.analytics-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.25rem; }
-.analytics-card-title { font-size: 13px; font-weight: 600; color: #6c757d; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
-.analytics-filter { display: flex; gap: 8px; margin-bottom: 1.5rem; }
-.analytics-filter button { box-sizing: border-box; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #dee2e6; color: #495057; background: #fff; cursor: pointer; }
-.analytics-filter button.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
-.analytics-divider { border: none; border-top: 1px solid #e9ecef; margin: 1.5rem 0; }
-.year-group { display: flex; align-items: stretch; border-radius: 6px; overflow: hidden; border: 1px solid #dee2e6; }
-.year-group.active { border-color: #0d6efd; }
-.year-group .year-btn { box-sizing: border-box; padding: 6px 14px; font-size: 13px; color: #495057; background: #fff; border: 1px solid transparent; cursor: pointer; }
-.year-group.active .year-btn { background: #0d6efd; color: #fff; }
-.year-group select { box-sizing: border-box; padding: 6px 8px; font-size: 13px; border: 1px solid transparent; border-left: 1px solid #dee2e6; background: #fff; color: #495057; }
-.year-group.active select { border-left-color: rgba(255,255,255,0.4); }
+/* ============================================
+   AORBO BRAND THEME — Search Analytics
+   (matches original searchlog_changelist.html layout)
+   Accent: yellow #facc15 / orange #f97316
+   Text: dark slate #1e293b / #0f172a
+   ============================================ */
+
+.analytics-wrap * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+.analytics-wrap { background: #f8fafc; min-height: 100vh; }
+
+/* FILTER ROW */
+.analytics-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.analytics-filter button {
+  padding: 8px 16px; border-radius: 8px; font-size: 0.8125rem;
+  text-decoration: none; border: 1px solid #e2e8f0; color: #475569;
+  background: #fff; cursor: pointer; font-weight: 600; font-family: inherit;
+}
+.analytics-filter button:hover { border-color: #f97316; color: #f97316; }
+.analytics-filter button.active {
+  background: #facc15; color: #1e293b; border-color: #facc15; font-weight: 700;
+}
+
+/* YEAR GROUP (This Year button + dropdown) */
+.year-group { display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+.year-group.active { border-color: #facc15; }
+.year-group .year-btn {
+  box-sizing: border-box; padding: 8px 16px; font-size: 0.8125rem;
+  text-decoration: none; color: #475569; background: #fff;
+  border: 1px solid transparent; cursor: pointer; font-weight: 600; font-family: inherit;
+}
+.year-group .year-btn:hover { color: #f97316; }
+.year-group.active .year-btn { background: #facc15; color: #1e293b; }
+.year-group select {
+  box-sizing: border-box; padding: 8px 8px; font-size: 0.8125rem;
+  border: 1px solid transparent; border-left: 1px solid #e2e8f0;
+  background: #fff; color: #0f172a;
+}
+.year-group.active select { border-left-color: rgba(250, 204, 21, 0.4); }
+
+/* METRICS GRID — 4-col → 2x2 on mobile */
+.analytics-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+@media (min-width: 768px) { .analytics-metrics { grid-template-columns: repeat(4, 1fr); } }
+.analytics-metric {
+  background: #fff; border-radius: 12px; padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+.analytics-metric-label { font-size: 0.75rem; color: #64748b; margin: 0 0 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.analytics-metric-value { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0; line-height: 1.2; word-break: break-word; }
+.analytics-metric-sub { font-size: 0.8125rem; color: #94a3b8; margin: 6px 0 0; }
+
+/* CHARTS GRID — 2-col → stacked on mobile */
+.analytics-charts { display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 24px; }
+@media (min-width: 900px) { .analytics-charts { grid-template-columns: 1fr 1fr; } }
+.analytics-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+.analytics-card-title { font-size: 0.8125rem; font-weight: 600; color: #1e293b; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* BOTTOM DIVIDER */
+.analytics-divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }

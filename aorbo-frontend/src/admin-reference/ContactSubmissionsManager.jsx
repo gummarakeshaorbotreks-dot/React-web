@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getCsrfToken } from '../utils/csrf';
 import './ContactSubmissionsManager.css';
 
@@ -83,9 +83,9 @@ function formatDateTime(str) {
 export default function ContactSubmissionsManager({
   initialData = [],
   endpoints = {
-    softDelete: '/supersecretadmin/treks_app/contactsubmission/soft-delete/',
-    restore: '/supersecretadmin/treks_app/contactsubmission/restore/',
-    permanentDelete: '/supersecretadmin/treks_app/contactsubmission/permanent-delete/',
+    softDelete: '/supersecretadmin/treks_app/contact/soft-delete/',
+    restore: '/supersecretadmin/treks_app/contact/restore/',
+    permanentDelete: '/supersecretadmin/treks_app/contact/permanent-delete/',
   },
 }) {
   const [data, setData] = useState(initialData);
@@ -138,7 +138,7 @@ export default function ContactSubmissionsManager({
   async function postIds(url, ids) {
     const res = await fetch(url, {
       method: 'POST',
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() || '' },
       body: JSON.stringify({ ids }),
     });
@@ -228,186 +228,219 @@ export default function ContactSubmissionsManager({
   const allChecked = rows.length > 0 && rows.every((r) => selectedIds.has(String(r.id)));
 
   return (
-    <div className="cs-wrap">
-      <div className="cs-title">📬 Contact Submissions</div>
-
-      <div className="cs-view-tabs">
-        <button
-          type="button"
-          className={`cs-view-tab ${activeView === 'active' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveView('active');
-            setSelectedIds(new Set());
-            setSearch('');
-          }}
-        >
-          📥 Active
-        </button>
-        <button
-          type="button"
-          className={`cs-view-tab ${activeView === 'deleted' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveView('deleted');
-            setSelectedIds(new Set());
-            setSearch('');
-          }}
-        >
-          🗑 Deleted <span className="cs-count">{counts.deletedView}</span>
-        </button>
-      </div>
-
-      <div className="cs-tabs">
-        {TAB_KEYS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            className={`cs-tab ${activeTab === t ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab(t);
-              setSearch('');
-            }}
-          >
-            {t === 'All' ? 'All' : badgeLabel(t)} <span className="cs-count">{counts[t]}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="cs-date-tabs">
-        {[
-          ['all', 'All Time'],
-          ['today', 'Today'],
-          ['week', 'This Week'],
-          ['year', 'This Year'],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            className={`cs-date-tab ${activeDateRange === key ? 'active' : ''}`}
-            onClick={() => {
-              setActiveDateRange(key);
-              setSearch('');
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <div className="cs-search-row">
-        <div className="cs-search-box">
-          🔍
-          <input
-            placeholder="Search name, email, mobile or message…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+    <div className="dj-wrap">
+      {/* HEADER BAR */}
+      <div id="dj-header">
+        <div id="dj-branding">
+          <h1 id="dj-site-name">
+            <a href="/supersecretadmin/">Aorbo Treks Admin</a>
+          </h1>
         </div>
-        <div className="cs-result">
-          {rows.length} result{rows.length !== 1 ? 's' : ''}
-        </div>
-        <div className={`cs-bulkbar ${selectedIds.size > 0 ? 'show' : ''}`}>
-          <span>{selectedIds.size} selected</span>
-          {activeView === 'active' && (
-            <button type="button" className="cs-btn-danger" onClick={() => bulkAction('delete')}>
-              🗑 Delete Selected
-            </button>
-          )}
-          {activeView === 'deleted' && (
-            <>
-              <button type="button" className="cs-btn-restore" onClick={() => bulkAction('restore')}>
-                ♻ Restore Selected
-              </button>
-              <button type="button" className="cs-btn-danger" onClick={() => bulkAction('permanent')}>
-                🗑 Delete Forever
-              </button>
-            </>
-          )}
+        <div id="dj-user-tools">
+          WELCOME, admin. <a href="/">VIEW SITE</a> / <a href="/supersecretadmin/password_change/">CHANGE PASSWORD</a> / <a href="/supersecretadmin/logout/">LOG OUT</a>
         </div>
       </div>
 
-      <div className="cs-table-wrap">
-        <table className="cs-table">
-          <thead>
-            <tr>
-              <th>
+      {/* BREADCRUMBS */}
+      <div className="dj-breadcrumbs">
+        <a href="/supersecretadmin/">Home</a>
+        {' '}&rsaquo;{' '}
+        <a href="/supersecretadmin/treks_app/">Treks_app</a>
+        {' '}&rsaquo;{' '}
+        Contact Submissions
+      </div>
+
+      {/* PAGE TITLE */}
+      <div id="dj-content">
+        <h1>Select Contact Submission to change</h1>
+
+        <div id="dj-content-main" className="dj-colms">
+          {/* OBJECT-TOOLS (top-right) */}
+          <ul className="dj-object-tools">
+            <li>
+              <a href="#" className="dj-addlink" onClick={(e) => { e.preventDefault(); }}>
+                ADD CONTACT SUBMISSION +
+              </a>
+            </li>
+          </ul>
+
+          {/* TOOLBAR (search) */}
+          <div id="dj-toolbar">
+            <form id="dj-changelist-search" onSubmit={(e) => e.preventDefault()}>
+              <div>
+                <label htmlFor="searchbar">
+                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E" alt="Search" style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                </label>
                 <input
-                  type="checkbox"
-                  checked={allChecked}
-                  onChange={(e) => toggleSelectAll(e.target.checked)}
+                  id="searchbar"
+                  type="text"
+                  size="40"
+                  placeholder="Search name, email, mobile or message…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
-              </th>
-              <th>#</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Mobile</th>
-              <th>User Type</th>
-              <th>Trek Category</th>
-              <th>Message</th>
-              <th>Date &amp; Time</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => {
-              const comment = r.comment || '—';
-              const expanded = expandedComments.has(r.id);
-              return (
-                <tr key={r.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(String(r.id))}
-                      onChange={(e) => toggleRow(r.id, e.target.checked)}
-                    />
-                  </td>
-                  <td className="cs-muted">{i + 1}</td>
-                  <td>
-                    <span className="cs-name">{r.name || '—'}</span>
-                  </td>
-                  <td>
-                    <span className="cs-muted">{r.email || '—'}</span>
-                  </td>
-                  <td style={{ color: '#1a1f36', fontWeight: 500 }}>{r.mobile || '—'}</td>
-                  <td>
-                    <span className={`badge ${badgeClass(r.user_type)}`}>{badgeLabel(r.user_type)}</span>
-                  </td>
-                  <td>
-                    <span className="cs-muted">{CATEGORY_LABELS[r.trek_category] || r.trek_category || '—'}</span>
-                  </td>
-                  <td>
-                    <span className={`cs-comment ${expanded ? 'expanded' : ''}`}>{comment}</span>
-                    {comment.length > 60 && (
-                      <button className="cs-comment-toggle" onClick={() => toggleComment(r.id)}>
-                        {expanded ? 'Show less' : 'Show more'}
-                      </button>
-                    )}
-                  </td>
-                  <td>{formatDateTime(r.created_at)}</td>
-                  <td>
-                    {activeView === 'active' ? (
-                      <button className="cs-del-btn" onClick={() => deleteOne(r.id)}>
-                        🗑 Delete
-                      </button>
-                    ) : (
-                      <>
-                        <button className="cs-restore-btn" onClick={() => restoreOne(r.id)}>
-                          ♻ Restore
-                        </button>
-                        <button className="cs-del-btn" onClick={() => permanentDeleteOne(r.id)}>
-                          🗑 Forever
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {rows.length === 0 && <div className="cs-empty">🔍 No results found</div>}
+                <input type="submit" value="Search" />
+                <span className="dj-search-count">{rows.length} result{rows.length !== 1 ? 's' : ''}</span>
+              </div>
+            </form>
+          </div>
+
+          {/* BULK ACTION BAR */}
+          <div className={`dj-bulkbar ${selectedIds.size > 0 ? 'dj-bulkbar-show' : ''}`}>
+            <span className="dj-bulk-count">{selectedIds.size} of {rows.length} selected</span>
+            {activeView === 'active' && (
+              <button type="button" className="dj-btn-delete" onClick={() => bulkAction('delete')}>
+                Delete Selected
+              </button>
+            )}
+            {activeView === 'deleted' && (
+              <>
+                <button type="button" className="dj-btn-restore" onClick={() => bulkAction('restore')}>
+                  Restore Selected
+                </button>
+                <button type="button" className="dj-btn-delete" onClick={() => bulkAction('permanent')}>
+                  Delete Forever
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* RESULT LIST TABLE */}
+          <div id="dj-changelist" className="dj-changelist">
+            <div className="dj-changelist-form">
+              <table id="dj-result-list">
+                <thead>
+                  <tr>
+                    <th scope="col" className="dj-action-checkbox">
+                      <div className="text">
+                        <span>
+                          <input
+                            type="checkbox"
+                            checked={allChecked}
+                            onChange={(e) => toggleSelectAll(e.target.checked)}
+                          />
+                        </span>
+                      </div>
+                    </th>
+                    <th scope="col"><div className="text"><a href="#">Name</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">Email</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">Mobile</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">User type</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">Trek category</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">Message</a></div></th>
+                    <th scope="col"><div className="text"><a href="#">Date &amp; time</a></div></th>
+                    <th scope="col"><div className="text"><span>Actions</span></div></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => {
+                    const comment = r.comment || '—';
+                    const expanded = expandedComments.has(r.id);
+                    return (
+                      <tr key={r.id} className={i % 2 === 0 ? 'dj-row-even' : 'dj-row-odd'}>
+                        <td className="dj-action-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(String(r.id))}
+                            onChange={(e) => toggleRow(r.id, e.target.checked)}
+                          />
+                        </td>
+                        <th scope="row">
+                          <a href="#" onClick={(e) => { e.preventDefault(); }}>{r.name || '—'}</a>
+                        </th>
+                        <td>{r.email || '—'}</td>
+                        <td>{r.mobile || '—'}</td>
+                        <td>
+                          <span className={`dj-badge ${badgeClass(r.user_type)}`}>{badgeLabel(r.user_type)}</span>
+                        </td>
+                        <td>{CATEGORY_LABELS[r.trek_category] || r.trek_category || '—'}</td>
+                        <td>
+                          <span className={`dj-comment ${expanded ? 'dj-comment-expanded' : ''}`}>{comment}</span>
+                          {comment.length > 60 && (
+                            <button className="dj-comment-toggle" onClick={() => toggleComment(r.id)}>
+                              {expanded ? 'Show less' : 'Show more'}
+                            </button>
+                          )}
+                        </td>
+                        <td>{formatDateTime(r.created_at)}</td>
+                        <td className="dj-actions-cell">
+                          {activeView === 'active' ? (
+                            <button className="dj-btn-sm dj-btn-soft-delete" onClick={() => deleteOne(r.id)}>
+                              Delete
+                            </button>
+                          ) : (
+                            <>
+                              <button className="dj-btn-sm dj-btn-restore" onClick={() => restoreOne(r.id)}>
+                                Restore
+                              </button>
+                              <button className="dj-btn-sm dj-btn-permanent-delete" onClick={() => permanentDeleteOne(r.id)}>
+                                Forever
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {rows.length === 0 && <div className="dj-empty">No results found</div>}
+            </div>
+
+            {/* RIGHT-SIDE FILTER PANEL */}
+            <div id="dj-changelist-filter">
+              <h2>Filter</h2>
+
+              {/* View filter (Active / Deleted) */}
+              <h3>By view</h3>
+              <ul>
+                <li className={activeView === 'active' ? 'dj-filter-selected' : ''}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setActiveView('active'); setSelectedIds(new Set()); setSearch(''); }}>
+                    Active {counts['All'] !== undefined && `(${counts['All']})`}
+                  </a>
+                </li>
+                <li className={activeView === 'deleted' ? 'dj-filter-selected' : ''}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setActiveView('deleted'); setSelectedIds(new Set()); setSearch(''); }}>
+                    Deleted {counts.deletedView !== undefined && `(${counts.deletedView})`}
+                  </a>
+                </li>
+              </ul>
+
+              {/* User type filter */}
+              <h3>By user type</h3>
+              <ul>
+                {TAB_KEYS.map((t) => (
+                  <li key={t} className={activeTab === t ? 'dj-filter-selected' : ''}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab(t); setSearch(''); }}>
+                      {t === 'All' ? 'All' : badgeLabel(t)} ({counts[t]})
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Date range filter */}
+              <h3>By date range</h3>
+              <ul>
+                {[
+                  ['all', 'All Time'],
+                  ['today', 'Today'],
+                  ['week', 'This Week'],
+                  ['year', 'This Year'],
+                ].map(([key, label]) => (
+                  <li key={key} className={activeDateRange === key ? 'dj-filter-selected' : ''}>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setActiveDateRange(key); setSearch(''); }}>
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {toast && <div className="cs-toast">{toast}</div>}
+      {/* TOAST NOTIFICATION */}
+      {toast && <div className="dj-toast">{toast}</div>}
     </div>
   );
 }
