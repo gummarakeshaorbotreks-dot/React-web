@@ -227,33 +227,10 @@ export default function ContactSubmissionsManager({
 
   const allChecked = rows.length > 0 && rows.every((r) => selectedIds.has(String(r.id)));
 
-  return (
+return (
     <div className="dj-wrap">
-      {/* HEADER BAR */}
-      <div id="dj-header">
-        <div id="dj-branding">
-          <h1 id="dj-site-name">
-            <a href="/supersecretadmin/">Aorbo Treks Admin</a>
-          </h1>
-        </div>
-        <div id="dj-user-tools">
-          WELCOME, admin. <a href="/">VIEW SITE</a> / <a href="/supersecretadmin/password_change/">CHANGE PASSWORD</a> / <a href="/supersecretadmin/logout/">LOG OUT</a>
-        </div>
-      </div>
-
-      {/* BREADCRUMBS */}
-      <div className="dj-breadcrumbs">
-        <a href="/supersecretadmin/">Home</a>
-        {' '}&rsaquo;{' '}
-        <a href="/supersecretadmin/treks_app/">Treks_app</a>
-        {' '}&rsaquo;{' '}
-        Contact Submissions
-      </div>
-
-      {/* PAGE TITLE */}
+      {/* CONTENT */}
       <div id="dj-content">
-        <h1>Select Contact Submission to change</h1>
-
         <div id="dj-content-main" className="dj-colms">
           {/* OBJECT-TOOLS (top-right) */}
           <ul className="dj-object-tools">
