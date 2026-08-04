@@ -1,5 +1,5 @@
-import React from 'react';
 import '../styles/Success.css';
+
 
 // Converted from aorboweb/treks_app/templates/success.html
 // Shown after a visitor's contact-form submission succeeds.

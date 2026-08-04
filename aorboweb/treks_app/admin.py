@@ -50,13 +50,15 @@ class ContactDateRangeFilter(admin.SimpleListFilter):
 # ── Contact Admin ───────────────────────────────────────────────────────────
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
+
     list_display   = ('name', 'email', 'mobile', 'user_type', 'trek_category', 'created_at', 'is_deleted')
     list_filter    = ('user_type', 'trek_category', 'is_deleted', ContactDateRangeFilter)
     search_fields  = ('name', 'email', 'mobile', 'comment')
     readonly_fields = ('created_at', 'deleted_at')
     date_hierarchy = 'created_at'
-    change_list_template = "admin/contact_filter.html"
+
     actions = ["delete_selected"]
+
 
     def changelist_view(self, request, extra_context=None):
         qs = Contact.objects.all().order_by('-created_at').values(
@@ -81,9 +83,34 @@ class ContactAdmin(admin.ModelAdmin):
         extra_context['submissions_json'] = json.dumps(submissions)
         return super().changelist_view(request, extra_context=extra_context)
 
+    def submissions_json_view(self, request):
+        qs = Contact.objects.all().order_by('-created_at').values(
+            'id', 'name', 'email', 'mobile', 'user_type', 'trek_category',
+            'comment', 'created_at', 'is_deleted', 'deleted_at'
+        )
+        submissions = []
+        for item in qs:
+            submissions.append({
+                'id':            item['id'],
+                'name':          item['name']          or '',
+                'email':         item['email']         or '',
+                'mobile':        str(item['mobile']    or ''),
+                'user_type':     item['user_type']     or 'other',
+                'trek_category': item['trek_category'] or '',
+                'comment':       item['comment']       or '',
+                'created_at':    item['created_at'].isoformat() if item['created_at'] else '',
+                'is_deleted':    item['is_deleted'],
+                'deleted_at':    item['deleted_at'].isoformat() if item['deleted_at'] else '',
+            })
+
+        return JsonResponse({'submissions': submissions})
+
+
     def get_urls(self):
+
         urls = super().get_urls()
         custom_urls = [
+            path('submissions-json/', self.admin_site.admin_view(self.submissions_json_view), name='contact_submissions_json'),
             path('soft-delete/', self.admin_site.admin_view(self.soft_delete_view), name='contact_soft_delete'),
             path('restore/', self.admin_site.admin_view(self.restore_view), name='contact_restore'),
             path('permanent-delete/', self.admin_site.admin_view(self.permanent_delete_view), name='contact_permanent_delete'),
@@ -92,6 +119,7 @@ class ContactAdmin(admin.ModelAdmin):
 
     def _get_ids_from_request(self, request):
         try:
+
             payload = json.loads(request.body or '{}')
             return [int(i) for i in payload.get('ids', [])]
         except (ValueError, TypeError):
@@ -330,29 +358,68 @@ class VisitorAdmin(admin.ModelAdmin):
     date_hierarchy  = "visit_time"
     search_fields   = ("ip_address", "session_id", "user_agent")
     readonly_fields = ("ip_address", "session_id", "user_agent", "visit_time")
-    change_list_template = "admin/visitor_changelist.html"
 
-    def changelist_view(self, request, extra_context=None):
+
+
+
+
+    def _get_visitor_stats(self):
         from django.db.models.functions import TruncDate
+
         today = timezone.localdate()
-        qs    = Visitor.objects.all()
-        total_visitors  = qs.count()
+        qs = Visitor.objects.all()
+
+        total_visitors = qs.count()
         unique_sessions = qs.values("session_id").distinct().count()
-        today_unique    = qs.filter(visit_time__date=today).values("session_id").distinct().count()
-        daily_unique    = (
+        today_unique = qs.filter(visit_time__date=today).values("session_id").distinct().count()
+        daily_unique = (
             qs.annotate(day=TruncDate("visit_time"))
               .values("day")
               .annotate(unique=Count("session_id", distinct=True))
               .order_by("-day")[:14]
         )
-        extra = {
-            "total_visitors":  total_visitors,
+
+        return {
+            "total_visitors": total_visitors,
             "unique_sessions": unique_sessions,
-            "today_unique":    today_unique,
-            "daily_unique":    list(daily_unique),
+            "today_unique": today_unique,
+            "daily_unique": list(daily_unique),
         }
+
+    def changelist_view(self, request, extra_context=None):
+        extra = self._get_visitor_stats()
         extra_context = {**(extra_context or {}), **extra}
         return super().changelist_view(request, extra_context=extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'visitor-stats-json/',
+                self.admin_site.admin_view(self.visitor_stats_json_view),
+                name='visitor_stats_json',
+            ),
+        ]
+        return custom_urls + urls
+
+    def visitor_stats_json_view(self, request):
+        stats = self._get_visitor_stats()
+        return JsonResponse({
+            'totalVisitors': stats['total_visitors'],
+            'uniqueSessions': stats['unique_sessions'],
+            'todayUnique': stats['today_unique'],
+            'dailyUnique': [
+                {'day': (d['day'].isoformat() if d.get('day') else ''), 'unique': d['unique']}
+                for d in stats['daily_unique']
+            ],
+        })
+
+
+# NOTE: SearchAnalyticsAdmin was removed because Django didn't register it.
+# The analytics JSON endpoint is now implemented on SearchLogAdmin instead.
+
+
+
 
 
 # ── Terms & Conditions ──────────────────────────────────────────────────────
@@ -436,9 +503,105 @@ class SearchLogAdmin(admin.ModelAdmin):
     search_fields = ('query', 'tag')
     readonly_fields = ('query', 'tag', 'trek', 'ip_address', 'searched_at')
     ordering = ('-searched_at',)
-    change_list_template = "admin/searchlog_changelist.html"
+
+    def _get_search_analytics(self, request):
+        period = request.GET.get('period') or '30days'
+        now = timezone.now()
+
+        qs = SearchLog.objects.all()
+
+        if period == 'today':
+            qs = qs.filter(searched_at__date=timezone.localdate())
+        elif period == '7days':
+            qs = qs.filter(searched_at__gte=now - timedelta(days=7))
+        elif period == '30days':
+            qs = qs.filter(searched_at__gte=now - timedelta(days=30))
+        elif period == 'year':
+            qs = qs.filter(searched_at__year=now.year)
+        elif period == 'custom_year':
+            year = request.GET.get('year')
+            if year and year.isdigit():
+                qs = qs.filter(searched_at__year=int(year))
+
+        totalSearches = qs.count()
+
+        topTreksChart = list(
+            qs.exclude(trek=None)
+            .values('trek__name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:8]
+        )
+
+        topTags = list(
+            qs.exclude(tag='')
+            .values('tag')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+
+        topTreks = list(
+            qs.exclude(trek=None)
+            .values('trek__name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:1]
+        )
+
+        topQueries = list(
+            qs.exclude(query='')
+            .values('query')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:1]
+        )
+
+        topQuery = topQueries[0]['query'] if topQueries else '-'
+        topQueryCount = topQueries[0]['count'] if topQueries else 0
+
+        topTag = topTags[0]['tag'] if topTags else '-'
+        topTagCount = topTags[0]['count'] if topTags else 0
+
+        topTrek = topTreks[0]['trek__name'] if topTreks else '-'
+        topTrekCount = topTreks[0]['count'] if topTreks else 0
+
+        availableYears = [d.year for d in SearchLog.objects.dates('searched_at', 'year', order='DESC')]
+
+        queryLabels = [t['trek__name'] for t in topTreksChart]
+        queryData = [t['count'] for t in topTreksChart]
+
+        tagLabels = [t['tag'] for t in topTags]
+        tagData = [t['count'] for t in topTags]
+
+        return {
+            'totalSearches': totalSearches,
+            'topQuery': topQuery,
+            'topQueryCount': topQueryCount,
+            'topTag': topTag,
+            'topTagCount': topTagCount,
+            'topTrek': topTrek,
+            'topTrekCount': topTrekCount,
+            'availableYears': availableYears,
+            'queryLabels': queryLabels,
+            'queryData': queryData,
+            'tagLabels': tagLabels,
+            'tagData': tagData,
+        }
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'search-analytics-json/',
+                self.admin_site.admin_view(self.search_analytics_json_view),
+                name='search_analytics_json',
+            ),
+        ]
+        return custom_urls + urls
+
+    def search_analytics_json_view(self, request):
+        data = self._get_search_analytics(request)
+        return JsonResponse(data)
 
     def get_queryset(self, request):
+
         """
         Filters data dynamically using our custom session-safe period parameter
         without crashing Django Admin's validation loop.

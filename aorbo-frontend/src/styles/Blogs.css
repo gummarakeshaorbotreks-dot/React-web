@@ -51,7 +51,7 @@
 
 .blogs-heading {
     text-align: center;
-    font-size: 42px;
+    font-size: clamp(2rem, 5vw, 2.625rem);
     font-weight: 700;
     margin-bottom: 2.5rem;
 }
@@ -87,7 +87,7 @@
     font-weight: 600;
     color: #333;
     margin-bottom: 0.5rem;
-    line-height: 15px;
+    line-height: 1.4;
 }
 
 .blog-excerpt {

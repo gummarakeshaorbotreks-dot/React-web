@@ -6,7 +6,13 @@
    ============================================ */
 
 .analytics-wrap * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-.analytics-wrap { background: #f8fafc; min-height: 100vh; }
+.analytics-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+  padding: 24px;
+}
 
 /* FILTER ROW */
 .analytics-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }

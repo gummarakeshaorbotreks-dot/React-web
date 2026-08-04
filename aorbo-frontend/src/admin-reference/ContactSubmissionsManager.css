@@ -5,7 +5,13 @@
    ============================================ */
 
 .dj-wrap * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-.dj-wrap { background: #f8fafc; min-height: 100vh; }
+.dj-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
 
 /* CONTENT */
 #dj-content { padding: 24px; }

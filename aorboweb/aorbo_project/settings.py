@@ -50,9 +50,26 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
 
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Strict'
+# 'Lax' so the Django admin session cookie is sent on same-site fetches
+# through the Vite dev proxy (localhost:5173 -> localhost:8000) while still
+# blocking cross-site POST/CSRF usage. 'Strict' was preventing the cookie
+# from being attached to the React admin dashboard's fetch() requests.
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# In DEBUG (local dev), the Vite dev server (localhost:5173) proxies /api
+# requests to Django (localhost:8000). The browser treats those as a different
+# "site" because the port differs, so the host-only session cookie (set for
+# localhost:8000) is NOT sent — causing the admin dashboard to see an
+# unauthenticated request and return JSON 403. Setting the cookie domain to
+# 'localhost' makes it shared across ALL localhost ports, so the browser sends
+# it when the SPA calls /api through the Vite proxy. This is dev-only; in
+# production the SPA is served cookie same-origin so no domain override is
+# needed (and must NOT be set, or it would break the production domain).
+if DEBUG:
+    SESSION_COOKIE_DOMAIN = 'localhost'
+    CSRF_COOKIE_DOMAIN = 'localhost'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -104,8 +121,8 @@ CORS_ALLOW_CREDENTIALS = True
 # Rate limiting with django-axes
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1
-AXES_LOCKOUT_TEMPLATE = 'registration/lockout.html'
-AXES_LOCKOUT_URL = '/locked/'
+AXES_LOCKOUT_TEMPLATE = None
+AXES_LOCKOUT_URL = '/accounts/lockout/'
 AXES_IP_WHITELIST = []
 AXES_ENABLE_ACCESS_LOG = True
 

@@ -32,6 +32,13 @@ body { background-color: #f7f5f0 !important; color: #1e293b; }
    HERO / LANDING LAYER
    ========================================== */
 .hero-landing { position: relative; width: 100%; margin-bottom: 0;height: 80vh;min-height: 650px; }
+
+@media (max-width: 768px) {
+  .hero-landing { min-height: 450px; height: 60vh; }
+}
+@media (max-width: 375px) {
+  .hero-landing { min-height: 380px; height: 55vh; }
+}
 .hero-carousel, .hero-carousel .carousel-inner, .hero-carousel .carousel-item { height: 100%; }
 .hero-carousel .hero-img { width: 100%; height: 100%; object-fit: cover; }
 

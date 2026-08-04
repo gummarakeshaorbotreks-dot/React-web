@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
+
 // Global Layout Components
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
@@ -26,7 +27,11 @@ import ResetPasswordComplete from './pages/auth/ResetPasswordComplete';
 import ResetPasswordConfirm from './pages/auth/ResetPasswordConfirm';
 import ResetPasswordSent from './pages/auth/ResetPasswordSent';
 
+// Admin dashboard (React conversion)
+import AdminDashboard from './pages/AdminDashboard';
+
 export default function App() {
+
   return (
     <Router>
       {/* Dynamic Global Header */}
@@ -50,6 +55,10 @@ export default function App() {
 
         {/* Auth + password reset routes */}
         <Route path="/success" element={<Success />} />
+
+        {/* Staff-protected admin React dashboard (Django admin-backed JSON) */}
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
         <Route path="/accounts/lockout" element={<Lockout />} />
         <Route path="/accounts/password_reset" element={<ForgotPassword />} />
         <Route path="/accounts/password_reset/done" element={<ResetPasswordSent />} />

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getCsrfToken } from '../../utils/csrf';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import '../../styles/Auth.css';
+import { getCsrfToken } from '../../utils/csrf';
 
 // Converted from aorboweb/treks_app/templates/registration/password_reset_confirm.html
 //
@@ -29,12 +29,12 @@ export default function ResetPasswordConfirm() {
 
     fetch(`/accounts/reset/${uidb64}/${token}/`, {
       credentials: 'include',
-      redirect: 'follow',
     })
-      .then((res) => {
+      .then((res) => res.json())
+      .then((data) => {
         if (cancelled) return;
-        setValidLink(res.ok);
-        setPostUrl(res.url); // Django's final redirected .../set-password/ URL
+        setValidLink(data.valid);
+        setPostUrl(`/accounts/reset/${uidb64}/${token}/`);
         setChecking(false);
       })
       .catch(() => {
@@ -62,16 +62,18 @@ export default function ResetPasswordConfirm() {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
           'X-CSRFToken': getCsrfToken() || '',
         },
-        body: new URLSearchParams({ new_password1: password1, new_password2: password2 }),
+        body: JSON.stringify({ new_password1: password1, new_password2: password2 }),
       });
 
-      if (res.ok || res.redirected) {
+      const data = await res.json();
+
+      if (data.success) {
         navigate('/accounts/reset/done', { replace: true });
       } else {
-        setError('The password could not be reset. Please check the requirements and try again.');
+        setError(data.error || 'The password could not be reset. Please check the requirements and try again.');
       }
     } catch {
       setError('Could not reach the server. Please try again.');

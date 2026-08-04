@@ -15,13 +15,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
+from treks_app import auth_views
 
 urlpatterns = [
     path('supersecretadmin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include([
+        path('password_reset/', auth_views.api_password_reset, name='password_reset'),
+        path('password_reset/done/', auth_views.api_password_reset_done, name='password_reset_done'),
+        path('reset/<uidb64>/<token>/', auth_views.api_password_reset_confirm, name='password_reset_confirm'),
+        path('reset/done/', auth_views.api_password_reset_complete, name='password_reset_complete'),
+        path('lockout/', auth_views.api_lockout, name='lockout'),
+        # Keep login/logout as Django's built-in views (they redirect to admin)
+        path('login/', RedirectView.as_view(url=reverse_lazy('admin:login')), name='login'),
+        path('logout/', RedirectView.as_view(url=reverse_lazy('admin:logout')), name='logout'),
+    ])),
     path('', include('treks_app.urls')),
 ]
 

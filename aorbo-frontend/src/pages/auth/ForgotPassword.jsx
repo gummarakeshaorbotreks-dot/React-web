@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCsrfToken } from '../../utils/csrf';
 import '../../styles/Auth.css';
+import { getCsrfToken } from '../../utils/csrf';
 
 // Converted from aorboweb/treks_app/templates/registration/password_reset_form.html
 // Posts to Django's built-in password_reset endpoint (django.contrib.auth.urls),
@@ -22,16 +22,18 @@ export default function ForgotPassword() {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
           'X-CSRFToken': getCsrfToken() || '',
         },
-        body: new URLSearchParams({ email }),
+        body: JSON.stringify({ email }),
       });
 
-      if (res.ok || res.redirected) {
+      const data = await res.json();
+
+      if (data.success) {
         navigate('/accounts/password_reset/done', { replace: true });
       } else {
-        setError('Something went wrong. Please try again.');
+        setError(data.error || 'Something went wrong. Please try again.');
       }
     } catch {
       setError('Could not reach the server. Please try again.');

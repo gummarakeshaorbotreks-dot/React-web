@@ -35,6 +35,16 @@ path('api/social-media/', views.api_social_media, name='api_social_media'),
     # Travel Your Way
     # path('travel-your-way/', views.travel_your_way, name='travel_your_way'),
 
-    # ✅ Contact (ONLY ONE)
+    # ✅ Contact endpoints (React frontend posts to /api/contact-submit/)
     path('contact/', views.contact, name='contact'),
+    path('api/contact-submit/', views.contact, name='contact_submit'),
+
+    # React protected admin helpers
+    path('api/admin/whoami/', views.api_admin_whoami, name='api_admin_whoami'),
+
+    # Staff-only JSON endpoints for the React Admin Dashboard.
+    # Return JSON 403 (not Django's HTML login redirect) when unauthenticated.
+    path('api/admin/visitor-stats/', views.admin_visitor_stats_json, name='admin_visitor_stats_json'),
+    path('api/admin/search-analytics/', views.admin_search_analytics_json, name='admin_search_analytics_json'),
+    path('api/admin/contact-submissions/', views.admin_contact_submissions_json, name='admin_contact_submissions_json'),
 ]

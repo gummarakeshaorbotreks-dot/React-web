@@ -22,6 +22,79 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+# --- Admin whoami (for React protected admin route) ---
+def api_admin_whoami(request):
+    is_staff = bool(getattr(request, 'user', None) and request.user.is_authenticated and request.user.is_staff)
+    return JsonResponse({
+        'is_staff': is_staff,
+        'is_authenticated': bool(getattr(request, 'user', None) and request.user.is_authenticated),
+    })
+
+
+def staff_json_required(view_func):
+    """Redirect-free staff gate that returns JSON 403 instead of Django's HTML login redirect.
+
+    The admin JSON endpoints registered in ModelAdmin.get_urls() wrap the view with
+    admin_site.admin_view(), which sends unauthenticated requests to the HTML login
+    page (302 → <!DOCTYPE html>). For the React dashboard we need genuine JSON, so we
+    use this decorator instead: authenticated staff  → data, otherwise → 403 JSON.
+    """
+    import functools
+
+    @functools.wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        user = getattr(request, 'user', None)
+        if not (user is not None and user.is_authenticated and user.is_staff):
+            return JsonResponse({'detail': 'Not authorized'}, status=403)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped
+
+
+@staff_json_required
+def admin_visitor_stats_json(request):
+    """JSON visitor stats for the React Admin Dashboard (staff-only, JSON 403 when unauthenticated)."""
+    from django.contrib import admin as django_admin
+    from .admin import VisitorAdmin
+    from .models import Visitor
+
+    admin = VisitorAdmin(Visitor, django_admin.site)
+    stats = admin._get_visitor_stats()
+    return JsonResponse({
+        'totalVisitors': stats['total_visitors'],
+        'uniqueSessions': stats['unique_sessions'],
+        'todayUnique': stats['today_unique'],
+        'dailyUnique': [
+            {'day': (d['day'].isoformat() if d.get('day') else ''), 'unique': d['unique']}
+            for d in stats['daily_unique']
+        ],
+    })
+
+
+@staff_json_required
+def admin_search_analytics_json(request):
+    """JSON search analytics for the React Admin Dashboard (staff-only)."""
+    from django.contrib import admin as django_admin
+    from .admin import SearchLogAdmin
+    from .models import SearchLog
+
+    admin = SearchLogAdmin(SearchLog, django_admin.site)
+    return JsonResponse(admin._get_search_analytics(request))
+
+
+@staff_json_required
+def admin_contact_submissions_json(request):
+    """JSON contact submissions for the React Admin Dashboard (staff-only)."""
+    from django.contrib import admin as django_admin
+    from .admin import ContactAdmin
+    from .models import Contact
+
+    admin = ContactAdmin(Contact, django_admin.site)
+    resp = admin.submissions_json_view(request)
+    return JsonResponse(json.loads(resp.content))
+
+
 from .models import (
     Contact, Blog, TrekCategory, Trek, 
     Testimonial, FAQ, SafetyTip, TeamMember,
@@ -142,17 +215,36 @@ def contact(request):
 
     display_category = detected_category.title() if detected_category else "Our Featured"
 
-    context = {
-        "name": name,
-        "email": email,
-        "message": message,
-        "detected_category": detected_category,
-        "display_category": display_category,
-        "explore_link": explore_link,
-        "current_year": datetime.now().year,
-    }
-
-    html_content = render_to_string(template_name, context)
+    # Render email using React components
+    try:
+        from .email_renderer import render_react_email
+        
+        if user_type == "trekker":
+            html_content = render_react_email("TrekkerEmail", {
+                "name": name,
+                "email": email,
+                "message": message,
+                "displayCategory": display_category,
+                "exploreLink": explore_link,
+                "currentYear": datetime.now().year,
+            })
+        elif user_type == "organizer":
+            html_content = render_react_email("OrganizerEmail", {
+                "name": name,
+                "email": email,
+                "message": message,
+                "currentYear": datetime.now().year,
+            })
+        else:
+            html_content = render_react_email("OtherInquiryEmail", {
+                "name": name,
+                "email": email,
+                "message": message,
+                "currentYear": datetime.now().year,
+            })
+    except Exception as e:
+        logger.error(f"React email render failed for {user_type} contact form: {e}")
+        return JsonResponse({"error": "Failed to render confirmation email. Please try again."}, status=500)
 
     try:
         mail = EmailMultiAlternatives(
@@ -731,7 +823,20 @@ def send_osm_draft_notification(draft, request):
             'short_desc': draft.short_desc,
             'admin_url': admin_url,
         }
-        html_content = render_to_string('emails/osm_draft_notification.html', context)
+
+        # Render email using React component
+        try:
+            from .email_renderer import render_react_email
+            html_content = render_react_email("OsmDraftNotificationEmail", {
+                "trekName": draft.name,
+                "state": draft.state,
+                "imageUrl": draft.image,
+                "shortDesc": draft.short_desc,
+                "adminUrl": admin_url,
+            })
+        except Exception as e:
+            logger.error(f"React email render failed for OSM draft '{draft.name}': {e}")
+            return  # Skip sending — don't fall back to deleted templates
 
         mail = EmailMultiAlternatives(
             subject=f"🆕 New OSM Draft Trek: {draft.name}",

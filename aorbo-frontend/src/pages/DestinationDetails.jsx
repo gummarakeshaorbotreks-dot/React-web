@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { slugToName } from '../utils/slugUtils';
 
 export default function DestinationDetails() {
@@ -9,7 +9,6 @@ export default function DestinationDetails() {
   const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [addStatus, setAddStatus] = useState('');
 
   const BACKEND_URL = 'http://127.0.0.1:8000';
 
@@ -73,7 +72,7 @@ export default function DestinationDetails() {
 
   if (loading) {
     return (
-      <div style={{ padding: '5rem', textAlign: 'center', color: '#4b5563', fontSize: '1rem' }}>
+      <div style={{ padding: 'clamp(2rem, 10vw, 5rem)', textAlign: 'center', color: '#4b5563', fontSize: '1rem' }}>
         Loading destination details...
       </div>
     );
@@ -81,7 +80,7 @@ export default function DestinationDetails() {
 
   if (error || !destination) {
     return (
-      <div style={{ padding: '5rem', textAlign: 'center', color: '#4b5563' }}>
+      <div style={{ padding: 'clamp(2rem, 10vw, 5rem)', textAlign: 'center', color: '#4b5563' }}>
         <p>Destination not found: {error}</p>
         <button
           onClick={() => navigate(-1)}
@@ -109,21 +108,13 @@ export default function DestinationDetails() {
   const orange = '#ff6a1a';
   const pageBg = '#FFFDF0';
 
-  const getEstimatedPrice = () => {
-    const diff = destination.difficulty?.toLowerCase() || 'easy';
-    const prices = {
-      'easy': 1000,
-      'moderate': 1500,
-      'difficult': 2500,
-      'very difficult': 4000
-    };
-    return Math.max(prices[diff] || 1000, 1000);
-  };
-
-  const estimatedPrice = getEstimatedPrice();
-
   return (
     <main style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem 4rem', background: pageBg, minHeight: '100vh' }}>
+      <style>{`
+        .dd-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; align-items: start; }
+        @media (min-width: 768px) { .dd-grid { grid-template-columns: minmax(0,2fr) minmax(0,1fr); } }
+        .dd-map { width: 100%; height: clamp(200px, 40vw, 320px); border: 0; display: block; }
+      `}</style>
 
       {/* HERO SECTION */}
       <div
@@ -132,7 +123,7 @@ export default function DestinationDetails() {
           borderRadius: '20px',
           overflow: 'hidden',
           marginBottom: '1.5rem',
-          minHeight: '320px',
+          minHeight: 'clamp(200px, 50vw, 320px)',
           background: destination.image_url ? `${darkGreen} url(${destination.image_url}) center/cover no-repeat` : darkGreen,
         }}
       >
@@ -183,8 +174,8 @@ export default function DestinationDetails() {
             <iframe
               title="Destination location map"
               width="100%"
-              height="320"
-              style={{ border: 0, display: 'block' }}
+              height="100%"
+              style={{ border: 0, display: 'block', minHeight: 'clamp(200px, 40vw, 320px)' }}
               src={`https://www.openstreetmap.org/export/embed.html?bbox=${lon - 0.05}%2C${lat - 0.05}%2C${lon + 0.05}%2C${lat + 0.05}&layer=mapnik&marker=${lat}%2C${lon}`}
             />
           </div>
@@ -192,7 +183,7 @@ export default function DestinationDetails() {
       })()}
 
       {/* MAIN CONTENT GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: '1.25rem', alignItems: 'start' }}>
+      <div className="dd-grid">
 
         {/* LEFT COLUMN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
