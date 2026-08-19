@@ -24,7 +24,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .models import (
-    Contact, Blog, TrekCategory, Trek, 
+    Contact, Blog,  
     Testimonial, FAQ, SafetyTip, TeamMember,
     HomepageBanner, TrekList, SearchLog, OsmDraftTrek, ContactInfo, SocialMedia, ContentSection
 )
@@ -60,7 +60,23 @@ def detect_trek_category(message: str):
     if any(word in message for word in ["weekend", "short trip", "getaway"]):
         return "weekend"
     return None
+@api_view(['GET'])
+def api_safety_tips(request):
+    safety_tips = SafetyTip.objects.all().order_by('order')
 
+    results = []
+
+    for tip in safety_tips:
+        results.append({
+            "id": tip.id,
+            "section_title": tip.section_title,
+            "title": tip.title,
+            "content": tip.content,
+            "icon": tip.icon.url if tip.icon else None,
+            "order": tip.order,
+        })
+
+    return Response(results)
 
 @csrf_exempt  # ← React sends JSON, no CSRF cookie needed for this public endpoint
 def contact(request):

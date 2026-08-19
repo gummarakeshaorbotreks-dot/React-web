@@ -162,16 +162,6 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
-class TrekCategory(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    
-    class Meta:
-        verbose_name_plural = "Trek Categories"
-    
-    def __str__(self):
-        return self.name
-
 class TrekOrganizer(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
@@ -184,47 +174,11 @@ class TrekOrganizer(models.Model):
     def __str__(self):
         return self.name
 
-class Trek(models.Model):
-    DIFFICULTY_CHOICES = [
-        ('easy', 'Easy'),
-        ('moderate', 'Moderate'),
-        ('difficult', 'Difficult'),
-        ('extreme', 'Extreme'),
-    ]
-    
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    description = models.TextField()
-    short_description = models.TextField(max_length=300, blank=True)
-    image = models.ImageField(upload_to='treks/', validators=[validate_image_file_extension])
-    additional_images = models.ManyToManyField('TrekImage', blank=True, related_name='trek_images')
-    category = models.ForeignKey(TrekCategory, on_delete=models.CASCADE, related_name='treks')
-    organizer = models.ForeignKey(TrekOrganizer, on_delete=models.CASCADE, related_name='treks')
-    duration = models.CharField(max_length=50, help_text="e.g., '2 days, 1 night'")
-    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
-    location = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    is_featured = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return self.title
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-    
-    def get_absolute_url(self):
-        return reverse('trek_detail', kwargs={'slug': self.slug})
-
 
 class Testimonial(models.Model):
     name = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='testimonials/', blank=True, null=True, validators=[validate_image_file_extension])
-    trek = models.ForeignKey(Trek, on_delete=models.SET_NULL, null=True, blank=True, related_name='testimonials')
+    trek = models.ForeignKey('TrekList', on_delete=models.SET_NULL, null=True, blank=True, related_name='testimonials')
     trek_name = models.CharField(max_length=200, blank=True, help_text="Only required if trek is not selected")
     date = models.DateField()
     content = models.TextField()
@@ -263,6 +217,7 @@ class FAQ(models.Model):
         return self.question
 
 class SafetyTip(models.Model):
+    section_title = models.CharField(max_length=200, default='Safety Tips')
     title = models.CharField(max_length=200)
     content = models.TextField()
     icon = models.ImageField(upload_to='safety_icons/', blank=True, null=True, validators=[validate_image_file_extension])

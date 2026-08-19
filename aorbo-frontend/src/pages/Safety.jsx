@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/Safety.css'; // Links directly to your external styles sheet
 
 export default function Safety() {
+  const [safetyTips, setSafetyTips] = useState([]);
+
+  const BACKEND_URL =
+    import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/safety-tips/`)
+      .then((response) => response.json())
+      .then((data) => setSafetyTips(data))
+      .catch((error) =>
+        console.error('Failed to load safety tips:', error)
+      );
+  }, []);
   return (
     <main className="safety-page">
       <div className="safety-container-fluid">
@@ -146,8 +159,43 @@ export default function Safety() {
             </div>
           </div>
         </section>
+        {/* ADMIN-CONTROLLED SAFETY TIPS */}
+        {Object.entries(
+          safetyTips.reduce((groups, tip) => {
+            const section = tip.section_title || 'Safety Tips';
 
-      </div>
+            if (!groups[section]) {
+              groups[section] = [];
+             }
+
+            groups[section].push(tip);
+
+            return groups;
+          }, {})
+        ).map(([sectionTitle, tips]) => (
+          <section
+            key={sectionTitle}
+            className="animate-fade-up safety-tips-section"
+          >
+            <h2 className="section-title">{sectionTitle}</h2>
+
+            <div className="scrollable-row">
+              {tips.map((tip) => (
+                <div
+                  key={tip.id}
+                  className="feature-item interactive-card"
+                >
+                  <h3>{tip.title}</h3>
+
+                  <p className="card-text-full">
+                    {tip.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>  
+        ))}      
+          </div>
     </main>
   );
 }
