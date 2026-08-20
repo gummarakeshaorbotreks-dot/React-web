@@ -16,10 +16,10 @@ admin.site.site_title = "Aorbo Treks Admin Pannel"
 admin.site.index_title = "Dashboard"
 
 from .models import (
-    Contact, Blog, TrekCategory, TrekOrganizer, Trek, TrekImage,
+    Contact, Blog, TrekOrganizer, TrekImage,
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
     SocialMedia, ContactInfo, TrekList, Visitor,
-    TermsAndConditions, Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection
+    Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection
 )
 
 
@@ -166,19 +166,6 @@ class BlogAdmin(admin.ModelAdmin):
     image_preview.short_description = "Image Preview"
 
 
-# ── Trek Category ───────────────────────────────────────────────────────────
-@admin.register(TrekCategory)
-class TrekCategoryAdmin(admin.ModelAdmin):
-    list_display  = ('name', 'description')
-    search_fields = ('name', 'description')
-
-
-# ── Trek Image Inline ───────────────────────────────────────────────────────
-class TrekImageInline(admin.TabularInline):
-    model = Trek.additional_images.through
-    extra = 1
-
-
 # ── Trek Organizer ──────────────────────────────────────────────────────────
 @admin.register(TrekOrganizer)
 class TrekOrganizerAdmin(admin.ModelAdmin):
@@ -191,29 +178,6 @@ class TrekOrganizerAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" width="50" />', obj.logo.url)
         return "-"
     logo_preview.short_description = 'Logo'
-
-
-# ── Trek ────────────────────────────────────────────────────────────────────
-@admin.register(Trek)
-class TrekAdmin(admin.ModelAdmin):
-    list_display        = ('title', 'category', 'organizer', 'difficulty', 'price', 'is_featured', 'image_preview')
-    list_filter         = ('category', 'difficulty', 'is_featured', 'created_at')
-    search_fields       = ('title', 'description', 'location')
-    prepopulated_fields = {'slug': ('title',)}
-    readonly_fields     = ('created_at', 'updated_at', 'image_preview')
-    fieldsets = (
-        (None,      {'fields': ('title', 'slug', 'category', 'organizer', 'is_featured')}),
-        ('Details', {'fields': ('description', 'short_description', 'duration', 'difficulty', 'location')}),
-        ('Pricing', {'fields': ('price', 'discount_price')}),
-        ('Image',   {'fields': ('image', 'image_preview')}),
-        ('Dates',   {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
-    )
-
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" width="100" />', obj.image.url)
-        return "-"
-    image_preview.short_description = 'Image Preview'
 
 
 # ── Trek Image ──────────────────────────────────────────────────────────────
@@ -238,7 +202,8 @@ class TestimonialAdmin(admin.ModelAdmin):
     readonly_fields = ('photo_preview',)
 
     def trek_display(self, obj):
-        return obj.trek.title if obj.trek else obj.trek_name
+        return obj.trek.name if obj.trek else obj.trek_name
+
     trek_display.short_description = 'Trek'
 
     def photo_preview(self, obj):
@@ -260,7 +225,7 @@ class FAQAdmin(admin.ModelAdmin):
 # ── Safety Tip ──────────────────────────────────────────────────────────────
 @admin.register(SafetyTip)
 class SafetyTipAdmin(admin.ModelAdmin):
-    list_display  = ('title', 'order', 'icon_preview')
+    list_display  = ('section_title','title', 'order', 'icon_preview')
     search_fields = ('title', 'content')
     list_editable = ('order',)
 
@@ -352,18 +317,6 @@ class VisitorAdmin(admin.ModelAdmin):
         }
         extra_context = {**(extra_context or {}), **extra}
         return super().changelist_view(request, extra_context=extra_context)
-
-
-# ── Terms & Conditions ──────────────────────────────────────────────────────
-# @admin.register(TermsAndConditions)
-# class TermsAndConditionsAdmin(admin.ModelAdmin):
-#     list_display    = ('title', 'updated_at', 'content_preview')
-#     readonly_fields = ('updated_at',)
-
-#     def content_preview(self, obj):
-#         return mark_safe(obj.content[:100] + '...') if obj.content else "-"
-#     content_preview.short_description = 'Content Preview'
-
 
 # ── Trek List ───────────────────────────────────────────────────────────────
 @admin.register(TrekList)

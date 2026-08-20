@@ -33,4 +33,5 @@ path('api/social-media/', views.api_social_media, name='api_social_media'),
     path('api/contact-submit/', views.contact, name='api_contact_submit'),
     # ✅ Content Sections
     path('api/content-sections/<str:page>/', views.api_content_sections, name='api_content_sections'),
+    path('api/safety-tips/', views.api_safety_tips, name='api_safety_tips'),
 ]
