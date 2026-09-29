@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.permissions import IsAdminUser
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from django.shortcuts import render, get_object_or_404, redirect
@@ -7,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.template.loader import render_to_string
 from django.db.models import Q, Case, When, IntegerField
 from django.conf import settings
@@ -24,9 +27,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .models import (
-    Contact, Blog,  
+    Contact, Blog,
     Testimonial, FAQ, SafetyTip, TeamMember,
-    HomepageBanner, TrekList, SearchLog, OsmDraftTrek, ContactInfo, SocialMedia, ContentSection
+    HomepageBanner, TrekList, SearchLog, OsmDraftTrek, ContactInfo, SocialMedia, ContentSection,
+    CrashReport,
 )
 
 def send_email_async(mail):
@@ -78,7 +82,6 @@ def api_safety_tips(request):
 
     return Response(results)
 
-@csrf_exempt  # ← React sends JSON, no CSRF cookie needed for this public endpoint
 def contact(request):
 
     if request.method == "GET":
@@ -99,6 +102,11 @@ def contact(request):
 
     if not all([name, email, mobile, user_type, message]):
         return JsonResponse({"error": "Please fill all required fields"}, status=400)
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({"error": "Please provide a valid email address"}, status=400)
 
     # Save to Django DB
     contact_obj = Contact.objects.create(
@@ -184,6 +192,15 @@ def contact(request):
         return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
 
     return JsonResponse({"message": "Message sent successfully"})
+
+# NOTE: `throttle_scope` must be set on the raw function *before* it is wrapped
+# by `api_view`/`throttle_classes` - those decorators read the attribute at
+# decoration time, so assigning it afterwards (as a plain `contact.throttle_scope
+# = ...` line below the decorators) is silently a no-op and disables throttling.
+contact.throttle_scope = 'contact_submit'
+contact = throttle_classes([ScopedRateThrottle])(contact)
+contact = api_view(['GET', 'POST'])(contact)
+contact = csrf_exempt(contact)  # React sends JSON, no CSRF cookie needed for this public endpoint
 
 
 @api_view(["GET"])
@@ -371,8 +388,6 @@ def api_search_suggestions(request):
             "state": t.state
         })
     return Response(results)
-@csrf_exempt
-@api_view(['POST'])
 def api_log_trek_click(request):
     trek_id = request.data.get('trek_id', '')
     query = request.data.get('query', '')
@@ -392,7 +407,13 @@ def api_log_trek_click(request):
         ip_address=request.META.get('REMOTE_ADDR')
     )
     return Response({"status": "logged"})
+
+api_log_trek_click.throttle_scope = 'log_click'
+api_log_trek_click = throttle_classes([ScopedRateThrottle])(api_log_trek_click)
+api_log_trek_click = api_view(['POST'])(api_log_trek_click)
+api_log_trek_click = csrf_exempt(api_log_trek_click)
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def api_analytics(request):
     period = request.GET.get('period', '30days')
     qs = SearchLog.objects.all()
@@ -576,8 +597,6 @@ def api_social_media(request):
     return Response(results)
 # ============ OpenAI Destination Enrichment Endpoint ============
 
-@api_view(['GET'])
-@throttle_classes([ScopedRateThrottle])
 def api_enrich_destination(request):
     """
     Enrich destination data using OpenAI for destinations not in database.
@@ -639,8 +658,12 @@ def api_enrich_destination(request):
         "enrichment": enriched_data,
         "image_url": image_url,
     })
-# ✅ SECURITY FIX: rate-limit this endpoint (it calls a paid AI API) to prevent abuse
+# Rate-limit this endpoint (it calls a paid AI API) to prevent abuse.
+# `throttle_scope` must be set before the api_view/throttle_classes wrapping -
+# see the note on `contact` above for why the previous ordering was a no-op.
 api_enrich_destination.throttle_scope = 'ai_enrich'
+api_enrich_destination = throttle_classes([ScopedRateThrottle])(api_enrich_destination)
+api_enrich_destination = api_view(['GET'])(api_enrich_destination)
 
 @api_view(['GET'])
 def api_nearby_destinations(request):
@@ -872,9 +895,6 @@ def api_search_intelligent(request):
             "error": "unexpected_error"
         }, status=200)  # Return 200 not 500 - client can retry
 
-@csrf_exempt
-@api_view(['POST'])
-@throttle_classes([ScopedRateThrottle])
 def api_create_trek_from_osm(request):
     """
     Triggered when a visitor clicks an OSM search result. Runs AI enrichment
@@ -911,13 +931,15 @@ def api_create_trek_from_osm(request):
         }, status=200)
 
     try:
+        # This endpoint is called fire-and-forget by the frontend (it never
+        # reads the response body), so the reply doesn't need to - and
+        # shouldn't - disclose internal IDs or whether a name is still
+        # pending review vs. already published to an anonymous caller.
         if OsmDraftTrek.objects.filter(name__iexact=name).exists():
-            existing = OsmDraftTrek.objects.filter(name__iexact=name).first()
-            return Response({"status": "already_exists", "draft_id": existing.id}, status=200)
+            return Response({"status": "already_exists"}, status=200)
 
         if TrekList.objects.filter(name__iexact=name).exists():
-            existing = TrekList.objects.filter(name__iexact=name).first()
-            return Response({"status": "already_published", "trek_id": existing.id}, status=200)
+            return Response({"status": "already_exists"}, status=200)
 
         state_guess = extract_state_from_display_name(display_name) or "Uttarakhand"
 
@@ -939,12 +961,57 @@ def api_create_trek_from_osm(request):
 
         send_osm_draft_notification(draft, request)
 
-        return Response({
-            "status": "draft_created",
-            "draft_id": draft.id
-        }, status=201)
+        return Response({"status": "draft_created"}, status=201)
 
     finally:
         cache.delete(lock_key)
-# ✅ SECURITY FIX: rate-limit this endpoint (it triggers AI calls, DB writes, and emails)
+# Rate-limit this endpoint (it triggers AI calls, DB writes, and emails).
+# `throttle_scope` must be set before the api_view/throttle_classes wrapping -
+# see the note on `contact` above for why the previous ordering was a no-op.
 api_create_trek_from_osm.throttle_scope = 'osm_draft_create'
+api_create_trek_from_osm = throttle_classes([ScopedRateThrottle])(api_create_trek_from_osm)
+api_create_trek_from_osm = api_view(['POST'])(api_create_trek_from_osm)
+api_create_trek_from_osm = csrf_exempt(api_create_trek_from_osm)
+
+
+def api_crash_report(request):
+    """Public sink for frontend crashes (React error boundary,
+    window.onerror, unhandledrejection) - every page reports here. Only
+    error_message is required; everything else is best-effort context."""
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return Response({"error": "Invalid JSON"}, status=400)
+
+    error_message = str(data.get('error_message', '')).strip()
+    if not error_message:
+        return Response({"error": "error_message is required"}, status=400)
+
+    platform = data.get('platform', 'web')
+    if platform not in dict(CrashReport.PLATFORM_CHOICES):
+        platform = 'web'
+    severity = data.get('severity', 'error')
+    if severity not in dict(CrashReport.SEVERITY_CHOICES):
+        severity = 'error'
+
+    xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    ip = xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR')
+
+    report = CrashReport.objects.create(
+        platform=platform,
+        severity=severity,
+        error_message=error_message[:5000],
+        stack_trace=str(data.get('stack_trace', ''))[:10000],
+        route=str(data.get('route', ''))[:500],
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+        ip_address=ip,
+        app_version=str(data.get('app_version', ''))[:40],
+        extra_context=data.get('extra_context') if isinstance(data.get('extra_context'), dict) else None,
+    )
+    return Response({"status": "logged", "report_id": report.report_id}, status=201)
+
+
+api_crash_report.throttle_scope = 'crash_report'
+api_crash_report = throttle_classes([ScopedRateThrottle])(api_crash_report)
+api_crash_report = api_view(['POST'])(api_crash_report)
+api_crash_report = csrf_exempt(api_crash_report)

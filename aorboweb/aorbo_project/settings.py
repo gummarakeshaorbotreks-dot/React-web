@@ -54,6 +54,14 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 
+# The only thing using sessions on this site is the staff admin panel (the
+# public frontend is a separate stateless SPA), so a short admin-appropriate
+# lifetime is safe globally. Django's own defaults (2 weeks, survives browser
+# close) are far too long for an admin session.
+SESSION_COOKIE_AGE = 60 * 60 * 12  # 12 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True  # sliding expiry while actively working
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,6 +74,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'csp',
     'axes',
+    'access_control',
     'treks_app',
     'ckeditor',
 ]
@@ -78,9 +87,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'access_control.middleware.StaffSessionValidationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
+    'treks_app.middleware.BackendCrashLoggingMiddleware',
     'axes.middleware.AxesMiddleware',
 ]
 
@@ -100,6 +111,16 @@ if DEBUG:
         "http://127.0.0.1:5173",
     ]
 
+# Lets a deployment that isn't on its final domain yet (e.g. a bare VPS IP)
+# allow its own origin without hardcoding that temporary value into source.
+_EXTRA_ORIGINS = config(
+    'EXTRA_ALLOWED_ORIGINS',
+    default='',
+    cast=lambda x: [i.strip() for i in x.split(',') if i.strip()],
+)
+CORS_ALLOWED_ORIGINS += _EXTRA_ORIGINS
+CSRF_TRUSTED_ORIGINS += _EXTRA_ORIGINS
+
 CORS_ALLOW_CREDENTIALS = True
 
 # Rate limiting with django-axes
@@ -109,7 +130,7 @@ AXES_LOCKOUT_TEMPLATE = 'registration/lockout.html'
 AXES_LOCKOUT_URL = '/locked/'
 AXES_IP_WHITELIST = []
 AXES_ENABLE_ACCESS_LOG = True
-AXES_ENABLED = False
+AXES_ENABLED = True
 ROOT_URLCONF = 'aorbo_project.urls'
 
 TEMPLATES = [
@@ -143,14 +164,27 @@ DATABASES = {
 }
 
 if not DEBUG and 'runserver' not in sys.argv:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Deployments served over plain HTTP only (e.g. bare IP, no TLS/domain yet)
+    # must opt out of the HTTPS redirect and secure-cookie flags, or every
+    # request loops/fails since there is no TLS listener to redirect to.
+    FORCE_SSL = config('FORCE_SSL', default='True', cast=lambda x: x.lower() in ('true', '1', 'yes'))
+    SECURE_SSL_REDIRECT = FORCE_SSL
+    SESSION_COOKIE_SECURE = FORCE_SSL
+    CSRF_COOKIE_SECURE = FORCE_SSL
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    'access_control.backends.StaffLockoutBackend',
+]
+
+# Argon2id first so Django transparently re-hashes any legacy PBKDF2 password
+# to Argon2id the next time that user logs in successfully (built into
+# django.contrib.auth.hashers.check_password's setter callback).
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
 ]
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -162,7 +196,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 PASSWORD_RESET_FORM = 'treks_app.forms.CustomPasswordResetForm'
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_USE_TLS = False
@@ -215,9 +249,6 @@ CACHES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
@@ -229,6 +260,9 @@ REST_FRAMEWORK = {
         'user': '50000/hour' if DEBUG else '1000/hour',  # 50,000/hour in DEBUG, 1,000/hour in production
         'osm_draft_create': '60/hour',
         'ai_enrich': '20/hour',
+        'contact_submit': '5/hour',
+        'log_click': '200/hour',
+        'crash_report': '100/hour',
     }
 }
 
@@ -335,6 +369,51 @@ if DEBUG:
                 "http://127.0.0.1:5173",
             )
 
-SIMPLE_JWT = {
-    'TOKEN_OBTAIN_PAIR_SERIALIZER': 'aorbo_project.serializers.MyTokenObtainPairSerializer',
+# Every module's `logging.getLogger(__name__)` call reaches these handlers by
+# default (root logger) - console always, plus a rotating file so errors
+# from any file survive past the terminal scrollback. CrashReport rows (see
+# treks_app.middleware / api_crash_report) are the queryable, DB-backed
+# complement to this file log, not a replacement for it.
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOGS_DIR / 'app.log',
+            'maxBytes': 10 * 1024 * 1024,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
 }
+

@@ -28,6 +28,10 @@ def home(request):
 
 urlpatterns = [
     path('', home, name='home'),
+    # access_control's login/MFA views must be matched before admin.site.urls
+    # (which also defines 'supersecretadmin/login/') so the two-step
+    # password -> MFA flow replaces Django's default single-step admin login.
+    path('supersecretadmin/', include('access_control.urls')),
     path('supersecretadmin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('treks_app.urls')),

@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { createPages } from '../utils/testHelper';
+import { createPages } from './utils/testHelper';
 
 test('Existing Trek Search - Coorg', async ({ page }) => {
 

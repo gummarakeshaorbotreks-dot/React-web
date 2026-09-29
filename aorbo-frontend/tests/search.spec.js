@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { SearchPage } from '../pages/SearchPage';
-import { TrekDetailsPage } from '../pages/TrekDetailsPage';
+import { HomePage } from './pages/HomePage';
+import { TrekDetailsPage } from './pages/TrekDetailsPage';
 
 /**
  * SEARCH MODULE TEST SUITE
@@ -20,12 +19,10 @@ import { TrekDetailsPage } from '../pages/TrekDetailsPage';
 
 test.describe('Search Module', () => {
   let homePage;
-  let searchPage;
   let detailsPage;
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    searchPage = new SearchPage(page);
     detailsPage = new TrekDetailsPage(page);
 
     await homePage.open();
@@ -34,7 +31,7 @@ test.describe('Search Module', () => {
 
   // ============ SECTION 1: EXISTING TREK SEARCH ============
   test.describe('1. Existing Trek Search', () => {
-    test('1.1 Search for existing trek - Coorg', async ({ page }) => {
+    test('1.1 Search for existing trek - Coorg', async () => {
       // Search for a known trek
       await homePage.search('Coorg');
 
@@ -63,7 +60,7 @@ test.describe('Search Module', () => {
       expect(trekName.length).toBeGreaterThan(0);
     });
 
-    test('1.3 Press Enter navigates to trek details', async ({ page }) => {
+    test('1.3 Press Enter navigates to trek details', async () => {
       await homePage.search('Coorg');
       await homePage.waitForSuggestions();
 
@@ -80,7 +77,7 @@ test.describe('Search Module', () => {
       expect(isHeadingVisible).toBe(true);
     });
 
-    test('1.4 Click search button navigates to trek details', async ({ page }) => {
+    test('1.4 Click search button navigates to trek details', async () => {
       await homePage.search('Kedarkantha');
       await homePage.waitForSuggestions();
 
@@ -93,7 +90,7 @@ test.describe('Search Module', () => {
       expect(url).toContain('/treks/');
     });
 
-    test('1.5 Click suggestion directly navigates to trek', async ({ page }) => {
+    test('1.5 Click suggestion directly navigates to trek', async () => {
       await homePage.search('Coorg');
       await homePage.waitForSuggestions();
 
@@ -133,7 +130,7 @@ test.describe('Search Module', () => {
 
   // ============ SECTION 2: OPENSTREETMAP SEARCH ============
   test.describe('2. OpenStreetMap (OSM) Search', () => {
-    test('2.1 Search for location not in database', async ({ page }) => {
+    test('2.1 Search for location not in database', async () => {
       // Search for a location that likely won't be in database but exists in OSM
       await homePage.search('Random Mountain Place XYZ');
 
@@ -160,7 +157,7 @@ test.describe('Search Module', () => {
       expect(firstSuggestion).toBeTruthy();
     });
 
-    test('2.3 Click OSM suggestion navigates to destination page', async ({ page }) => {
+    test('2.3 Click OSM suggestion navigates to destination page', async () => {
       // Search for a less common location to get OSM results
       await homePage.search('Himachal');
 
@@ -187,7 +184,7 @@ test.describe('Search Module', () => {
       }
     });
 
-    test('2.4 OSM destination information loads successfully', async ({ page }) => {
+    test('2.4 OSM destination information loads successfully', async () => {
       // Search for a location that should return OSM results
       await homePage.search('Valley');
 
@@ -332,8 +329,6 @@ test.describe('Search Module', () => {
     });
 
     test('4.4 Submitting whitespace may trigger OSM search', async ({ page }) => {
-      const initialUrl = page.url();
-
       // Type only spaces
       await homePage.searchWithSpaces('test');
 
@@ -709,7 +704,7 @@ test.describe('Search Module', () => {
 
   // ============ SECTION 8: INTEGRATION TESTS ============
   test.describe('8. Search Integration Tests', () => {
-    test('8.1 Search and navigate - full workflow', async ({ page }) => {
+    test('8.1 Search and navigate - full workflow', async () => {
       // User searches for trek
       await homePage.search('Coorg');
       await homePage.waitForSuggestions();

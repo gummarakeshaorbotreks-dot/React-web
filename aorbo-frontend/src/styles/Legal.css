@@ -1,0 +1,30 @@
+/* Legal documents are long: slightly smaller text, clear section breaks. */
+
+.legal {
+  font-size: 1rem;
+}
+
+.legal h3 {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.2rem;
+  scroll-margin-top: calc(var(--nav-h) + 1rem);
+}
+
+.legal > h3:first-child,
+.legal > div:first-child > h3:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.legal h4,
+.legal h5 {
+  font-size: 1.02rem;
+}
+
+.legal .emphasis {
+  font-weight: 600;
+  color: var(--ink);
+}

@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+  <p>Enter the 6-digit code from your authenticator app, or a backup code (format XXXXX-XXXXX).</p>
+  {% if error %}
+    <p class="errornote">{{ error }}</p>
+  {% endif %}
+  <form action="{% url 'access_control:mfa_verify' %}" method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label for="id_code">Code:</label>
+      <input type="text" name="code" autofocus autocomplete="one-time-code" required id="id_code">
+    </div>
+    <div class="form-row">
+      <label for="id_remember"><input type="checkbox" name="remember_device" id="id_remember"> Remember this device for 30 days</label>
+    </div>
+    <div class="submit-row">
+      <input type="submit" value="Verify">
+    </div>
+  </form>
+</div>
+{% endblock %}

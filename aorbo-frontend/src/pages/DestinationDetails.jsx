@@ -1,333 +1,177 @@
-import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  BedDouble, BookOpen, CalendarDays, Car, Info, Lightbulb, MapPin, MapPinOff, Mountain, Ruler, Tag,
+  UtensilsCrossed, Zap,
+} from 'lucide-react';
+import { qs } from '../api/client';
+import useApi from '../hooks/useApi';
 import { slugToName } from '../utils/slugUtils';
+import DetailHero from '../components/trek/DetailHero';
+import InfoCard from '../components/ui/InfoCard';
+import FactList from '../components/ui/FactList';
+import Loader from '../components/ui/Loader';
+import EmptyState from '../components/ui/EmptyState';
+import '../styles/Details.css';
+
+// The search page passes the OpenStreetMap result along in router state;
+// if someone opens the URL directly we only have the slug.
+function enrichPath(slug, passed) {
+  return `/api/enrich-destination/?${qs({
+    name: passed?.name || slugToName(slug),
+    lat: passed?.lat,
+    lon: passed?.lon,
+    display_name: passed?.display_name,
+    category: passed?.category,
+  })}`;
+}
+
+function normalise(data, passed, fallbackName) {
+  const enrich = data.enrichment || {};
+  return {
+    name: data.destination || fallbackName,
+    image_url: data.image_url || null,
+    lat: passed?.lat ?? data.lat,
+    lon: passed?.lon ?? data.lon,
+    summary: enrich.summary || enrich.description || 'Explore this beautiful destination.',
+    category: enrich.category || 'Adventure',
+    difficulty: enrich.difficulty || 'moderate',
+    best_time_to_visit: enrich.best_time_to_visit || 'October to March',
+    activities: enrich.activities || [],
+    travel_tips: enrich.travel_tips || [],
+    nearby_attractions: enrich.nearby_attractions || enrich.famous_places || [],
+    accommodation: enrich.accommodation,
+    local_cuisine: enrich.local_cuisine,
+    altitude: enrich.altitude,
+    distance_from_major_city: enrich.distance_from_major_city,
+  };
+}
+
+function osmEmbedUrl(lat, lon) {
+  const d = 0.05;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${lon - d}%2C${lat - d}%2C${lon + d}%2C${lat + d}&layer=mapnik&marker=${lat}%2C${lon}`;
+}
 
 export default function DestinationDetails() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [destination, setDestination] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [addStatus, setAddStatus] = useState('');
+  const passed = useLocation().state?.destination;
+  const { data, loading, error } = useApi(enrichPath(slug, passed));
 
- const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+  if (loading) return <Loader label="Loading destination details…" />;
 
-  useEffect(() => {
-    async function getDestinationDetails() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const passedDestination = location.state?.destination;
-        const destinationName = passedDestination?.name || slugToName(slug);
-        const lat = passedDestination?.lat;
-        const lon = passedDestination?.lon;
-        const display_name = passedDestination?.display_name;
-        const category = passedDestination?.category;
-
-        let url = `${BACKEND_URL}/api/enrich-destination/?name=${encodeURIComponent(destinationName)}`;
-        if (lat != null) url += `&lat=${lat}`;
-        if (lon != null) url += `&lon=${lon}`;
-        if (display_name) url += `&display_name=${encodeURIComponent(display_name)}`;
-        if (category) url += `&category=${encodeURIComponent(category)}`;
-
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Destination not found');
-
-        const data = await res.json();
-
-        // Safely extract the enrichment block with fallback defaults
-        const enrich = data.enrichment || {};
-
-        setDestination({
-          name: data.destination || destinationName,
-          image_url: data.image_url || null,
-          lat: lat || data.lat,
-          lon: lon || data.lon,
-          display_name: display_name || data.display_name,
-          summary: enrich.summary || enrich.description || 'Explore this beautiful destination.',
-          category: enrich.category || 'Adventure',
-          difficulty: enrich.difficulty || 'moderate',
-          best_time_to_visit: enrich.best_time_to_visit || 'October to March',
-          activities: enrich.activities || [],
-          travel_tips: enrich.travel_tips || [],
-          nearby_attractions: enrich.nearby_attractions || enrich.famous_places || [],
-          accommodation: enrich.accommodation,
-          local_cuisine: enrich.local_cuisine,
-          altitude: enrich.altitude,
-          distance_from_major_city: enrich.distance_from_major_city
-        });
-      } catch (err) {
-        console.error('Failed fetching destination details:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (slug || location.state?.destination) {
-      getDestinationDetails();
-    }
-  }, [slug, location.state]);
-
-  if (loading) {
+  if (error || !data) {
     return (
-      <div style={{ padding: '5rem', textAlign: 'center', color: '#4b5563', fontSize: '1rem' }}>
-        Loading destination details...
+      <div className="container section">
+        <EmptyState
+          icon={MapPinOff}
+          title="Destination not found"
+          text="We couldn't find details for this place. Try searching for it again."
+          action={<button type="button" className="button button--brand" onClick={() => navigate(-1)}>Go Back</button>}
+        />
       </div>
     );
   }
 
-  if (error || !destination) {
-    return (
-      <div style={{ padding: '5rem', textAlign: 'center', color: '#4b5563' }}>
-        <p>Destination not found: {error}</p>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            marginTop: '1rem',
-            padding: '10px 20px',
-            background: '#FFE100',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  // Theme colors
-  const yellow = '#FFE100';
-  const yellowLight = '#FFF8C0';
-  const yellowBorder = '#F5D800';
-  const darkGreen = '#1a2e1a';
-  const orange = '#ff6a1a';
-  const pageBg = '#FFFDF0';
-
-  const getEstimatedPrice = () => {
-    const diff = destination.difficulty?.toLowerCase() || 'easy';
-    const prices = {
-      'easy': 1000,
-      'moderate': 1500,
-      'difficult': 2500,
-      'very difficult': 4000
-    };
-    return Math.max(prices[diff] || 1000, 1000);
-  };
-
-  const estimatedPrice = getEstimatedPrice();
+  const place = normalise(data, passed, passed?.name || slugToName(slug));
+  const lat = parseFloat(place.lat);
+  const lon = parseFloat(place.lon);
+  const hasCoords = !Number.isNaN(lat) && !Number.isNaN(lon);
 
   return (
-    <main style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem 4rem', background: pageBg, minHeight: '100vh' }}>
+    <div className="page detail-page">
+      <div className="container">
+        <DetailHero
+          image={place.image_url}
+          title={place.name}
+          badges={[
+            { icon: Tag, label: place.category },
+            { icon: MapPin, label: 'OpenStreetMap' },
+          ]}
+          meta={[
+            { icon: Mountain, label: place.difficulty },
+            { icon: CalendarDays, label: place.best_time_to_visit },
+          ]}
+        />
 
-      {/* HERO SECTION */}
-      <div
-        style={{
-          position: 'relative',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          marginBottom: '1.5rem',
-          minHeight: '320px',
-          background: destination.image_url ? `${darkGreen} url(${destination.image_url}) center/cover no-repeat` : darkGreen,
-        }}
-      >
-        {/* Fallback gradient only shows when there's no real photo (visible through the background above) */}
-        {!destination.image_url && (
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${darkGreen} 0%, #2d5a2d 100%)` }} />
+        {hasCoords && (
+          <div className="surface surface--flush detail-map">
+            <iframe title="Destination location map" src={osmEmbedUrl(lat, lon)} loading="lazy" />
+          </div>
         )}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,20,10,0.92) 0%, rgba(10,20,10,0.3) 60%, transparent 100%)' }} />
 
-        <button
-          onClick={() => navigate(-1)}
-          style={{ position: 'absolute', top: '1.25rem', left: '1.25rem', background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '999px', padding: '7px 18px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', zIndex: 10 }}
-        >
-          ← Back
-        </button>
+        <div className="detail-grid">
+          <div className="stack">
+            <InfoCard icon={BookOpen} title="About this Destination">
+              <p>{place.summary}</p>
+            </InfoCard>
 
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '1.5rem 2rem' }}>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-            {destination.category && (
-              <span style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', padding: '3px 12px', borderRadius: '999px', backdropFilter: 'blur(4px)' }}>
-                🏷️ {destination.category}
-              </span>
+            {place.activities.length > 0 && (
+              <InfoCard icon={Zap} title="Activities">
+                <ul className="chip-list">
+                  {place.activities.map((activity) => <li key={activity} className="chip">{activity}</li>)}
+                </ul>
+              </InfoCard>
             )}
-            <span style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', padding: '3px 12px', borderRadius: '999px', backdropFilter: 'blur(4px)' }}>
-              🗺️ OpenStreetMap
-            </span>
+
+            {place.travel_tips.length > 0 && (
+              <InfoCard icon={Lightbulb} title="Travel Tips">
+                <ul className="tip-list">
+                  {place.travel_tips.map((tip) => <li key={tip}>{tip}</li>)}
+                </ul>
+              </InfoCard>
+            )}
+
+            {place.nearby_attractions.length > 0 && (
+              <InfoCard icon={MapPin} title="Nearby Attractions">
+                <ul className="place-list">
+                  {place.nearby_attractions.map((spot) => <li key={spot}>{spot}</li>)}
+                </ul>
+              </InfoCard>
+            )}
           </div>
-          <h1 style={{ color: '#fff', fontSize: 'clamp(1.6rem, 4vw, 2.2rem)', fontWeight: '700', margin: '0 0 0.75rem', lineHeight: 1.2 }}>
-            {destination.name}
-          </h1>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            {destination.difficulty && (
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px' }}>⛰️ {destination.difficulty}</span>
+
+          <aside className="stack">
+            <section className="surface surface--dark">
+              <p className="price-card__label">Package Price</p>
+              <p className="price-card__value price-card__value--soon">Trek Details Coming Soon..</p>
+              <p className="price-card__note">Pricing details will be added soon</p>
+            </section>
+
+            <InfoCard icon={Info} title="Trip Information" as="h3">
+              <FactList
+                items={[
+                  { icon: Mountain, label: 'Difficulty Level', value: place.difficulty },
+                  { icon: CalendarDays, label: 'Best Time to Visit', value: place.best_time_to_visit },
+                  { icon: Tag, label: 'Category', value: place.category },
+                ]}
+              />
+            </InfoCard>
+
+            {place.accommodation && (
+              <InfoCard icon={BedDouble} title="Accommodation" as="h3">
+                <p>{place.accommodation}</p>
+              </InfoCard>
             )}
-            {destination.best_time_to_visit && (
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px' }}>📅 {destination.best_time_to_visit}</span>
+
+            {place.local_cuisine && (
+              <InfoCard icon={UtensilsCrossed} title="Local Cuisine" as="h3">
+                <p>{place.local_cuisine}</p>
+              </InfoCard>
             )}
-          </div>
+
+            {(place.altitude || place.distance_from_major_city) && (
+              <InfoCard icon={Ruler} title="Location Details" as="h3">
+                <FactList
+                  items={[
+                    { icon: Mountain, label: 'Altitude', value: place.altitude },
+                    { icon: Car, label: 'Distance', value: place.distance_from_major_city },
+                  ]}
+                />
+              </InfoCard>
+            )}
+          </aside>
         </div>
       </div>
-
-      {/* DESTINATION LOCATION MAP */}
-      {!isNaN(parseFloat(destination.lat)) && !isNaN(parseFloat(destination.lon)) && (() => {
-        const lat = parseFloat(destination.lat);
-        const lon = parseFloat(destination.lon);
-        return (
-          <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', border: `1px solid ${yellowBorder}` }}>
-            <iframe
-              title="Destination location map"
-              width="100%"
-              height="320"
-              style={{ border: 0, display: 'block' }}
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${lon - 0.05}%2C${lat - 0.05}%2C${lon + 0.05}%2C${lat + 0.05}&layer=mapnik&marker=${lat}%2C${lon}`}
-            />
-          </div>
-        );
-      })()}
-
-      {/* MAIN CONTENT GRID */}
-      <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: '1.25rem', alignItems: 'start' }}>
-
-        {/* LEFT COLUMN */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* ABOUT DESTINATION */}
-          <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: '0 0 0.75rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: orange }}>📖</span> About this Destination
-            </h2>
-            <p style={{ color: '#374151', lineHeight: '1.8', fontSize: '0.98rem', margin: 0 }}>
-              {destination.summary}
-            </p>
-          </div>
-
-          {/* ACTIVITIES */}
-          {destination.activities?.length > 0 && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: '0 0 1rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ color: orange }}>⚡</span> Activities
-              </h2>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {destination.activities.map((act, i) => (
-                  <span key={i} style={{ background: yellow, color: '#1a1a1a', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '999px', border: `1px solid ${yellowBorder}` }}>
-                    {act}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TRAVEL TIPS */}
-          {destination.travel_tips?.length > 0 && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: '0 0 1rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ color: orange }}>💡</span> Travel Tips
-              </h2>
-              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#374151', fontSize: '13px' }}>
-                {destination.travel_tips.map((tip, i) => (
-                  <li key={i} style={{ marginBottom: '0.5rem', lineHeight: '1.6' }}>
-                    {tip}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* NEARBY ATTRACTIONS */}
-          {destination.nearby_attractions?.length > 0 && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: '0 0 1rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ color: orange }}>📍</span> Nearby Attractions
-              </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px' }}>
-                {destination.nearby_attractions.map((place, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#374151', background: '#fff', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${yellowBorder}` }}>
-                    <span style={{ color: orange, fontSize: '10px' }}>●</span> {place}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* PRICE CARD - Coming Soon */}
-          <div style={{ background: darkGreen, borderRadius: '16px', padding: '1.5rem', color: '#fff', textAlign: 'center' }}>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: '0 0 0.5rem' }}>Package Price</p>
-            <span style={{ display: 'inline-block', background: yellow, color: '#1a1a1a', fontSize: '13px', fontWeight: '700', padding: '6px 18px', borderRadius: '999px', letterSpacing: '0.5px' }}>
-              Trek Details Coming Soon..
-            </span>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0.75rem 0 0' }}>Pricing details will be added soon</p>
-          </div>
-
-          {/* TRIP INFORMATION */}
-          <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 1rem', color: '#111827' }}>Trip Information</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#6b7280' }}>⛰️ Difficulty Level</span>
-                <span style={{ fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>{destination.difficulty}</span>
-              </div>
-              <div style={{ borderTop: `1px solid ${yellowBorder}` }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#6b7280' }}>📅 Best Time to Visit</span>
-                <span style={{ fontWeight: '600', color: '#111827' }}>{destination.best_time_to_visit}</span>
-              </div>
-              <div style={{ borderTop: `1px solid ${yellowBorder}` }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#6b7280' }}>🏷️ Category</span>
-                <span style={{ fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>{destination.category}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ACCOMMODATION */}
-          {destination.accommodation && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 0.75rem', color: '#111827' }}>🏨 Accommodation</h3>
-              <p style={{ fontSize: '13px', color: '#374151', margin: 0, lineHeight: '1.6' }}>{destination.accommodation}</p>
-            </div>
-          )}
-
-          {/* LOCAL CUISINE */}
-          {destination.local_cuisine && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 0.75rem', color: '#111827' }}>🍽️ Local Cuisine</h3>
-              <p style={{ fontSize: '13px', color: '#374151', margin: 0, lineHeight: '1.6' }}>{destination.local_cuisine}</p>
-            </div>
-          )}
-
-          {/* LOCATION DETAILS */}
-          {(destination.altitude || destination.distance_from_major_city) && (
-            <div style={{ background: yellowLight, border: `1px solid ${yellowBorder}`, borderRadius: '16px', padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 1rem', color: '#111827' }}>📏 Location Details</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-                {destination.altitude && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ color: '#6b7280' }}>⛰️ Altitude</span>
-                      <span style={{ fontWeight: '600', color: '#111827' }}>{destination.altitude}</span>
-                    </div>
-                    <div style={{ borderTop: `1px solid ${yellowBorder}` }} />
-                  </>
-                )}
-                {destination.distance_from_major_city && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#6b7280' }}>🚗 Distance</span>
-                    <span style={{ fontWeight: '600', color: '#111827' }}>{destination.distance_from_major_city}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+    </div>
   );
 }

@@ -1,0 +1,108 @@
+.site-footer {
+  padding: clamp(3rem, 6vw, 4.5rem) 0 1.5rem;
+  background: var(--dark);
+  color: var(--on-dark-muted);
+  font-size: 0.95rem;
+}
+
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.site-footer__logo img {
+  height: 44px;
+  width: auto;
+  border-radius: var(--radius-sm);
+}
+
+.site-footer__brand p {
+  max-width: 42ch;
+  margin: 1.25rem 0;
+  line-height: 1.7;
+}
+
+.site-footer__stores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.site-footer__stores img {
+  height: 40px;
+  width: auto;
+  border-radius: 6px;
+}
+
+.site-footer__heading {
+  margin: 0 0 1rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.site-footer__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer a {
+  color: var(--on-dark-muted);
+}
+
+.site-footer a:hover {
+  color: var(--brand);
+}
+
+.site-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.site-footer__socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--dark-2);
+  border: 1px solid var(--on-dark-border);
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.site-footer__socials a:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.site-footer__socials img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.site-footer__legal {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--on-dark-border);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+@media (max-width: 991.98px) {
+  .site-footer__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .site-footer__brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 575.98px) {
+  .site-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

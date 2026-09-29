@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
+import { HomePage } from './pages/HomePage';
 
 test.describe('Home Page Module', () => {
   let homePage;
@@ -134,7 +134,7 @@ test.describe('Home Page Module', () => {
     expect(isSearchButtonVisible).toBe(true);
   });
 
-  test('7a. Search button is clickable', async ({ page }) => {
+  test('7a. Search button is clickable', async () => {
     await homePage.search('Coorg');
     await homePage.waitForSuggestions();
 
@@ -314,7 +314,7 @@ test.describe('Home Page Module', () => {
       await homePage.verifyFeaturedDestinationsSectionVisible();
 
       // Check that images have loading attribute or are visible
-      const trekImages = page.locator('.bolt-card-img');
+      const trekImages = page.locator('.trek-card__media img');
       const count = await trekImages.count();
 
       expect(count).toBeGreaterThan(0);

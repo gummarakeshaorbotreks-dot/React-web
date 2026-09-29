@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { TrekDetailsPage } from '../pages/TrekDetailsPage';
+import { HomePage } from './pages/HomePage';
+import { TrekDetailsPage } from './pages/TrekDetailsPage';
 
 /**
  * TREK DETAILS MODULE TEST SUITE
@@ -36,7 +36,7 @@ test.describe('Trek Details Module', () => {
 
   test.describe('1. Navigation to Trek Details', () => {
     
-    test('1a. Navigate from Featured Destinations card', async ({ page }) => {
+    test('1a. Navigate from Featured Destinations card', async () => {
     const trekCount = await homePage.getTrekCardsCount();
     expect(trekCount).toBeGreaterThan(0);
 
@@ -97,7 +97,7 @@ await expect(page).toHaveURL(/\/treks\/[a-z0-9-]+$/i, {
       await trekPage.verifyOnTrekDetailsPage();
     });
 
-    test('1e. Verify correct URL structure for trek details', async ({ page }) => {
+    test('1e. Verify correct URL structure for trek details', async () => {
       // Navigate to trek
       await homePage.clickFirstTrekCard();
 
@@ -274,7 +274,7 @@ await expect(page).toHaveURL(/\/treks\/[a-z0-9-]+$/i, {
       }
     });
 
-    test('5d. Related Trek links are clickable', async ({ page }) => {
+    test('5d. Related Trek links are clickable', async () => {
       const isVisible = await trekPage.isRelatedTreksSectionVisible().catch(() => false);
       
       if (isVisible) {

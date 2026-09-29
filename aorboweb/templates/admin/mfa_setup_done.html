@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+  <h2>2FA is now enabled</h2>
+  <p><strong>Save these backup codes somewhere safe — each works once, and this is the only time they'll be shown.</strong> Use one if you lose access to your authenticator app.</p>
+  <ul style="font-family: monospace; font-size: 1.1em;">
+    {% for code in backup_codes %}
+      <li>{{ code }}</li>
+    {% endfor %}
+  </ul>
+  <p><a href="{% url 'access_control:staff_login' %}">Continue to log in</a></p>
+</div>
+{% endblock %}

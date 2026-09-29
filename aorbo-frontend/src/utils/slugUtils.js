@@ -23,7 +23,7 @@ export function generateSlug(name) {
     .toLowerCase()
     .trim()
     // Remove or replace special characters
-    .replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '')
+    .replace(/[&/\\#,+()$~%.'":*?<>{}]/g, '')
     // Replace spaces with dashes
     .replace(/\s+/g, '-')
     // Remove duplicate dashes

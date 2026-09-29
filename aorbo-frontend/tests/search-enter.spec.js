@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
-import { HomePage } from '../pages/HomePage';
-import { TrekDetailsPage } from '../pages/TrekDetailsPage';
+import { HomePage } from './pages/HomePage';
+import { TrekDetailsPage } from './pages/TrekDetailsPage';
 
 test('Search existing trek using Enter', async ({ page }) => {
 

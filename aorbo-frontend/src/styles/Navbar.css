@@ -1,62 +1,107 @@
-/* Navbar logo positioning & spacing
-Previously the logo relied only on Bootstrap's default .navbar-brand
-padding/margins, which left it sitting slightly low (extra baseline
-whitespace under inline <img>) and too close to the first nav link. */
+.site-nav {
+  min-height: var(--nav-h);
+  padding: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(1.4) blur(8px);
+}
 
-.navbar-brand {
+.site-nav__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  justify-content: space-between;
+}
+
+.site-nav .navbar-brand {
   display: flex;
   align-items: center;
-  padding-top: 0;
-  padding-bottom: 0;
+  min-height: var(--nav-h);
+  padding: 0;
   margin-right: 2rem;
 }
 
 .nav-logo {
-  display: block;   /* removes the few px of baseline gap inline images get */
-  height: 50px;      /* the global "img { height: auto }" responsive rule
-                        overrides the img's height="50" HTML attribute, so
-                        it must be re-asserted here explicitly, or the logo
-                        renders at its full natural (much larger) size */
+  display: block;
+  height: 44px;
   width: auto;
 }
 
-@media (max-width: 991.98px) {
-  .navbar-brand {
-    margin-right: 1rem;
-  }
-  .nav-logo {
-    height: 42px !important;  /* slightly smaller so it has breathing room
-    next to the hamburger toggle on mobile */
-  }
+.site-nav__links {
+  gap: 0.25rem;
+  margin: 0 auto;
 }
 
-/* Extra visual polish: clearer spacing between links and a modern
-underline indicator on hover/active, instead of relying on color
-change alone. */
-.navbar-nav .nav-item {
-  margin: 0 0.35rem;
-}
-
-.navbar-nav .nav-link {
+.site-nav .nav-link {
   position: relative;
-  padding-bottom: 0.35rem !important;
+  padding: 0.5rem 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.2s var(--ease);
 }
 
-.navbar-nav .nav-link::after {
+.site-nav .nav-link::after {
   content: '';
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
+  left: 0.875rem;
+  right: 0.875rem;
+  bottom: 0.2rem;
   height: 2px;
-  background-color: #f97316; /* matches the existing orange accent already
-                                 used for .nav-link:hover / .active in
-                                 index.css */
-  transition: width 0.25s ease, left 0.25s ease;
+  border-radius: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transition: transform 0.25s var(--ease);
 }
 
-.navbar-nav .nav-link:hover::after,
-.navbar-nav .nav-link.active::after {
-  width: 70%;
-  left: 15%;
+.site-nav .nav-link:hover,
+.site-nav .nav-link.active {
+  color: var(--ink);
+}
+
+.site-nav .nav-link:hover::after,
+.site-nav .nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.site-nav__cta {
+  background: var(--surface-alt);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.site-nav .navbar-toggler {
+  border-color: var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+}
+
+.site-nav .navbar-toggler:focus {
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+@media (max-width: 991.98px) {
+  .nav-logo { height: 38px; }
+
+  .site-nav .navbar-collapse {
+    padding: 0.75rem 0 1.25rem;
+  }
+
+  .site-nav__links {
+    margin: 0;
+  }
+
+  .site-nav .nav-link {
+    padding: 0.75rem 0;
+  }
+
+  .site-nav .nav-link::after {
+    left: 0;
+    right: auto;
+    width: 1.5rem;
+  }
+
+  .site-nav__cta {
+    margin-top: 0.75rem;
+  }
 }

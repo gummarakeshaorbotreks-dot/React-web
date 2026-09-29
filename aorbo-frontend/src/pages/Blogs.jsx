@@ -1,107 +1,45 @@
-import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { BookOpen, WifiOff } from 'lucide-react';
+import useApi from '../hooks/useApi';
+import PageHeader from '../components/ui/PageHeader';
+import Loader from '../components/ui/Loader';
+import EmptyState from '../components/ui/EmptyState';
+import Pagination from '../components/ui/Pagination';
+import BlogCard from '../components/blog/BlogCard';
 import '../styles/Blogs.css';
 
 export default function Blogs() {
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchParams, setSearchParams] = useSearchParams();
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-  useEffect(() => {
-    const page = parseInt(searchParams.get('page')) || 1;
-    setCurrentPage(page);
-    fetchBlogs(page);
-  }, [searchParams]);
+  const [searchParams] = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);
+  const { data, loading, error } = useApi(`/api/blogs/?page=${page}`, { cache: true });
+  const blogs = data?.results || [];
 
-  const fetchBlogs = async (page = 1) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/blogs/?page=${page}`);
-      const data = await res.json();
-      setBlogs(data.results || []);
-      setTotalPages(data.total_pages || 1);
-    } catch (err) {
-      console.error('Failed to fetch blogs', err);
-      setBlogs([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const goToPage = (page) => {
-    setSearchParams({ page });
-  };
+  let content;
+  if (loading) {
+    content = <Loader label="Loading blogs…" />;
+  } else if (error) {
+    content = <EmptyState icon={WifiOff} title="We couldn't load the blog" text="Please check your connection and try again in a moment." />;
+  } else if (blogs.length === 0) {
+    content = <EmptyState icon={BookOpen} title="No blog posts yet" text="Check back soon for trek guides and stories from the trail." />;
+  } else {
+    content = (
+      <div className="grid grid-cards">
+        {blogs.map((blog) => <BlogCard key={blog.slug} blog={blog} />)}
+      </div>
+    );
+  }
 
   return (
-    <main className="blogs-container">
-      <h1 className="blogs-heading">Blogs</h1>
-
-      {loading ? (
-        <div className="blogs-loading">
-          <div className="spinner" />
-          <p>Loading blogs...</p>
-        </div>
-      ) : blogs.length > 0 ? (
-        <div className="blogs-scroll">
-          {blogs.map((blog) => (
-            <div className="blog-card" key={blog.slug}>
-              <div className="blog-image">
-                <Link to={`/blogs/${blog.slug}`}>
-                  <img src={blog.image_url || '/images/placeholder-trek.jpg'} alt={blog.title} />
-                </Link>
-              </div>
-              <div className="blog-content">
-                <div className="blog-meta">
-                  <img src="/images/Group 1000001381.png" alt="Aorbo" className="blog-logo" />
-                  <div className="blog-date">
-                    {new Date(blog.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'long', day: 'numeric'
-                    })}
-                  </div>
-                </div>
-                <h2 className="blog-title">
-                  <Link to={`/blogs/${blog.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    {blog.title}
-                  </Link>
-                </h2>
-                <p className="blog-excerpt">
-                  {blog.excerpt || blog.content?.replace(/<[^>]+>/g, '').split(' ').slice(0, 35).join(' ') + '...'}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="no-blogs-message">
-          <p>No blog posts available at the moment. Check back soon!</p>
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="pagination">
-          <ul>
-            {currentPage > 1 && (
-              <li><a href="#" onClick={(e) => { e.preventDefault(); goToPage(currentPage - 1); }}>&laquo; Previous</a></li>
-            )}
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <li key={num} className={currentPage === num ? 'active' : ''}>
-                {currentPage === num ? (
-                  <span>{num}</span>
-                ) : (
-                  <a href="#" onClick={(e) => { e.preventDefault(); goToPage(num); }}>{num}</a>
-                )}
-              </li>
-            ))}
-
-            {currentPage < totalPages && (
-              <li><a href="#" onClick={(e) => { e.preventDefault(); goToPage(currentPage + 1); }}>Next &raquo;</a></li>
-            )}
-          </ul>
-        </div>
-      )}
-    </main>
+    <div className="page">
+      <PageHeader
+        eyebrow="Blogs"
+        title="Stories from the trail"
+        subtitle="Trek guides, packing lists and safety tips from the Aorbo Treks team."
+      />
+      <div className="container">
+        {content}
+        <Pagination page={page} totalPages={data?.total_pages || 1} hrefFor={(n) => `/blogs?page=${n}`} />
+      </div>
+    </div>
   );
 }

@@ -1,57 +1,35 @@
-@media (min-width: 1400px) {
-  .container, .container-lg, .container-md,
-  .container-sm, .container-xl, .container-xxl {
-    max-width: 1440px;
-  }
+/* ---------- Hero ---------- */
+
+.hero-landing {
+  position: relative;
+  height: min(80vh, 760px);
+  min-height: 560px;
 }
 
-/* GLOBAL ADVENTURE GOLD ACCENTS */
-.btn10 { 
-  background-color: #ecc258; 
-  opacity: 1; 
-  border-color: #dfb137; 
-  color: #062419 !important;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+.hero-carousel,
+.hero-carousel .carousel-inner,
+.hero-carousel .carousel-item {
+  height: 100%;
 }
-.btn10:hover { 
-  background-color: #dfb137; 
-  border-color: #c49a2a;
-  transform: translateY(-1px);
+
+.hero-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.days { font-size: 13px !important; }
-
-/* Global app canvas background setup - warm matte sand tone */
-.secondbg { background-color: #f7f5f0 !important; }
-body { background-color: #f7f5f0 !important; color: #1e293b; }
-
-/* ==========================================
-   HERO / LANDING LAYER
-   ========================================== */
-.hero-landing { position: relative; width: 100%; margin-bottom: 0;height: 80vh;min-height: 650px; }
-.hero-carousel, .hero-carousel .carousel-inner, .hero-carousel .carousel-item { height: 100%; }
-.hero-carousel .hero-img { width: 100%; height: 100%; object-fit: cover; }
 
 .hero-overlay-content {
-  position: absolute; 
+  position: absolute;
   inset: 0;
-  display: flex; 
+  z-index: 2;
+  display: flex;
   flex-direction: column;
-  justify-content: center; 
   align-items: center;
+  justify-content: center;
+  padding: 0 var(--gutter);
   text-align: center;
-  /* Converted heavy dark mask to an ultra-soft subtle gradient shade */
-  background: linear-gradient(
-    to bottom, 
-    rgba(6, 36, 25, 0.25) 0%, 
-    rgba(15, 23, 42, 0.4) 50%, 
-    rgba(17, 22, 34, 0.75) 100%
-  ) !important;
-  z-index: 10;
-  padding: 0 1.5rem;
+  background: linear-gradient(180deg, rgba(22, 24, 29, 0.25) 0%, rgba(22, 24, 29, 0.45) 55%, rgba(22, 24, 29, 0.75) 100%);
   pointer-events: none;
 }
 
@@ -59,739 +37,177 @@ body { background-color: #f7f5f0 !important; color: #1e293b; }
   pointer-events: auto;
 }
 
-.hero-heading { 
-  font-size: clamp(2.6rem, 5.5vw, 4.5rem); 
-  font-weight: 900; 
-  color: #ffffff; 
-  letter-spacing: -0.03em; 
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  line-height: 1.15;
-  margin-bottom: 0.75rem;
-}
-
 .hero-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 0.4rem 1.1rem; border-radius: 999px;
-  background: rgba(236, 194, 88, 0.15); 
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(236, 194, 88, 0.4);
-  color: #ecc258; font-weight: 700; font-size: 0.8rem;
-  text-transform: uppercase; letter-spacing: 0.15em;
+  margin: 0 0 1rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(255, 214, 10, 0.5);
+  border-radius: var(--radius-pill);
+  background: rgba(22, 24, 29, 0.35);
+  backdrop-filter: blur(6px);
+  color: var(--brand);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.hero-subtitle { 
-  max-width: 700px; 
-  margin: 1.2rem auto 2rem auto; 
-  color: #e2e8f0 !important; 
-  font-size: 1.1rem; 
-  font-weight: 400;
-  line-height: 1.6;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+.hero-heading {
+  margin: 0;
+  color: var(--white);
+  font-size: var(--fs-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-.hero-search-form { max-width: 720px; width: 100%; margin-left: auto; margin-right: auto; }
+.hero-subtitle {
+  max-width: 620px;
+  margin: 1rem auto 2rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: var(--fs-lg);
+}
+
+.hero-carousel .carousel-control-prev,
+.hero-carousel .carousel-control-next {
+  z-index: 3;
+  width: 8%;
+}
+
+/* ---------- Hero search ---------- */
+
+.hero-search-form {
+  width: 100%;
+  max-width: 680px;
+}
 
 .hero-search-wrapper {
-  position: relative; display: flex; align-items: stretch;
-  background-color: #f7f5f0; border-radius: 50px; padding: 0.35rem;
-  box-shadow: 0 24px 48px rgba(4, 20, 14, 0.4); overflow: visible;
-  border: 2px solid #ecc258;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  padding: 0.375rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
 }
 
 .hero-search-input {
-  flex: 1; border: none; outline: none;
-  padding: 0.95rem 1.5rem; font-size: 1rem;
-  border-radius: 12px 0 0 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 1.25rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
   font-weight: 500;
-  color: #062419;
-  background-color: transparent;
 }
-.hero-search-input::placeholder { color: #64748b; }
+
+.hero-search-input::placeholder {
+  color: var(--subtle);
+}
 
 .hero-search-button {
-  border: none; outline: none; border-radius: 50px;
-  padding: 0 2rem; display: flex; align-items: center; justify-content: center;
-  background:#facc15; cursor: pointer; 
-  transition: all 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease);
 }
-.hero-search-button:hover { 
-  background: #dfb137; 
-  transform: scale(1.02); 
+
+.hero-search-button:hover {
+  background: var(--brand-hover);
 }
-.hero-search-icon { width: 1.4rem; height: 1.4rem; fill: #062419; }
+
+.hero-search-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
 
 .search-suggestions {
-  position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px;
-  background: #f7f5f0; border-radius: 14px;
-  box-shadow: 0 20px 40px rgba(6, 36, 25, 0.15);
-  max-height: 280px; overflow-y: auto; z-index: 9999; display: none;
-  border: 1px solid #ecc258;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0.375rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  text-align: left;
 }
 
 .search-suggestion-item {
-  padding: 0.75rem 1.25rem; display: flex; flex-direction: column;
-  align-items: flex-start; gap: 2px; cursor: pointer;
-  border-bottom: 1px solid rgba(6, 36, 25, 0.05);
-}
-.search-suggestion-item:last-child { border-bottom: none; }
-.search-suggestion-main { font-size: 0.95rem; font-weight: 700; color: #062419; }
-.search-suggestion-secondary { font-size: 0.8rem; color: #64748b; }
-.search-suggestion-item:hover, .search-suggestion-item.active { background: #fefbeb; }
-
-@media (max-width: 767.98px) {
-  .hero-carousel, .hero-carousel .carousel-inner, .hero-carousel .carousel-item { height: 100%; }
-  .hero-heading { font-size: 2.2rem; }
-  .hero-search-wrapper { border-radius: 14px; }
-  .hero-search-input { padding: 0.8rem 1rem; }
-  .hero-search-button { padding: 0 1.2rem; border-radius: 10px; }
-}
-.hero-search-spinner {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top-color: #3a3a3a;
-  border-radius: 50%;
-  animation: heroSearchSpin 0.6s linear infinite;
-}
-
-@keyframes heroSearchSpin {
-  to { transform: rotate(360deg); }
-}
-
-/* ==========================================
-   TRAVEL YOUR WAY CATEGORIES
-   ========================================== */
-.travel-your-way { background-color: #e2dfd5; padding: 5rem 0; border-top: 1px solid rgba(6, 36, 25, 0.06); border-bottom: 1px solid rgba(6, 36, 25, 0.06); }
-.tyw-title { font-size: clamp(2.2rem, 3.5vw, 2.8rem); font-weight: 800; color: #062419; letter-spacing: -0.5px; }
-.tyw-subtitle { max-width: 640px; margin-left: auto; margin-right: auto; font-size: 1rem; color: #475569; }
-.tyw-card-link { text-decoration: none; color: inherit; display: block; }
-
-.tyw-card {
-  background-color: rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 2rem 1.5rem;
-  box-shadow: 0 10px 30px rgba(6, 36, 25, 0.02);
-  display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;
-  transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
-  border: 2px solid transparent;
-}
-.tyw-card:hover { 
-  transform: translateY(-4px); 
-  box-shadow: 0 16px 35px rgba(6, 36, 25, 0.08); 
-  border-color: #ecc258;
-  background-color: #ffffff;
-}
-.tyw-card-active { 
-  background-color: #ffffff;
-  border-color: #ecc258; 
-  box-shadow: 0 16px 35px rgba(236, 194, 88, 0.25); 
-}
-.tyw-card-title { font-size: 1.1rem; font-weight: 700; color: #062419; }
-.tyw-card-text { font-size: 0.88rem; margin: 0; color: #475569; text-align: center; line-height: 1.5; }
-
-.tyw-icon {
-  width: 48px; height: 48px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; margin-bottom: 0.5rem;
-}
-.icon-adventure { background: #fefbeb; color: #ca8a04; }
-.icon-weekend { background: #fef9c3; color: #a16207; }
-.icon-nature { background: #dcfce7; color: #16a34a; }
-.icon-beach { background: #e0f2fe; color: #0284c7; }
-.icon-spiritual { background: #fae8ff; color: #c026d3; }
-.icon-camping { background: #ffedd5; color: #ea580c; }
-
-/* ==========================================
-   WHY CHOOSE US BAR FEATURES
-   ========================================== */
-.why-trek { background-color: #f7f5f0; padding: 5rem 0; }
-.why-title { font-size: clamp(2.2rem, 3.5vw, 2.8rem); font-weight: 800; color: #062419; letter-spacing: -0.5px; }
-.why-subtitle { max-width: 720px; margin-left: auto; margin-right: auto; font-size: 1rem; color: #475569; }
-
-.why-card {
-  background-color: rgba(255, 255, 255, 0.4); border-radius: 20px; padding: 2.2rem 2rem;
-  border: 1px solid rgba(6, 36, 25, 0.08);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; width: 100%;
-  transition: all 0.2s ease;
-}
-.why-card:hover {
-  background-color: #ffffff;
-  border-color: #ecc258;
-  box-shadow: 0 12px 30px rgba(6, 36, 25, 0.06);
-}
-.why-icon-circle {
-  width: 48px; height: 48px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; margin-bottom: 0.2rem;
-  background: #062419; color: #ecc258;
-}
-.why-card-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #062419; }
-.why-card-text { font-size: 0.9rem; margin: 0; color: #475569; text-align: left; line-height: 1.6; }
-
-@media (max-width: 767.98px) {
-  .why-card { align-items: center; text-align: center; }
-  .why-card-text { text-align: center; }
-}
-
-/* ==========================================
-   PAGINATION / FOOTER ELEMENTS
-   ========================================== */
-.pagination .page-link { border-radius: 8px; margin: 0 4px; border: 1px solid #e2e8f0; color: #062419; font-weight: 600; padding: 8px 14px; background: rgba(255,255,255,0.6); }
-.pagination .page-item.active .page-link { background: #062419; color: #ecc258; border-color: #062419; }
-.pagination .page-link:hover { background: #fefbeb; color: #ca8a04; border-color: #fef08a; }
-
-.related-trek-badge, .badge.bg-light.text-dark.border { 
-  transition: all 0.2s ease; 
-  cursor: pointer; 
-  border-radius: 6px;
-  padding: 6px 12px;
-  background-color: rgba(255,255,255,0.6) !important;
-  color: #062419 !important;
-  border: 1px solid rgba(6, 36, 25, 0.08) !important;
-}
-.related-trek-badge:hover, .badge.bg-light.text-dark.border:hover { 
-  background: #ecc258 !important; 
-  color: #062419 !important; 
-  border-color: #ecc258 !important; 
-}
-/* ==========================================================================
-   BOLT PLATFORM REFINED SLATE NAVY / GOLD CARD SYSTEM / Featured
-   ========================================================================== */
-
-.bolt-premium-card {
-  position: relative;
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  border-radius: 1rem;
-  border: 1px solid rgba(251, 191, 36, 0.15);
-  background-color: #1a2333; /* Soft rich slate color instead of dark pitch black */
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1), border-color 500ms ease, box-shadow 500ms ease;
-}
-
-.bolt-premium-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(251, 191, 36, 0.6);
-  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.15), 0 20px 50px rgba(0, 0, 0, 0.4);
-}
-
-/* Shimmer top wire glow line */
-.bolt-top-glow {
-  position: absolute;
-  top: 0;
-  left: 2rem;
-  right: 2rem;
-  height: 1px;
-  background: linear-gradient(to right, transparent, #fbbf24, transparent);
-  opacity: 0;
-  transition: opacity 500ms ease;
-  z-index: 10;
-}
-.bolt-premium-card:hover .bolt-top-glow {
-  opacity: 1;
-}
-
-/* Image Frames Layout */
-.bolt-image-wrapper {
-  position: relative;
-  height: 13rem;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.bolt-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.bolt-premium-card:hover .bolt-card-img {
-  transform: scale(1.08);
-}
-
-.bolt-image-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, #1a2333, rgba(0, 0, 0, 0.15), transparent);
-}
-.bolt-image-shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top right, transparent, rgba(251, 191, 36, 0.08), transparent);
-  opacity: 0;
-  transition: opacity 500ms ease;
-}
-.bolt-premium-card:hover .bolt-image-shimmer {
-  opacity: 1;
-}
-
-/* Interactive Luxury Gold Price Badges */
-.bolt-price-badge {
-  position: absolute;
-  bottom: 0.75rem;
-  right: 0.75rem;
-  z-index: 10;
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  text-align: right;
-  background: linear-gradient(to bottom right, #fbbf24, #d97706);
-  box-shadow: 0 8px 12px -3px rgba(251, 191, 36, 0.3);
-  transition: box-shadow 300ms ease;
-}
-.bolt-premium-card:hover .bolt-price-badge {
-  box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.5);
-}
-.bolt-price-onwards {
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  line-height: 1;
-  margin: 0 0 0.125rem 0;
-}
-.bolt-price-value {
-  font-size: 17px;
-  font-weight: 900;
-  color: #000000;
-  line-height: 1;
-  margin: 0;
-}
-
-/* Card details text areas */
-.bolt-card-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0%;
-  padding: 1rem;
-  padding-top: 0.75rem;
+  align-items: flex-start;
   gap: 0.75rem;
-}
-.bolt-card-title {
-  font-weight: 700;
-  color: #ffffff;
-  font-size: 15px;
-  line-height: 1.4;
-  margin: 0;
-  transition: color 300ms ease;
-}
-.bolt-premium-card:hover .bolt-card-title {
-  color: #fbbf24;
-}
-
-.bolt-location-row {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
-}
-.bolt-pin-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  color: #fbbf24;
-  flex-shrink: 0;
-}
-.bolt-location-text {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.bolt-card-divider {
-  height: 1px;
-  background: linear-gradient(to right, rgba(251, 191, 36, 0.2), rgba(255, 255, 255, 0.05), transparent);
-}
-
-/* Item details metadata */
-.bolt-specs-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.bolt-spec-item {
-  display: flex;
-  align-items: start;
-  gap: 0.5rem;
-}
-.bolt-spec-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  color: rgba(251, 191, 36, 0.7);
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-}
-.bolt-spec-text {
-  font-size: 11px;
-  line-height: 1.625;
-}
-.bolt-spec-label {
-  font-weight: 600;
-  color: rgba(251, 191, 36, 0.8);
-}
-.bolt-spec-val {
-  color: #cbd5e1;
-}
-
-/* Footer structure items */
-.bolt-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 0.5rem;
-}
-.bolt-partner-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  background-color: rgba(251, 191, 36, 0.03);
-  transition: all 300ms ease;
-}
-.bolt-premium-card:hover .bolt-partner-badge {
-  background-color: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.7);
-}
-.bolt-shield-icon {
-  width: 0.75rem;
-  height: 0.75rem;
-  color: #fbbf24;
-  flex-shrink: 0;
-}
-.bolt-partner-text {
-  font-size: 10px;
-  font-weight: 700;
-  color: #fbbf24;
-  letter-spacing: 0.02em;
-}
-
-.bolt-arrow-circle {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  flex-shrink: 0;
-  transition: all 300ms ease;
-}
-.bolt-premium-card:hover .bolt-arrow-circle {
-  opacity: 1;
-  border-color: rgba(251, 191, 36, 0.7);
-  background-color: rgba(251, 191, 36, 0.1);
-}
-.bolt-arrow-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  color: #fbbf24;
-}
-
-/* Arrow Navigation Strip layout */
-.bolt-pagination-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-.bolt-pag-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #9ca3af !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 200ms ease;
-  text-decoration: none !important;
-  user-select: none;
-
-}
-.bolt-pag-btn:hover {
-  color: #fbbf24 !important;
-  background-color: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.3);
-}
-.bolt-pag-active {
-  background-color: #fbbf24 !important;
-  color: #000000 !important;
-  border-color: #fbbf24 !important;
-  box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.3);
-}
-.bolt-pag-disabled {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.bolt-pag-ellipsis {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  color: #4b5563;
-}
-/* ==========================================
-   TRAVEL YOUR WAY — PAGE HEADER AND STYLES
-   ========================================== */
-/* ==========================================
-   TRAVEL YOUR WAY — PAGE HEADER
-   ========================================== */
-.tyw-page-header {
-  padding-top: clamp(5.5rem, 12vw, 7rem);
-  padding-bottom: 2.5rem;
-  background-color: #0d1520;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.12);
-}
-
-.tyw-back-link {
-  display: inline-block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(251, 191, 36, 0.7);
-  text-decoration: none;
-  margin-bottom: 1.5rem;
-  transition: color 200ms ease;
-}
-.tyw-back-link:hover { color: #fbbf24; }
-
-.tyw-page-title-row {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-.tyw-page-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-}
-.tyw-page-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #fbbf24;
-  margin: 0 0 0.25rem 0;
-}
-.tyw-page-heading {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.03em;
-  margin: 0;
-  line-height: 1.1;
-}
-.tyw-page-subtitle {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 1rem;
-  margin: 0.75rem 0 1.5rem 0;
-  max-width: 560px;
-}
-
-/* Category pill switcher */
-.tyw-tag-switcher {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.tyw-tag-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  transition: all 200ms ease;
-}
-.tyw-tag-pill:hover {
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.4);
-  background: rgba(251, 191, 36, 0.06);
-}
-.tyw-tag-pill--active {
-  color: #000000 !important;
-  background: #fbbf24 !important;
-  border-color: #fbbf24 !important;
-}
-
-@media (max-width: 767.98px) {
-  .tyw-page-title-row { gap: 0.75rem; }
-  .tyw-page-icon { font-size: 2rem; }
-  .tyw-tag-switcher { gap: 0.4rem; }
-  .tyw-tag-pill { font-size: 0.75rem; padding: 0.35rem 0.8rem; }
-}
-
-/* ==========================================
-   BOLT SKELETON LOADING CARDS
-   ========================================== */
-@keyframes bolt-shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
-}
-
-.bolt-skeleton-card {
-  border-radius: 1rem;
-  border: 1px solid rgba(251, 191, 36, 0.08);
-  background-color: #1a2333;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.bolt-skeleton-img {
-  height: 13rem;
-  flex-shrink: 0;
-  background: linear-gradient(90deg, #1e2d42 25%, #243450 50%, #1e2d42 75%);
-  background-size: 800px 100%;
-  animation: bolt-shimmer 1.4s ease-in-out infinite;
-}
-
-.bolt-skeleton-body {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  flex: 1;
-}
-
-.bolt-skeleton-line {
-  border-radius: 6px;
-  background: linear-gradient(90deg, #1e2d42 25%, #243450 50%, #1e2d42 75%);
-  background-size: 800px 100%;
-  animation: bolt-shimmer 1.4s ease-in-out infinite;
-}
-.bolt-skeleton-line--title  { height: 14px; width: 75%; }
-.bolt-skeleton-line--short  { height: 10px; width: 45%; }
-.bolt-skeleton-line--med    { height: 10px; width: 60%; }
-
-.bolt-skeleton-divider {
-  height: 1px;
-  background: rgba(251, 191, 36, 0.08);
-  margin: 0.2rem 0;
-}
-
-.bolt-skeleton-footer {
-  margin-top: auto;
-  height: 28px;
-  border-radius: 999px;
-  width: 70%;
-  background: linear-gradient(90deg, #1e2d42 25%, #243450 50%, #1e2d42 75%);
-  background-size: 800px 100%;
-  animation: bolt-shimmer 1.4s ease-in-out infinite;
-}
-
-/* ==========================================
-   🗺️ OPENSTREETMAP / TREK MAP STYLES
-   ========================================== */
-
-/* Leaflet map container styling */
-.leaflet-container {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #f0f4f8;
-}
-
-/* Trek marker styling */
-.trek-marker {
-  transition: all 0.2s ease;
-}
-.trek-marker:hover {
-  filter: drop-shadow(0 4px 12px rgba(255, 107, 53, 0.4));
-}
-
-/* Trek popup styling */
-.trek-popup .leaflet-popup-content-wrapper {
-  background-color: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #ecc258;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  padding: 0;
-}
-
-.trek-popup .leaflet-popup-content {
-  margin: 0;
-  padding: 0;
-}
-
-.trek-popup .leaflet-popup-tip {
-  background-color: #ffffff;
-  border-top-color: #ecc258;
-}
-
-/* Map controls styling */
-.leaflet-control-zoom {
-  border-radius: 8px;
-  border: 1px solid rgba(6, 36, 25, 0.1);
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out {
-  background-color: #ffffff;
-  color: #062419;
-  font-weight: 700;
-  border: none;
-  width: 36px;
-  height: 36px;
-  line-height: 36px;
-  transition: all 0.2s ease;
-}
-
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
-  background-color: #ecc258;
-  color: #111827;
-}
-
-/* Attribution styling */
-.leaflet-attribution {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #64748b;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-/* Map hero integration */
-.hero-search-form + div {
   width: 100%;
-  max-width: 800px;
-  margin: 2rem auto 0;
+  padding: 0.7rem 0.875rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Responsive map sizing */
+.search-suggestion-item:hover,
+.search-suggestion-item:focus-visible {
+  background: var(--brand-soft);
+}
+
+.search-suggestion-item svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  color: var(--brand-ink);
+}
+
+.search-suggestion-item--empty {
+  justify-content: center;
+  color: var(--muted);
+  cursor: default;
+}
+
+.search-suggestion-item--empty:hover {
+  background: none;
+}
+
+.search-suggestion-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.search-suggestion-main {
+  font-weight: 600;
+}
+
+.search-suggestion-secondary {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Travel Your Way cards ---------- */
+
+.tyw-card-link__cta {
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
 @media (max-width: 767.98px) {
-  .trek-map {
-    height: 350px !important;
-    margin-bottom: 1rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .trek-map {
-    height: 280px !important;
-    border-radius: 12px !important;
-  }
-  
-  .trek-popup .leaflet-popup-content-wrapper {
-    max-width: 200px;
-  }
+  .hero-landing { min-height: 520px; height: 72vh; }
+  .hero-search-button { padding: 0 1.1rem; }
+  .hero-search-input { padding: 0.75rem 1rem; }
 }

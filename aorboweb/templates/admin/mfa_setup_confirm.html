@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+  <p>Set up two-factor authentication to continue. Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password, etc.):</p>
+  <img src="{{ qr_data_uri }}" alt="MFA QR code" style="width:220px;height:220px;">
+  <p>Can't scan it? Enter this key manually: <code>{{ secret }}</code></p>
+  {% if error %}
+    <p class="errornote">{{ error }}</p>
+  {% endif %}
+  <form action="{% url 'access_control:mfa_setup_confirm' %}" method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label for="id_code">Enter the 6-digit code:</label>
+      <input type="text" name="code" autofocus required id="id_code">
+    </div>
+    <div class="submit-row">
+      <input type="submit" value="Confirm and enable">
+    </div>
+  </form>
+</div>
+{% endblock %}

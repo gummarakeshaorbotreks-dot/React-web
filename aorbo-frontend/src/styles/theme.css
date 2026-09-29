@@ -1,0 +1,162 @@
+/* ==========================================================================
+   Aorbo Treks — design tokens and base styles
+   Every colour, radius, shadow and font size used on the site comes from
+   here. Page and component stylesheets should only reference these
+   variables, never raw hex values, so the whole site stays on one theme.
+
+   Breakpoints (match Bootstrap; CSS variables can't be used in @media):
+     sm  < 576px   phones
+     md  < 768px   large phones / small tablets
+     lg  < 992px   tablets
+     xl  ≥ 1200px  desktops
+   ========================================================================== */
+
+:root {
+  /* Brand — sampled from the Aorbo logo (yellow on near-black) */
+  --brand: #ffd60a;
+  --brand-hover: #f5c800;
+  --brand-soft: #fff6c7;
+  --brand-ink: #7a5a00; /* yellow-family text that stays readable on white */
+
+  /* Neutrals */
+  --ink: #16181d;
+  --text: #3c414c;
+  --muted: #6b7280;
+  --subtle: #9aa0ab;
+  --bg: #faf8f3;
+  --white: #ffffff;
+  --surface: var(--white);
+  --surface-alt: #f3efe6;
+  --border: #e8e2d4;
+  --border-strong: #d9d1be;
+
+  /* Dark surfaces (footer, hero overlays, price panel) */
+  --dark: #16181d;
+  --dark-2: #23262e;
+  --on-dark: #f4f2ec;
+  --on-dark-muted: #a7abb5;
+  --on-dark-border: rgba(255, 255, 255, 0.12);
+
+  /* Feedback */
+  --success: #15803d;
+  --danger: #b91c1c;
+  --whatsapp: #25d366;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-h3: 1.125rem;
+  --fs-h2: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --fs-h1: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  --fs-display: clamp(2.5rem, 1.6rem + 4vw, 4.25rem);
+
+  /* Space and shape */
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --container: 1200px;
+  --container-narrow: 860px;
+  --section-y: clamp(3rem, 6vw, 5rem);
+  --stack: 1.5rem; /* default gap between cards */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(22, 24, 29, 0.05), 0 2px 6px rgba(22, 24, 29, 0.04);
+  --shadow: 0 10px 30px rgba(22, 24, 29, 0.08);
+  --shadow-lg: 0 18px 44px rgba(22, 24, 29, 0.14);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --nav-h: 72px;
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--text);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5em;
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: var(--brand-ink);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+a:hover {
+  color: var(--ink);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+p, li, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+input, select, textarea {
+  font-size: 16px; /* stops iOS zooming into focused fields */
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--ink);
+}
+
+/* One container width for every page (overrides Bootstrap's breakpoints). */
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + 2 * var(--gutter));
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container--narrow {
+  max-width: calc(var(--container-narrow) + 2 * var(--gutter));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

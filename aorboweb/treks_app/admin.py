@@ -10,6 +10,7 @@ from django.urls import reverse, path
 import supabase
 import json
 from django import forms
+from access_control.admin_mixins import RBACAdminMixin
 
 admin.site.site_header = "Aorbo Treks Admin"
 admin.site.site_title = "Aorbo Treks Admin Pannel"
@@ -19,7 +20,8 @@ from .models import (
     Contact, Blog, TrekOrganizer, TrekImage,
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
     SocialMedia, ContactInfo, TrekList, Visitor,
-    Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection
+    Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection,
+    CrashReport,
 )
 
 
@@ -48,7 +50,8 @@ class ContactDateRangeFilter(admin.SimpleListFilter):
 
 # ── Contact Admin ───────────────────────────────────────────────────────────
 @admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "contacts"
     list_display   = ('name', 'email', 'mobile', 'user_type', 'trek_category', 'created_at', 'is_deleted')
     list_filter    = ('user_type', 'trek_category', 'is_deleted', ContactDateRangeFilter)
     search_fields  = ('name', 'email', 'mobile', 'comment')
@@ -136,7 +139,8 @@ class BlogAdminForm(forms.ModelForm):
 
 
 @admin.register(Blog)
-class BlogAdmin(admin.ModelAdmin):
+class BlogAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     form = BlogAdminForm
     list_display       = ('title', 'author', 'created_at', 'is_featured', 'image_preview')
     list_filter        = ('is_featured', 'created_at')
@@ -168,7 +172,8 @@ class BlogAdmin(admin.ModelAdmin):
 
 # ── Trek Organizer ──────────────────────────────────────────────────────────
 @admin.register(TrekOrganizer)
-class TrekOrganizerAdmin(admin.ModelAdmin):
+class TrekOrganizerAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display  = ('name', 'contact_email', 'contact_phone', 'is_verified', 'logo_preview')
     list_filter   = ('is_verified',)
     search_fields = ('name', 'description', 'contact_email')
@@ -182,7 +187,8 @@ class TrekOrganizerAdmin(admin.ModelAdmin):
 
 # ── Trek Image ──────────────────────────────────────────────────────────────
 @admin.register(TrekImage)
-class TrekImageAdmin(admin.ModelAdmin):
+class TrekImageAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display  = ('id', 'caption', 'image_preview')
     search_fields = ('caption',)
 
@@ -195,7 +201,8 @@ class TrekImageAdmin(admin.ModelAdmin):
 
 # ── Testimonial ─────────────────────────────────────────────────────────────
 @admin.register(Testimonial)
-class TestimonialAdmin(admin.ModelAdmin):
+class TestimonialAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('name', 'trek_display', 'rating', 'date', 'is_featured', 'photo_preview')
     list_filter   = ('rating', 'is_featured', 'date')
     search_fields = ('name', 'content', 'trek_name')
@@ -215,7 +222,8 @@ class TestimonialAdmin(admin.ModelAdmin):
 
 # ── FAQ ─────────────────────────────────────────────────────────────────────
 @admin.register(FAQ)
-class FAQAdmin(admin.ModelAdmin):
+class FAQAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('question', 'category', 'order')
     list_filter   = ('category',)
     search_fields = ('question', 'answer')
@@ -224,7 +232,8 @@ class FAQAdmin(admin.ModelAdmin):
 
 # ── Safety Tip ──────────────────────────────────────────────────────────────
 @admin.register(SafetyTip)
-class SafetyTipAdmin(admin.ModelAdmin):
+class SafetyTipAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('section_title','title', 'order', 'icon_preview')
     search_fields = ('title', 'content')
     list_editable = ('order',)
@@ -238,7 +247,8 @@ class SafetyTipAdmin(admin.ModelAdmin):
 
 # ── Team Member ─────────────────────────────────────────────────────────────
 @admin.register(TeamMember)
-class TeamMemberAdmin(admin.ModelAdmin):
+class TeamMemberAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('name', 'position', 'order', 'photo_preview')
     search_fields = ('name', 'position', 'bio')
     list_editable = ('order',)
@@ -252,7 +262,8 @@ class TeamMemberAdmin(admin.ModelAdmin):
 
 # ── Homepage Banner ─────────────────────────────────────────────────────────
 @admin.register(HomepageBanner)
-class HomepageBannerAdmin(admin.ModelAdmin):
+class HomepageBannerAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('title', 'is_active', 'order', 'image_preview')
     list_filter   = ('is_active',)
     search_fields = ('title', 'subtitle')
@@ -267,7 +278,8 @@ class HomepageBannerAdmin(admin.ModelAdmin):
 
 # ── Social Media ────────────────────────────────────────────────────────────
 @admin.register(SocialMedia)
-class SocialMediaAdmin(admin.ModelAdmin):
+class SocialMediaAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('platform', 'url', 'order', 'icon_preview')
     search_fields = ('platform',)
     list_editable = ('order',)
@@ -281,14 +293,16 @@ class SocialMediaAdmin(admin.ModelAdmin):
 
 # ── Contact Info ────────────────────────────────────────────────────────────
 @admin.register(ContactInfo)
-class ContactInfoAdmin(admin.ModelAdmin):
+class ContactInfoAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display  = ('company_name', 'email', 'phone')
     search_fields = ('company_name', 'address', 'email', 'phone')
 
 
 # ── Visitor ─────────────────────────────────────────────────────────────────
 @admin.register(Visitor)
-class VisitorAdmin(admin.ModelAdmin):
+class VisitorAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "analytics"
     list_display    = ("ip_address", "session_id", "user_agent", "visit_time")
     list_filter     = ("visit_time",)
     date_hierarchy  = "visit_time"
@@ -320,7 +334,8 @@ class VisitorAdmin(admin.ModelAdmin):
 
 # ── Trek List ───────────────────────────────────────────────────────────────
 @admin.register(TrekList)
-class TrekListAdmin(admin.ModelAdmin):
+class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display = (
         'name', 'state', 'is_pinned', 'pin_priority',
         'duration_days', 'price_start', 'currency', 'is_ai_generated', 'created_at'
@@ -366,23 +381,27 @@ class TrekListAdmin(admin.ModelAdmin):
 
 # ── Operator / Tag / Trek Point ─────────────────────────────────────────────
 @admin.register(Operator)
-class OperatorAdmin(admin.ModelAdmin):
+class OperatorAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display  = ('name',)
     search_fields = ('name',)
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display  = ('name',)
     search_fields = ('name',)
 
 @admin.register(TrekPoint)
-class TrekPointAdmin(admin.ModelAdmin):
+class TrekPointAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "treks"
     list_display = ('name',)
     search_fields = ('name',)
 
 
 @admin.register(SearchLog)
-class SearchLogAdmin(admin.ModelAdmin):
+class SearchLogAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "analytics"
     list_display = ('query', 'tag', 'trek', 'ip_address', 'searched_at')
     list_filter = ('tag',)
     search_fields = ('query', 'tag')
@@ -490,7 +509,8 @@ class SearchLogAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context=extra_context)
 
 @admin.register(OsmDraftTrek)
-class OsmDraftTrekAdmin(admin.ModelAdmin):
+class OsmDraftTrekAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "osm_drafts"
     list_display = ('name', 'state', 'price_start', 'operating_days', 'is_published', 'created_at')
     list_filter = ('is_published', 'state')
     search_fields = ('name', 'state')
@@ -553,7 +573,8 @@ class OsmDraftTrekAdmin(admin.ModelAdmin):
 
 
 @admin.register(ContentSection)
-class ContentSectionAdmin(admin.ModelAdmin):
+class ContentSectionAdmin(RBACAdminMixin, admin.ModelAdmin):
+    resource = "content"
     list_display = (
         "heading",
         "page",
@@ -597,3 +618,50 @@ class ContentSectionAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+
+@admin.register(CrashReport)
+class CrashReportAdmin(admin.ModelAdmin):
+    """Crash reports only ever get created by code (the crash-report API
+    endpoint or the exception-logging middleware) - there's no legitimate
+    reason for a human to hand-create or delete one via this admin, so
+    add/delete stay off regardless of role."""
+
+    list_display = ("report_id", "platform", "severity", "route", "is_resolved", "created_at")
+    list_filter = ("platform", "severity", "is_resolved")
+    search_fields = ("report_id", "error_message", "route")
+    readonly_fields = (
+        "report_id", "platform", "severity", "error_message", "stack_trace",
+        "route", "user_agent", "ip_address", "app_version", "extra_context", "created_at",
+    )
+    fields = readonly_fields + ("is_resolved", "resolved_by", "resolved_at", "resolution_notes")
+    actions = ["mark_resolved"]
+
+    def has_module_permission(self, request):
+        from access_control.rbac_guards import actor_can
+        return request.user.is_superuser or actor_can(request.user, "crash_reports:read")
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_module_permission(request)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        from access_control.rbac_guards import actor_can
+        return request.user.is_superuser or actor_can(request.user, "crash_reports:resolve")
+
+    def save_model(self, request, obj, form, change):
+        if obj.is_resolved and not obj.resolved_at:
+            obj.resolved_by = request.user
+            obj.resolved_at = timezone.now()
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="Mark selected reports as resolved")
+    def mark_resolved(self, request, queryset):
+        queryset.filter(is_resolved=False).update(
+            is_resolved=True, resolved_by=request.user, resolved_at=timezone.now()
+        )

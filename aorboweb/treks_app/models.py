@@ -525,3 +525,59 @@ class ContentSection(models.Model):
 
     def __str__(self):
         return f"{self.get_page_display()} - {self.heading}"
+
+
+class CrashReport(models.Model):
+    """A frontend JS crash (React error boundary / window.onerror /
+    unhandledrejection) or an unhandled backend exception, stored to the DB
+    so failures on any page or in any view are visible in one place instead
+    of only scrolling past in server logs."""
+
+    PLATFORM_CHOICES = [
+        ("web", "Public website (React)"),
+        ("admin", "Admin panel (browser)"),
+        ("backend", "Backend (Django)"),
+    ]
+    SEVERITY_CHOICES = [
+        ("fatal", "Fatal"),
+        ("error", "Error"),
+        ("warning", "Warning"),
+        ("info", "Info"),
+    ]
+
+    report_id = models.CharField(max_length=40, unique=True, editable=False)
+    platform = models.CharField(max_length=10, choices=PLATFORM_CHOICES)
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default="error")
+    error_message = models.TextField()
+    stack_trace = models.TextField(blank=True)
+    route = models.CharField(max_length=500, blank=True, help_text="Page URL or API path where this happened")
+    user_agent = models.CharField(max_length=255, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    app_version = models.CharField(max_length=40, blank=True)
+    extra_context = models.JSONField(null=True, blank=True)
+
+    is_resolved = models.BooleanField(default=False)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["platform", "severity"]),
+            models.Index(fields=["is_resolved"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.report_id:
+            prefix = {"web": "CR-WEB", "admin": "CR-ADM", "backend": "CR-BE"}.get(self.platform, "CR")
+            self.report_id = f"{prefix}-{timezone.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4].upper()}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.report_id} [{self.severity}] {self.error_message[:60]}"
