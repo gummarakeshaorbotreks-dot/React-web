@@ -40,7 +40,7 @@ export default function Footer() {
         <div className="site-footer__grid">
           <div className="site-footer__brand">
             <Link to="/" className="site-footer__logo">
-              <img src="/images/updated_logo.webp" alt="Aorbo Treks" width="156" height="61" loading="lazy" />
+              <img src="/images/aorbo-wordmark-light.webp" alt="Aorbo Treks" width="129" height="36" loading="lazy" />
             </Link>
             <p>
               Aorbo Treks helps travellers find and book treks easily by connecting them with trusted trek

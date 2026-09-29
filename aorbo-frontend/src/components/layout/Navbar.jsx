@@ -19,7 +19,7 @@ export default function Navbar() {
     <nav className="navbar site-nav" aria-label="Main">
       <div className="container site-nav__inner">
         <Link className="site-nav__brand" to="/" onClick={closeMenu}>
-          <img src="/images/updated_logo.webp" alt="Aorbo Treks" className="nav-logo" width="156" height="61" />
+          <img src="/images/aorbo-wordmark.webp" alt="Aorbo Treks" className="nav-logo" width="129" height="36" />
         </Link>
 
         <button

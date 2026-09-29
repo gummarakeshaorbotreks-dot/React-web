@@ -12,9 +12,9 @@
 }
 
 .site-footer__logo img {
-  height: 44px;
+  display: block;
+  height: 36px;
   width: auto;
-  border-radius: var(--radius-sm);
 }
 
 .site-footer__brand p {
