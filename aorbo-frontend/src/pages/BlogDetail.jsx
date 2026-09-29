@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { FileQuestion, ListOrdered, Share2 } from 'lucide-react';
-import { mediaUrl } from '../api/client';
+import { imageCors, mediaUrl } from '../api/client';
 import useApi from '../hooks/useApi';
 import { formatDate } from '../utils/format';
 import PageHeader from '../components/ui/PageHeader';
@@ -104,7 +104,7 @@ export default function BlogDetail() {
 
       <div className="container">
         <div className="blog-post__cover">
-          <img src={mediaUrl(blog.image_url)} alt="" />
+          <img src={mediaUrl(blog.image_url)} alt="" crossOrigin={imageCors(blog.image_url)} />
         </div>
 
         <div className="page-block blog-post__layout">

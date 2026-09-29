@@ -82,13 +82,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Bootstrap turns on smooth scrolling for the whole page, which makes the
-   router's scroll-to-top and back-button restore visibly animate.
-   Page changes should jump instantly. */
-:root {
-  scroll-behavior: auto;
-}
-
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -97,6 +90,8 @@ body {
   color: var(--text);
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -106,6 +101,14 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
+
+/* Defaults only; components set their own sizes. */
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.9rem; }
 
 p {
   margin: 0 0 1rem;
@@ -130,8 +133,59 @@ p, li, h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
 }
 
+ul, ol {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+dl, blockquote, figure {
+  margin: 0 0 1rem;
+}
+
+dd {
+  margin-left: 0;
+}
+
+address {
+  margin: 0 0 1rem;
+  font-style: normal;
+}
+
+b, strong {
+  font-weight: 700;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+hr {
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+img, svg {
+  vertical-align: middle;
+}
+
+button, input, select, textarea {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 input, select, textarea {
   font-size: 16px; /* stops iOS zooming into focused fields */
+}
+
+textarea {
+  resize: vertical;
 }
 
 :focus-visible {

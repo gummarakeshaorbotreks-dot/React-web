@@ -1,6 +1,7 @@
 .site-nav {
-  min-height: var(--nav-h);
-  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
   background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid var(--border);
   backdrop-filter: saturate(1.4) blur(8px);
@@ -10,15 +11,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  align-content: flex-start;
   justify-content: space-between;
 }
 
-.site-nav .navbar-brand {
+.site-nav__brand {
   display: flex;
   align-items: center;
   min-height: var(--nav-h);
-  padding: 0;
   margin-right: 2rem;
 }
 
@@ -28,13 +27,42 @@
   width: auto;
 }
 
+.site-nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.site-nav__toggle svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.site-nav__menu {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
 .site-nav__links {
+  display: flex;
   gap: 0.25rem;
   margin: 0 auto;
+  padding: 0;
+  list-style: none;
 }
 
 .site-nav .nav-link {
   position: relative;
+  display: block;
   padding: 0.5rem 0.875rem;
   font-weight: 500;
   color: var(--muted);
@@ -70,30 +98,30 @@
   white-space: nowrap;
 }
 
-.site-nav .navbar-toggler {
-  border-color: var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.6rem;
-}
-
-.site-nav .navbar-toggler:focus {
-  box-shadow: 0 0 0 3px var(--brand-soft);
-}
-
+/* Below 992px the links move into a drop-down opened by the menu button. */
 @media (max-width: 991.98px) {
   .nav-logo { height: 38px; }
 
-  .site-nav .navbar-collapse {
-    padding: 0.75rem 0 1.25rem;
+  .site-nav__toggle { display: inline-flex; }
+
+  .site-nav__menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.5rem 0 1.25rem;
   }
 
+  .site-nav__menu.is-open { display: flex; }
+
   .site-nav__links {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
     margin: 0;
   }
 
-  .site-nav .nav-link {
-    padding: 0.75rem 0;
-  }
+  .site-nav .nav-link { padding: 0.75rem 0; }
 
   .site-nav .nav-link::after {
     left: 0;
@@ -101,7 +129,5 @@
     width: 1.5rem;
   }
 
-  .site-nav__cta {
-    margin-top: 0.75rem;
-  }
+  .site-nav__cta { margin-top: 0.75rem; }
 }

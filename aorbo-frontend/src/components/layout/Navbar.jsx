@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import '../../styles/Navbar.css';
 
 const NAV_LINKS = [
@@ -15,26 +16,27 @@ export default function Navbar() {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav className="navbar navbar-expand-lg site-nav sticky-top">
+    <nav className="navbar site-nav" aria-label="Main">
       <div className="container site-nav__inner">
-        <Link className="navbar-brand" to="/" onClick={closeMenu}>
-          <img src="/images/updated_logo.webp" alt="Aorbo Treks" className="nav-logo" />
+        <Link className="site-nav__brand" to="/" onClick={closeMenu}>
+          <img src="/images/updated_logo.webp" alt="Aorbo Treks" className="nav-logo" width="156" height="61" />
         </Link>
 
         <button
-          className="navbar-toggler"
+          className="site-nav__toggle"
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle navigation"
+          aria-label={isOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isOpen}
+          aria-controls="site-menu"
         >
-          <span className="navbar-toggler-icon" />
+          {isOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
 
-        <div className={`collapse navbar-collapse${isOpen ? ' show' : ''}`}>
-          <ul className="navbar-nav site-nav__links">
+        <div id="site-menu" className={`site-nav__menu${isOpen ? ' is-open' : ''}`}>
+          <ul className="site-nav__links">
             {NAV_LINKS.map(({ to, label }) => (
-              <li className="nav-item" key={to}>
+              <li key={to}>
                 <NavLink className="nav-link" to={to} end={to === '/'} onClick={closeMenu}>
                   {label}
                 </NavLink>

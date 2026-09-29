@@ -40,7 +40,7 @@ export default function Footer() {
         <div className="site-footer__grid">
           <div className="site-footer__brand">
             <Link to="/" className="site-footer__logo">
-              <img src="/images/updated_logo.webp" alt="Aorbo Treks" />
+              <img src="/images/updated_logo.webp" alt="Aorbo Treks" width="156" height="61" loading="lazy" />
             </Link>
             <p>
               Aorbo Treks helps travellers find and book treks easily by connecting them with trusted trek
@@ -49,7 +49,7 @@ export default function Footer() {
             <div className="site-footer__stores">
               {STORES.map((store) => (
                 <a key={store.name} href={store.href} target="_blank" rel="noopener noreferrer">
-                  <img src={store.img} alt={store.name} />
+                  <img src={store.img} alt={store.name} width="150" height="45" loading="lazy" />
                 </a>
               ))}
             </div>
@@ -73,14 +73,14 @@ export default function Footer() {
             <div className="site-footer__socials">
               {SOCIALS.map((social) => (
                 <a key={social.name} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.name}>
-                  <img src={social.icon} alt="" />
+                  <img src={social.icon} alt="" width="18" height="18" loading="lazy" />
                 </a>
               ))}
             </div>
           </div>
         </div>
 
-        <p className="site-footer__legal">© {new Date().getFullYear()} Aorbo Treks. All rights reserved.</p>
+        <p className="site-footer__legal" suppressHydrationWarning>© {new Date().getFullYear()} Aorbo Treks. All rights reserved.</p>
       </div>
     </footer>
   );

@@ -5,13 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-prerender.jsx --outDir node_modules/.cache/prerender --emptyOutDir && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "bootstrap": "^5.3.8",
     "dompurify": "^3.4.12",
     "lucide-react": "^1.21.0",
     "react": "^19.2.6",

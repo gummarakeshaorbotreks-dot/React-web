@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { imageCors } from '../../api/client';
 
 // Big image header shared by the trek and destination detail pages.
 // badges: small chips above the title; meta: icon + text line under it.
@@ -10,7 +11,7 @@ export default function DetailHero({ image, title, badges = [], meta = [], price
 
   return (
     <header className="detail-hero">
-      {image && <img src={image} alt="" className="detail-hero__img" fetchPriority="high" decoding="async" />}
+      {image && <img src={image} alt="" className="detail-hero__img" fetchPriority="high" decoding="async" crossOrigin={imageCors(image)} />}
       <div className="detail-hero__shade" />
 
       <button type="button" className="button button--sm button--ghost-light detail-hero__back" onClick={goBack}>

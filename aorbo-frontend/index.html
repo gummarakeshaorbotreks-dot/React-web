@@ -23,7 +23,46 @@
     <meta name="twitter:description" content="Aorbo Treks helps travellers find and book treks easily by connecting them with trusted trek organizers across India." />
   </head>
   <body>
-    <div id="root"></div>
+    <script>
+      // On the home page, start loading the treks now instead of waiting for
+      // the app's JavaScript (it picks this up via window.__prefetch).
+      if (location.pathname === '/' && !location.search) {
+        var api = '%VITE_API_URL%';
+        if (api.charAt(0) === '%') api = 'http://127.0.0.1:8000';
+        window.__prefetch = {
+          '/api/treks/?page=1': fetch(api + '/api/treks/?page=1').then(function (r) {
+            return r.ok ? r.json() : Promise.reject(new Error('Request failed (' + r.status + ')'));
+          }),
+        };
+        window.__prefetch['/api/treks/?page=1'].catch(function () {});
+      }
+    </script>
+    <style>#main[data-prerendered]:empty { min-height: 100vh; }</style>
+    <!-- Filled in at build time by scripts/prerender.mjs: the page frame
+         (header + footer) and, separately, the home page's content. -->
+    <div id="root"><!--prerender--></div>
+    <template id="prerendered-home"><!--prerender-home--></template>
+    <script>
+      // Show the pre-built home content only on the home page itself; other
+      // pages get just the header/footer until the app renders them. (Template
+      // content is inert, so its images aren't downloaded on other pages.)
+      (function () {
+        var main = document.querySelector('#root [data-prerendered]');
+        if (!main) return;
+        var path = location.pathname;
+        if (path === '/' && !location.search) {
+          main.appendChild(document.getElementById('prerendered-home').content);
+          return;
+        }
+        document.querySelectorAll('#root .nav-link').forEach(function (link) {
+          var href = link.getAttribute('href');
+          var current = href === '/' ? path === '/' : path.indexOf(href) === 0;
+          link.classList.toggle('active', current);
+          if (current) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

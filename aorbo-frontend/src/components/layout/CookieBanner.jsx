@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/CookieBanner.css';
 
@@ -20,14 +20,19 @@ function saveConsent(value) {
   }
 }
 
-export default function CookieBanner() {
-  const [visible, setVisible] = useState(() => !readConsent());
+const noSubscription = () => () => {};
 
-  if (!visible) return null;
+export default function CookieBanner() {
+  // The pre-built HTML has no banner, so it starts hidden and appears right
+  // after the page takes over (the "server snapshot" is used for that first pass).
+  const hasConsent = useSyncExternalStore(noSubscription, () => Boolean(readConsent()), () => true);
+  const [dismissed, setDismissed] = useState(false);
+
+  if (hasConsent || dismissed) return null;
 
   const choose = (value) => {
     saveConsent(value);
-    setVisible(false);
+    setDismissed(true);
   };
 
   return (

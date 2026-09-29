@@ -20,7 +20,11 @@ export default function useApi(path, { cache = false } = {}) {
   useEffect(() => {
     if (!path || cached !== undefined) return undefined;
     const controller = new AbortController();
-    getJSON(path, { signal: controller.signal })
+    // index.html may already have started this request while the app loaded.
+    const early = window.__prefetch?.[path];
+    if (early) delete window.__prefetch[path];
+    const request = () => getJSON(path, { signal: controller.signal });
+    (early ? early.catch(request) : request())
       .then((data) => {
         if (cache) memoryCache.set(path, data);
         setResult({ path, data, error: null });

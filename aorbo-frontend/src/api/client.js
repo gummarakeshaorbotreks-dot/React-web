@@ -53,6 +53,10 @@ export function mediaUrl(url, fallback = PLACEHOLDER_IMAGE) {
   return url.startsWith('http') ? url : `${API_BASE}${url}`;
 }
 
+// Supabase serves photos with CORS headers; requesting them in CORS mode lets
+// the service worker keep a copy (see public/sw.js).
+export const imageCors = (url) => (url && url.includes('.supabase.co/') ? 'anonymous' : undefined);
+
 export const qs = (params) => new URLSearchParams(
   Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''),
 ).toString();

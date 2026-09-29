@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, CalendarDays, WifiOff } from 'lucide-react';
-import { logClick, mediaUrl } from '../../api/client';
+import { imageCors, logClick, mediaUrl } from '../../api/client';
 import { formatDuration, formatPrice, sentenceCase } from '../../utils/format';
 import EmptyState from '../ui/EmptyState';
 import '../../styles/TrekCard.css';
@@ -17,7 +17,7 @@ export default function TrekCard({ trek, tag = '' }) {
       onClick={() => logClick({ trekId: trek.id, tag })}
     >
       <div className="trek-card__media">
-        <img src={image} alt={trek.name} loading="lazy" decoding="async" width="400" height="300" />
+        <img src={image} alt={trek.name} loading="lazy" decoding="async" width="400" height="300" crossOrigin={imageCors(image)} />
         {trek.price_start != null && (
           <span className="trek-card__price">
             {formatPrice(trek.price_start)}
