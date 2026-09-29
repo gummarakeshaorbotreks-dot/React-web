@@ -66,10 +66,6 @@
 
 /* ---------- Blog post ---------- */
 
-.blog-post__header {
-  max-width: 820px;
-}
-
 .blog-post__meta {
   display: flex;
   flex-wrap: wrap;

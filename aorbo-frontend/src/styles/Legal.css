@@ -28,3 +28,9 @@
   font-weight: 600;
   color: var(--ink);
 }
+
+/* Indented list without bullets (used in the Privacy Policy) */
+.legal .legal-plain-list {
+  padding-left: 1rem;
+  list-style: none;
+}

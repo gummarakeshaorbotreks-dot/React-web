@@ -32,7 +32,8 @@
   border-color: transparent;
 }
 
-@media (max-width: 767.98px) {
+/* Below laptop width the 2×2 card grid needs the full row. */
+@media (max-width: 991.98px) {
   .safety-split,
   .safety-split--reverse {
     grid-template-columns: minmax(0, 1fr);

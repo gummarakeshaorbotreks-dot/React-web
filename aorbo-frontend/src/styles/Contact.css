@@ -6,6 +6,17 @@
   align-self: center;
 }
 
+/* Below laptop width the form gets the full row; the illustration follows. */
+@media (max-width: 991.98px) {
+  .contact-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact-intro > .illustration {
+    max-width: 320px;
+  }
+}
+
 .contact-form-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

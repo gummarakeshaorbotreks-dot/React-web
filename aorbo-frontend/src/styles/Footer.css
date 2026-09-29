@@ -98,7 +98,7 @@
   text-align: center;
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
   .site-footer__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .site-footer__brand { grid-column: 1 / -1; }
 }

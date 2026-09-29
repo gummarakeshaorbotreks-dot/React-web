@@ -103,7 +103,7 @@
 }
 
 .hero-search-input::placeholder {
-  color: var(--subtle);
+  color: var(--muted);
 }
 
 .hero-search-button {

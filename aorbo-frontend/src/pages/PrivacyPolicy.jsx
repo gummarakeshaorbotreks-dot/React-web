@@ -69,7 +69,7 @@ export default function PrivacyPolicy() {
           your journey.
         </p>
         <p>Withdrawing your consent for us to process your personal information may:</p>
-        <ul className="list-unstyled ms-3">
+        <ul className="legal-plain-list">
           <li>
             <p>Severely hinder our ability to serve you properly, and in such cases, we may have to refuse your booking altogether; or</p>
           </li>
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
         </p>
         <h5>Other Uses of Your Personal Information:</h5>
         <p>We may use your Personal Information for various purposes, including but not limited to:</p>
-        <ul className="list-unstyled ms-3">
+        <ul className="legal-plain-list">
           <li><p>Keeping you informed about the status of your transactions.</p></li>
           <li><p>Sending booking confirmations via SMS, WhatsApp, or other messaging services.</p></li>
           <li><p>Updating you about any changes to your bookings.</p></li>
