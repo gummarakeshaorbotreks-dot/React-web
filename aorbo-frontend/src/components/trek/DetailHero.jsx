@@ -10,7 +10,7 @@ export default function DetailHero({ image, title, badges = [], meta = [], price
 
   return (
     <header className="detail-hero">
-      {image && <img src={image} alt="" className="detail-hero__img" />}
+      {image && <img src={image} alt="" className="detail-hero__img" fetchPriority="high" decoding="async" />}
       <div className="detail-hero__shade" />
 
       <button type="button" className="button button--sm button--ghost-light detail-hero__back" onClick={goBack}>

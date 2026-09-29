@@ -655,3 +655,23 @@ a.pager__item:hover { border-color: var(--brand); color: var(--ink); }
 .field__hint p {
   margin: 0 0 0.25rem;
 }
+
+/* ---------- Page-change progress bar ---------- */
+
+.route-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1090;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  animation: route-progress 1s var(--ease) infinite;
+}
+
+@keyframes route-progress {
+  from { background-position: -50% 0; }
+  to { background-position: 150% 0; }
+}

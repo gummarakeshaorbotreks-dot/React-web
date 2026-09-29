@@ -8,8 +8,13 @@
 
 .hero-carousel,
 .hero-carousel .carousel-inner,
-.hero-carousel .carousel-item {
+.hero-carousel .carousel-item,
+.hero-carousel picture {
   height: 100%;
+}
+
+.hero-carousel picture {
+  display: block;
 }
 
 .hero-img {

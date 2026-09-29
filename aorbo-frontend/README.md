@@ -26,7 +26,7 @@ src/
   hooks/useApi.js      Data loading for pages: { data, loading, error }
   data/                Static content shared by several pages (travel categories)
   components/
-    layout/            Navbar, Footer, CookieBanner, ScrollToTop
+    layout/            Navbar, Footer, CookieBanner
     ui/                Building blocks: PageHeader, SectionHeading, InfoCard, FactList,
                        Pagination, Loader, EmptyState
     trek/              TrekCard + TrekGrid, DetailHero

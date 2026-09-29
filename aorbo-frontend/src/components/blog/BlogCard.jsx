@@ -9,7 +9,7 @@ export default function BlogCard({ blog, showExcerpt = true }) {
   return (
     <Link to={`/blogs/${blog.slug}`} className="blog-card">
       <div className="blog-card__media">
-        <img src={mediaUrl(blog.image_url)} alt="" loading="lazy" />
+        <img src={mediaUrl(blog.image_url)} alt="" loading="lazy" decoding="async" width="400" height="250" />
       </div>
       <div className="blog-card__body">
         {blog.created_at && <time className="blog-card__date" dateTime={blog.created_at}>{formatDate(blog.created_at)}</time>}

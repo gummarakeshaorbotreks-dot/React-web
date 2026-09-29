@@ -82,6 +82,13 @@ body {
   overflow-x: hidden;
 }
 
+/* Bootstrap turns on smooth scrolling for the whole page, which makes the
+   router's scroll-to-top and back-button restore visibly animate.
+   Page changes should jump instantly. */
+:root {
+  scroll-behavior: auto;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);

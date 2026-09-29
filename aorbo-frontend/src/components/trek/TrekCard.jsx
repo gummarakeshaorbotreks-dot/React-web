@@ -17,7 +17,7 @@ export default function TrekCard({ trek, tag = '' }) {
       onClick={() => logClick({ trekId: trek.id, tag })}
     >
       <div className="trek-card__media">
-        <img src={image} alt={trek.name} loading="lazy" />
+        <img src={image} alt={trek.name} loading="lazy" decoding="async" width="400" height="300" />
         {trek.price_start != null && (
           <span className="trek-card__price">
             {formatPrice(trek.price_start)}

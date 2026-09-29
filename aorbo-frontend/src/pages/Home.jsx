@@ -11,11 +11,35 @@ import Pagination from '../components/ui/Pagination';
 import SectionHeading from '../components/ui/SectionHeading';
 import '../styles/Home.css';
 
+// Each slide has a wide version for desktop and a centre-cropped narrow
+// version for phones/tablets (they only ever show the middle of the image).
 const HERO_SLIDES = [
-  { src: '/images/hero_1.webp', alt: 'Ayodhya, Varanasi and Mathura' },
-  { src: '/images/hero_2.webp', alt: 'Badrinath' },
-  { src: '/images/hero_3.webp', alt: 'Coorg' },
+  { name: 'hero-1', alt: 'Ayodhya, Varanasi and Mathura' },
+  { name: 'hero-2', alt: 'Badrinath' },
+  { name: 'hero-3', alt: 'Coorg' },
 ];
+
+function HeroImage({ name, alt, first }) {
+  const base = `/images/hero/${name}`;
+  const narrow = '(max-width: 991.98px)';
+  return (
+    <picture>
+      <source media={narrow} srcSet={`${base}-narrow.avif`} type="image/avif" />
+      <source media={narrow} srcSet={`${base}-narrow.webp`} type="image/webp" />
+      <source srcSet={`${base}-wide.avif`} type="image/avif" />
+      <img
+        src={`${base}-wide.webp`}
+        className="hero-img"
+        alt={alt}
+        width="1528"
+        height="500"
+        decoding="async"
+        // The first slide is the page's main image; the others load quietly after it.
+        fetchPriority={first ? 'high' : 'low'}
+      />
+    </picture>
+  );
+}
 
 const REASONS = [
   { icon: SlidersHorizontal, title: 'Tailored Experience', text: 'Customize your trek according to your preferences and comfort level.' },
@@ -39,8 +63,8 @@ function HeroCarousel() {
     <div id="heroCarousel" ref={ref} className="carousel slide carousel-fade hero-carousel">
       <div className="carousel-inner">
         {HERO_SLIDES.map((slide, i) => (
-          <div key={slide.src} className={`carousel-item${i === 0 ? ' active' : ''}`}>
-            <img src={slide.src} className="hero-img" alt={slide.alt} loading={i === 0 ? 'eager' : 'lazy'} />
+          <div key={slide.name} className={`carousel-item${i === 0 ? ' active' : ''}`}>
+            <HeroImage name={slide.name} alt={slide.alt} first={i === 0} />
           </div>
         ))}
       </div>
