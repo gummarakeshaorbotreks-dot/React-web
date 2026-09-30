@@ -3,6 +3,8 @@ import LegalPage from '../components/legal/LegalPage';
 
 const CARE_EMAIL = 'care@aorbotreks.com';
 const careLink = <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a>;
+const carePhone = <a href="tel:+917989251063">+91 79892 51063</a>;
+const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="noreferrer">WhatsApp</a>;
 
 // No `contentKind`: the Django admin has no "refund" sections, so this page
 // is the fixed text only.
@@ -233,7 +235,8 @@ export default function RefundPolicy() {
       <h3 id="contact">10. Questions, complaints and disputes</h3>
       <p>
         For any question about a cancellation or refund, or if you think your refund was calculated wrongly, write
-        to {careLink} with your Booking ID. The same address handles all complaints and grievances.
+        to {careLink}, or call or message us on {careWhatsApp} at {carePhone} (Monday to Saturday, 10:00 to 18:00
+        IST), with your Booking ID. The same contacts handle all complaints and grievances.
       </p>
       <p>
         If the trek itself was not as described (for example, something included in the listing was not provided),

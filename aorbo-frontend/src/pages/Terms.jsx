@@ -417,6 +417,7 @@ export default function Terms() {
         <li><p>Company: AORBO INFOCOM</p></li>
         <li><p>Platform: Aorbo Treks (www.aorbotreks.com)</p></li>
         <li><p>Support Email: care@aorbotreks.com</p></li>
+        <li><p>Phone and WhatsApp: +91 79892 51063</p></li>
         <li><p>Registered Office: [Aorbo Treks, Sri Krupa Market, Malakpet, Hyderabad, Telangana]</p></li>
       </ul>
 

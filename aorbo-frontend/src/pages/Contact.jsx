@@ -15,7 +15,7 @@ const REQUIRED = ['name', 'email', 'mobile', 'comment'];
 const FALLBACK_CONTACT = {
   company_name: 'AORBO INFOCOM',
   address: 'Sri Krupa Market, Malakpet, Hyderabad, India, 500036',
-  phone: '919398093503',
+  phone: '917989251063', // customer care — calls and WhatsApp (owner, 30 Sep 2026)
 };
 
 function Field({ id, label, error, children }) {
