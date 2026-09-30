@@ -146,8 +146,8 @@ function ContactForm() {
         {form.user_type === 'organizer' && (
           <div className="field field__hint">
             <p><strong>Vendor Portal</strong> — for partnership and onboarding, please visit our vendor portal.</p>
-            <a href="https://www.partner.aorbotreks.co.in" target="_blank" rel="noreferrer" className="link">
-              www.partner.aorbotreks.co.in
+            <a href="https://partners.aorbotreks.co.in" target="_blank" rel="noreferrer" className="link">
+              partners.aorbotreks.co.in
             </a>
           </div>
         )}
@@ -189,7 +189,7 @@ export default function Contact() {
         <div className="page-block grid grid-2">
           <InfoCard icon={Mail} title="Grievances">
             <p>If you have any concerns or complaints about our services, please reach out to our dedicated grievance team.</p>
-            <a href="mailto:Aorbotreks@gmail.com?subject=Issue Regarding the AorboTreks App" className="link">
+            <a href="mailto:care@aorbotreks.com?subject=Issue Regarding the AorboTreks App" className="link">
               Send a message
             </a>
           </InfoCard>

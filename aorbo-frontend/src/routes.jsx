@@ -45,6 +45,7 @@ export const routes = [
           { path: 'terms', lazy: page(() => import('./pages/Terms')) },
           { path: 'privacy-policy', lazy: page(() => import('./pages/PrivacyPolicy')) },
           { path: 'user-agreement', lazy: page(() => import('./pages/UserAgreement')) },
+          { path: 'refund-policy', lazy: page(() => import('./pages/RefundPolicy')) },
           { path: 'treks/:id', lazy: page(() => import('./pages/CardDetails')) },
           { path: 'treks/:id/details', lazy: page(() => import('./pages/CardDetails')) },
           { path: 'destination/:slug', lazy: page(() => import('./pages/DestinationDetails')) },

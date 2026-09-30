@@ -5,7 +5,7 @@ const letterAfterN = (i) => String.fromCharCode('N'.charCodeAt(0) + i + 1);
 
 export default function PrivacyPolicy() {
   return (
-    <LegalPage title="Privacy Policy" updated="April 25, 2025" contentKind="privacy" numberSection={letterAfterN}>
+    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="30 September 2026" contentKind="privacy" numberSection={letterAfterN}>
       {/* A. INTRODUCTION */}
       <div>
         <h3>A. INTRODUCTION</h3>
@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
         <p>
           If you have any concerns regarding the processing of your data and wish to withdraw your consent, you may
           do so by writing to the following email address:{' '}
-          <a href="mailto:privacy@aorbotreks.com">privacy@aorbotreks.com</a>. However, please note that if
+          <a href="mailto:care@aorbotreks.com">care@aorbotreks.com</a>. However, please note that if
           such processing of data is essential for us to provide services to you, we may not be able to serve you
           or confirm your bookings after the withdrawal of consent. For example, if you wish to book a trek,
           certain personal information such as contact details, gender, and location may need to be shared with
@@ -318,7 +318,7 @@ export default function PrivacyPolicy() {
           of your Personal Information or to decline permissions previously granted to the Aorbo Treks platform.
           However, such withdrawal may restrict your access to certain features or functionalities, and in some
           cases, we may be unable to provide our services to you. To withdraw consent, please contact us at{' '}
-          <strong>privacy@aorbo.com</strong> with your request.
+          <strong>care@aorbotreks.com</strong> with your request.
         </p>
       </div>
 
@@ -329,7 +329,7 @@ export default function PrivacyPolicy() {
           As a registered user of Aorbo Treks, you have the ability to access and update your personal information
           directly through your account dashboard. You may also correct or delete optional information stored in
           your account. If you are not a registered user or if you are unable to make such changes, you may write
-          to us at <strong>support@aorbotreks.com</strong> and we will address your request in accordance with
+          to us at <strong>care@aorbotreks.com</strong> and we will address your request in accordance with
           applicable laws and our internal policies.
         </p>
       </div>
@@ -353,7 +353,7 @@ export default function PrivacyPolicy() {
       {/* N. DELETION REQUESTS */}
       <div>
         <h3>N. ACCOUNT OR PERSONAL DATA DELETION REQUESTS</h3>
-        <p>If you wish to delete your Aorbo Treks account or request the removal of your personal data in accordance with applicable Indian data protection laws, you may do so by <strong>contacting us at privacy@aorbo.com or reaching out to our Customer Care Support team.</strong></p>
+        <p>If you wish to delete your Aorbo Treks account or request the removal of your personal data in accordance with applicable Indian data protection laws, you may do so by <strong>contacting us at care@aorbotreks.com or reaching out to our Customer Care Support team.</strong></p>
         <p>For security purposes and to prevent unauthorized requests, Aorbo Treks may require proper identity verification before processing such requests. Any documents submitted for identity verification will be securely retained for a period of <strong>30 days</strong> following the account deletion, after which they will be permanently deleted.</p>
         <p>If, during the verification process, there is reasonable suspicion of <strong>fraudulent activity, misrepresentation, or breach of our platform policies</strong>, Aorbo Treks reserves the right to <strong>withhold or delay</strong> the deletion or deactivation of the account. In such cases, the User must cooperate with our <strong>Customer Care Support team</strong> to facilitate further review. Final action will be taken only after due diligence and resolution of the concerns raised.</p>
         <p>Please note that while your account will be deleted, Aorbo Treks may retain certain transactional or legal data as required by applicable laws. Additionally, your email ID or phone number used to register the deleted account may not be eligible for reuse in a new account for a period of <strong>12 months</strong> following the deletion.</p>

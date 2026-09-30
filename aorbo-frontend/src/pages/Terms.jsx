@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
 
 export default function Terms() {
   return (
-    <LegalPage title="Terms and Conditions" contentKind="terms" numberSection={(i) => 20 + i + 1}>
+    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="30 September 2026" contentKind="terms" numberSection={(i) => 20 + i + 1}>
 
       {/* 1. Introduction */}
       <h3 id="introduction">1. Introduction</h3>
@@ -131,11 +132,9 @@ export default function Terms() {
         confirm such potential costs with the organizer prior to the commencement of the trek.
       </p>
       <p>
-        <strong>Refund Responsibility Disclaimer:</strong> Aorbo Treks shall not be held liable for processing or
-        determining the eligibility or quantum of refunds. All refund-related requests are governed solely by the respective
-        Vendor’s cancellation and refund policy. The decision to approve, deny, or calculate the refund amount rests entirely
-        with the Vendor. Aorbo Treks shall, however, provide reasonable assistance in facilitating communication and
-        coordination between the User and the Vendor.
+        <strong>Refunds:</strong> Cancellations and refunds of bookings made through the Platform are processed by
+        Aorbo Treks in accordance with our <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>, which
+        forms part of these Terms.
       </p>
       <p>
         <strong>Payment Security:</strong> All transactions are securely processed through third-party payment
@@ -151,63 +150,39 @@ export default function Terms() {
 
       {/* 5. Cancellations and Refunds Policy */}
       <h3 id="cancellation-refund">5. Cancellations and Refunds Policy</h3>
+      <p>
+        Cancellations and refunds are governed by our{' '}
+        <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>, which forms part of these Terms. In
+        summary:
+      </p>
       <ul>
         <li>
-          <h4>User-Initiated Cancellations</h4>
           <p>
-            Users may cancel their bookings either through their Aorbo Treks account or by contacting our official
-            support team. Cancellations are subject to the individual Vendor’s cancellation policy, which is
-            disclosed at the time of booking. Applicable cancellation fees and refund eligibility are governed
-            strictly by that policy.
+            The cancellation charge depends on whether the trek follows the Standard Policy or the Flexible Policy
+            (shown before booking) and on how close to departure the booking is cancelled. Under the Flexible Policy,
+            the ₹999 advance per traveller is non-refundable.
           </p>
         </li>
         <li>
-          <h4>Rescheduling Requests</h4>
-          <ul>
-            <li><p>Rescheduling is allowed only if explicitly supported by the Vendor.</p></li>
-            <li><p>Approval is at the Vendor’s discretion and subject to availability.</p></li>
-            <li><p>Additional costs, such as fare differences or service charges, must be paid by the User.</p></li>
-            <li><p>No refunds are issued if the new trek is of a lower value.</p></li>
-            <li><p>Unless otherwise stated by the Vendor, only one rescheduling is permitted per booking.</p></li>
-          </ul>
+          <p>
+            The ₹10 platform fee is never refunded. The payment gateway fee on card and net-banking payments is
+            deducted from refunds; UPI payments have no such fee. If you cancel before the trek starts, the GST
+            you paid is refunded in full.
+          </p>
         </li>
         <li>
-          <h4>Vendor-Initiations</h4>
-          <p>If a Vendor cancels a trek due to weather, safety, or operational issues, Users may be offered:</p>
-          <ul>
-            <li><p>A full or partial refund, or</p></li>
-            <li><p>An alternative trek or date, as per the Vendor’s stated policy.</p></li>
-          </ul>
+          <p>
+            If the organizer cancels, the User is refunded the amount paid, less the ₹10 platform fee and any
+            payment gateway fee.
+          </p>
         </li>
+        <li><p>Rescheduling is not offered.</p></li>
+        <li><p>Refunds start immediately and usually reach the User in 5–7 business days.</p></li>
         <li>
-          <h4>Aorbo-Initiated Cancellations</h4>
-          <p>Aorbo Treks reserves the right to cancel bookings in cases involving:</p>
-          <ul>
-            <li><p>Fraudulent or suspicious activity,</p></li>
-            <li><p>Misuse or misrepresentation, or</p></li>
-            <li>
-              <p>
-                Breach of Terms and Conditions. Refunds in such cases will be determined based on the Vendor’s
-                applicable terms.
-              </p>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <h4>Refund Disclaimer</h4>
-          <p>Aorbo Treks acts solely as an intermediary platform and does not operate or manage trek services. As such:</p>
-          <ul>
-            <li><p>Aorbo Treks is not responsible for issuing or approving refunds.</p></li>
-            <li><p>All refund requests are handled exclusively by the Vendor, in accordance with their own cancellation and refund policies.</p></li>
-            <li><p>Aorbo Treks may assist by facilitating communication between the User and Vendor but does not guarantee any resolution or outcome.</p></li>
-          </ul>
-        </li>
-        <li>
-          <h4>Important Notes</h4>
-          <ul>
-            <li><p>Users are advised to review the applicable Vendor policy before booking.</p></li>
-            <li><p>Refund timelines, deductions, and eligibility are governed strictly by each Vendor and may vary.</p></li>
-          </ul>
+          <p>
+            Aorbo Treks may cancel a booking in cases of fraudulent or suspicious activity, misuse or
+            misrepresentation, or breach of these Terms.
+          </p>
         </li>
       </ul>
 
@@ -441,8 +416,7 @@ export default function Terms() {
       <ul>
         <li><p>Company: AORBO INFOCOM</p></li>
         <li><p>Platform: Aorbo Treks (www.aorbotreks.com)</p></li>
-        <li><p>Support Email: support@aorbotreks.com</p></li>
-        <li><p>Phone: [+91 9398093503]</p></li>
+        <li><p>Support Email: care@aorbotreks.com</p></li>
         <li><p>Registered Office: [Aorbo Treks, Sri Krupa Market, Malakpet, Hyderabad, Telangana]</p></li>
       </ul>
 

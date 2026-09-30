@@ -16,6 +16,7 @@ const COLUMNS = [
       { to: '/privacy-policy', label: 'Privacy Policy' },
       { to: '/blogs', label: 'Blogs' },
       { to: '/user-agreement', label: 'User Agreement' },
+      { to: '/refund-policy', label: 'Refund Policy' },
       { href: '#', label: 'Insurance Partner' },
     ],
   },

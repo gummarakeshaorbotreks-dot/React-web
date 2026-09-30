@@ -1,29 +1,125 @@
-/* Legal documents are long: slightly smaller text, clear section breaks. */
+/* Legal pages are set as a formal document on plain white — a centred
+   title block, compact numbered headings, dense dark body text — not as a
+   card floating on the cream page background. */
 
+.legal-page {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+}
+
+.legal-doc {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: clamp(2rem, 1.5rem + 2.5vw, 3.5rem) 0 clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  color: #23262d;
+}
+
+/* Title block */
+.legal-doc__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.legal-doc__brand {
+  margin: 0 0 0.6rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+.legal-doc__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.legal-doc__audience {
+  margin: 0.6rem 0 0;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.legal-doc__meta {
+  margin: 0.35rem 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.legal-doc__notice {
+  margin: 0 0 2rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Body */
 .legal {
-  font-size: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.legal p {
+  margin: 0 0 0.85rem;
+  color: #23262d;
 }
 
 .legal h3 {
-  margin-top: 2.5rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--border);
-  font-size: 1.2rem;
+  margin: 2rem 0 0.7rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--ink);
   scroll-margin-top: calc(var(--nav-h) + 1rem);
 }
 
 .legal > h3:first-child,
 .legal > div:first-child > h3:first-child {
   margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
 }
 
 .legal h4,
 .legal h5 {
-  font-size: 1.02rem;
+  margin: 1.1rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
+.legal ul,
+.legal ol {
+  margin: 0 0 0.9rem;
+  padding-left: 1.4rem;
+}
+
+.legal li {
+  margin: 0 0 0.35rem;
+}
+
+.legal li > p {
+  margin: 0;
+}
+
+.legal a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legal strong,
 .legal .emphasis {
   font-weight: 600;
   color: var(--ink);
@@ -33,4 +129,62 @@
 .legal .legal-plain-list {
   padding-left: 1rem;
   list-style: none;
+}
+
+/* Tables (used in the Refund Policy). The wrapper scrolls sideways if a
+   table is ever too wide for a phone, so the page itself never does. */
+.legal .legal-table {
+  margin: 0 0 1.25rem;
+  overflow-x: auto;
+}
+
+.legal .legal-table table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.legal .legal-table th,
+.legal .legal-table td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal .legal-table th {
+  background: var(--surface-alt);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Printing a legal page gives just the document. */
+@media print {
+  body:has(.legal-page) .site-footer,
+  body:has(.legal-page) nav,
+  body:has(.legal-page) .cookie-banner {
+    display: none !important;
+  }
+
+  .legal-page {
+    border-top: 0;
+  }
+
+  .legal-doc {
+    max-width: none;
+    padding: 0;
+    color: #000;
+  }
+
+  .legal p,
+  .legal h3,
+  .legal h4 {
+    color: #000;
+  }
+
+  .legal h3 {
+    break-after: avoid;
+  }
 }

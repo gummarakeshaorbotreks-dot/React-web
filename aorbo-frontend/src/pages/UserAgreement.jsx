@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
 
 export default function UserAgreement() {
   return (
-    <LegalPage title="User Agreement" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
+    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="30 September 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
       
       {/* 1. DEFINITIONS AND INTERPRETATION */}
       <h3>1. DEFINITIONS AND INTERPRETATION</h3>
@@ -138,12 +139,9 @@ export default function UserAgreement() {
         Vendor or authorized personnel and may be disclosed either during or after the booking process.
       </p>
       <p>
-        6.4 <strong>Refund Responsibility Disclaimer:</strong>{' '}
-        Aorbo Treks shall not be held liable for processing or determining the eligibility or quantum of refunds.
-        All refund-related requests are governed solely by the respective Vendor’s cancellation and refund policy.
-        The decision to approve, deny, or calculate the refund amount rests entirely with the Vendor. Aorbo Treks,
-        however, will provide reasonable assistance in facilitating communication and coordination between the User
-        and the Vendor.
+        6.4 <strong>Refunds:</strong>{' '}
+        Cancellations and refunds of bookings made through the platform are processed by Aorbo Treks in accordance
+        with the <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link> (see Section 7).
       </p>
       <p>
         6.5 <strong>Payment Security:</strong>{' '}
@@ -167,19 +165,20 @@ export default function UserAgreement() {
       {/* 7. CANCELLATIONS AND REFUNDS */}
       <h3>7. CANCELLATIONS AND REFUNDS</h3>
       <p>
-        7.1 Users may cancel their bookings in accordance with the cancellation policies of the respective Service
-        Providers. While Aorbo Treks will assist with the cancellation process, it cannot guarantee a full refund if
-        the Service Provider’s cancellation policy does not allow for one, as the choice of Vendor is made by the User.
+        7.1 Cancellations and refunds of bookings made through the platform are governed by the Aorbo Treks{' '}
+        <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>, which forms part of this Agreement.
       </p>
       <p>
-        7.2 <strong>Refunds</strong> for cancellations will be processed in accordance with the Service Provider's
-        policies. Depending on the payment method, refunds may be issued to the original payment method and may take
-        several business days to process, as the choice of Vendor is made by the User.
+        7.2 In summary, the cancellation charge depends on whether the trek follows the Standard Policy or the
+        Flexible Policy (shown before booking) and on how close to departure the booking is cancelled. Under the
+        Flexible Policy, the ₹999 advance per traveller is non-refundable. The ₹10 platform fee is never refunded,
+        the payment gateway fee on card and net-banking payments is deducted from refunds (UPI payments have no such
+        fee), and GST is refunded in full when the booking is cancelled before the trek starts.
       </p>
       <p>
-        7.3 <strong>Aorbo Treks</strong> shall not be held liable for any loss incurred due to cancellations or
-        changes made by the Service Providers. Additionally, Aorbo Treks is not responsible for any inconvenience
-        caused, as the choice of Vendor is solely the responsibility of the User.
+        7.3 If the organizer cancels, the User is refunded the amount paid, less the ₹10 platform fee and any payment
+        gateway fee. Rescheduling is not offered. Refunds start immediately and usually reach the User in 5–7
+        business days.
       </p>
 
       {/* 8. PRIVACY AND CONFIDENTIALITY */}
@@ -266,8 +265,7 @@ export default function UserAgreement() {
       <p className="emphasis">
         Company: AORBO INFOCOM<br />
         Platform: Aorbo Treks (www.aorbotreks.com)<br />
-        Support Email: support@aorbotreks.com<br />
-        Phone: +91 9398093503<br />
+        Support Email: care@aorbotreks.com<br />
         Registered Office: Aorbo Treks, Sri Krupa Market, Malakpet, Hyderabad, Telangana
       </p>
 
