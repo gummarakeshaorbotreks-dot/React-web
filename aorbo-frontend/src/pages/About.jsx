@@ -49,7 +49,7 @@ export default function About() {
           <InfoCard icon={Target} title="Our Goal">
             <p>
               Our vision is clear—to become your ultimate go-to platform for treks and adventure trips. We
-              connect passionate adventurers like you with certified, experienced organizers, ensuring a
+              connect passionate adventurers like you with verified, experienced organizers, ensuring a
               seamless and worry-free experience. Think of us as the Tinder of trekking - only better! With
               Aorbo Treks, you won't have to worry about getting ghosted. Instead, you'll find the perfect
               match for your adventure needs.

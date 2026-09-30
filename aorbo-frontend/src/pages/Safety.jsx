@@ -8,10 +8,10 @@ import SectionHeading from '../components/ui/SectionHeading';
 import '../styles/Safety.css';
 
 const SAFETY_FEATURES = [
-  { icon: HeartHandshake, title: 'Female-Friendly Treks', text: 'Offering women-specific treks with experienced female guides who bring a supportive and inclusive atmosphere.' },
-  { icon: Headset, title: '24/7 Support', text: 'We have a dedicated team that is available around the clock to assist with any emergencies or help you need.' },
-  { icon: Siren, title: 'Emergency Preparedness', text: 'All treks are equipped with an emergency kit, have clear protocols in place, and medical support if needed.' },
-  { icon: ShieldCheck, title: 'Safety Drills', text: 'Our trek guides are skilled in handling all types of situations and conduct regular training drills for all trek team members.' },
+  { icon: HeartHandshake, title: 'Women-Friendly Treks', text: "Trekkers rate every trek on women's safety, so you can choose organizers that other women trust." },
+  { icon: Headset, title: 'Customer Support', text: 'Call or WhatsApp +91 79892 51063, or write to care@aorbotreks.com, Monday to Saturday, 10 AM to 6 PM.' },
+  { icon: Siren, title: 'In an Emergency', text: 'On the trail, your trek leader is your first point of contact. For emergency services anywhere in India, dial 112.' },
+  { icon: ShieldCheck, title: 'Know Before You Go', text: 'Every listing shows what the trek includes, its difficulty and the organizer, so you can pick a trek that suits your fitness.' },
 ];
 
 const SOLO_TREKKER = [
@@ -24,17 +24,17 @@ const SOLO_TREKKER = [
 const ON_PLATFORM = [
   { icon: Users, title: 'Access to Multiple Organizers', text: 'Users can browse trusted trekking organizers on Aorbo, making it easy to compare options.' },
   { icon: SlidersHorizontal, title: 'Tailored Trek Options', text: 'Users can filter treks by preferences, ensuring a personalized experience.' },
-  { icon: ShieldCheck, title: 'Safety and Assurance', text: 'Aorbo ensures partner organizers follow safety standards, providing reliable services for peace of mind.' },
+  { icon: ShieldCheck, title: 'Verified Organizers', text: 'Every organizer completes KYC verification, and every trek listing is reviewed before it goes live on Aorbo.' },
   { icon: BadgePercent, title: 'Cost-Effective Packages', text: 'Aorbo offers group discounts, special deals, and customizable packages to help users save.' },
-  { icon: Headset, title: '24/7 Support', text: 'Users have direct access to customer support, ensuring a secure and stress-free experience.' },
+  { icon: Headset, title: 'Customer Support', text: 'Reach our team by call, WhatsApp or e-mail, Monday to Saturday, 10 AM to 6 PM.' },
   { icon: CalendarCheck, title: 'Streamlined Booking Process', text: 'With Aorbo, users can easily book, pay, and manage their trips in one place.' },
 ];
 
 const GROUP_BENEFITS = [
   { icon: ClipboardCheck, title: 'Simple Booking', text: 'Group leaders can book for the entire group online with customizable trek options.' },
   { icon: BadgePercent, title: 'Exclusive Discounts', text: 'Get special pricing and flexible payment options for groups.' },
-  { icon: Headset, title: 'Dedicated Support', text: 'Enjoy personalized assistance and 24/7 customer support for a smooth experience.' },
-  { icon: ShieldCheck, title: 'Safety & Logistics', text: "We manage safety, transport, and accommodation for your group's comfort." },
+  { icon: Headset, title: 'Dedicated Support', text: 'Get help from our support team with your group booking, Monday to Saturday, 10 AM to 6 PM.' },
+  { icon: ShieldCheck, title: 'Safety & Logistics', text: "Compare what each organizer includes — transport, stay, meals and safety arrangements — before you book for your group." },
   { icon: Users, title: 'Team Building', text: 'Engage in activities that promote bonding and collaboration.' },
   { icon: MessageCircle, title: 'Seamless Communication', text: 'Keep everyone informed with clear details and updates.' },
 ];

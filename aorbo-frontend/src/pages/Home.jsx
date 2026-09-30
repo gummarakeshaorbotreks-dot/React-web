@@ -12,9 +12,9 @@ import '../styles/Home.css';
 
 const REASONS = [
   { icon: SlidersHorizontal, title: 'Tailored Experience', text: 'Customize your trek according to your preferences and comfort level.' },
-  { icon: BadgeCheck, title: 'Verified Local Operators', text: 'Every trek is led by trusted, certified local experts who ensure your safety and provide an authentic experience.' },
+  { icon: BadgeCheck, title: 'Verified Local Operators', text: 'Every organizer completes KYC verification and every trek listing is reviewed before it goes live, so you book with local operators you can trust.' },
   { icon: Mountain, title: 'Unmatched Trek Variety', text: 'From serene weekend getaways to challenging Himalayan expeditions, find the perfect trail for your adventure style.' },
-  { icon: Users, title: 'Community & Support', text: 'Join a community of passionate adventurers with 24/7* support from a team that lives and breathes the outdoors.' },
+  { icon: Users, title: 'Community & Support', text: 'Join a community of passionate adventurers, with support from a team that lives and breathes the outdoors.' },
 ];
 
 export default function Home() {
