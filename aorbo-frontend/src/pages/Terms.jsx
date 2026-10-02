@@ -102,20 +102,17 @@ export default function Terms() {
           </p>
         </li>
       </ul>
-      <h4>Balance Paid Directly to the Vendor:</h4>
+      <h4>Balance Paid to the Organizer:</h4>
       <p>
-        Any balance paid directly to the Vendor, whether before the trek or in person at the trek start point, is paid to
-        the Vendor and not to Aorbo Treks. Aorbo Treks does not receive, hold, track or verify that money, and gives no
-        assurance, guarantee or undertaking of any kind about it, including its amount, its receipt by the Vendor, any
-        receipt or invoice for it, or its refund. Any confirmation of such a payment shown on the Platform is the
-        Vendor&rsquo;s own statement. Users should pay the balance only as stated in their booking, and should obtain
-        and keep proof of every such payment.
+        If you choose to pay part of the fare later, you pay the balance directly to the Vendor (your trek organizer), as
+        shown in your booking &mdash; either before the trek or at the trek start point. Please pay only as shown in your
+        booking and keep the receipt. Because this amount is paid to the Vendor and not to Aorbo Treks, the Vendor is
+        responsible for it, including any refund of it that becomes due. The &ldquo;balance paid&rdquo; status shown on
+        the Platform is updated by the Vendor.
       </p>
       <p>
-        In respect of such money, Aorbo Treks provides assistance only: on a request made through customer care, Aorbo
-        Treks will contact the Vendor, share the booking records available to it, and make reasonable efforts to help the
-        User and the Vendor resolve the matter. Aorbo Treks is not obliged to pay, refund or compensate any such amount
-        itself.
+        If you face any problem with it, contact Aorbo Treks customer care: we will take it up with the Vendor and help
+        you get it resolved.
       </p>
       <h4>Liability Disclaimer:</h4>
       <p>

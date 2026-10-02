@@ -132,10 +132,11 @@ export default function UserAgreement() {
         </li>
       </ul>
       <p>
-        Any balance paid directly to the Vendor (under Partial Payment or Pay at Site) is paid to the Vendor and not to
-        Aorbo Treks. Aorbo Treks does not receive, hold, track or verify that money and gives no assurance or guarantee
-        about it, including its refund; it provides assistance only, by contacting the Vendor and helping to resolve the
-        matter when asked through customer care. Users should keep proof of every such payment.
+        <strong>Balance paid to the organizer:</strong> a balance paid under Partial Payment or Pay at Site goes directly
+        to the Vendor (your trek organizer), not to Aorbo Treks. Please pay only as shown in your booking and keep the
+        receipt. The Vendor is responsible for this amount, including any refund of it that becomes due. If you face any
+        problem with it, contact Aorbo Treks customer care: we will take it up with the Vendor and help you get it
+        resolved.
       </p>
       <p>
         6.3 <strong>Additional Charges:</strong>{' '}
