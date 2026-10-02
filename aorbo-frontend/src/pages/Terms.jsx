@@ -3,7 +3,7 @@ import LegalPage from '../components/legal/LegalPage';
 
 export default function Terms() {
   return (
-    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="30 September 2026" contentKind="terms" numberSection={(i) => 20 + i + 1}>
+    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="terms" numberSection={(i) => 20 + i + 1}>
 
       {/* 1. Introduction */}
       <h3 id="introduction">1. Introduction</h3>
@@ -130,6 +130,69 @@ export default function Terms() {
         Vendors or organizers are responsible for informing Users of any applicable additional charges, either at the
         time of booking, during pre-departure communication, or on-ground during the trek. Users are advised to
         confirm such potential costs with the organizer prior to the commencement of the trek.
+      </p>
+      <h4>Booking for Family and Friends</h4>
+      <p>
+        A User may make a booking from their own account for themselves and for other persons personally known to
+        them, such as members of their family and their friends, provided that:
+      </p>
+      <ul>
+        <li><p>each such person has consented to the User furnishing their particulars and making the booking for them;</p></li>
+        <li><p>the User is responsible for the accuracy of their particulars and for informing them of the trek details, these Terms and the applicable cancellation policy;</p></li>
+        <li><p>the booking is paid for by the User, and any refund is made to the original method of payment; and</p></li>
+        <li><p>the User remains the person responsible to Aorbo Treks for the booking, including for its cancellation.</p></li>
+      </ul>
+      <p>
+        A traveller may reimburse the User for that traveller&rsquo;s own share of the amount actually paid by the User for
+        the booking. Such reimbursement, without any addition, is not consideration for the purposes of the clause below.
+      </p>
+      <h4>No Agents, Resale or Commercial Booking</h4>
+      <p>
+        Bookings are for personal, non-commercial use only. A User shall not, directly or indirectly, whether on the
+        Platform or elsewhere (including through any website, social-media page, messaging group or classified listing):
+      </p>
+      <ul>
+        <li><p>act as a travel agent, tour operator, broker, aggregator, sub-agent or reseller in respect of any trek or booking;</p></li>
+        <li><p>make, or offer to make, a booking for any person in return for any fee, commission, mark-up, service charge or other consideration;</p></li>
+        <li><p>sell, resell, auction, transfer or offer for sale any booking, seat or booking ID, or any coupon, referral benefit or account;</p></li>
+        <li><p>advertise or solicit bookings for treks listed on the Platform, or represent themselves as acting for Aorbo Treks or any Vendor;</p></li>
+        <li><p>reserve or hold seats in bulk, or without a genuine intention that the named travellers shall travel, including in order to create scarcity or to resell; or</p></li>
+        <li><p>use any script, bot or other automated means to search, reserve, hold or book seats.</p></li>
+      </ul>
+      <p>
+        &ldquo;Consideration&rdquo; includes money, goods, services or any other benefit, received or receivable from any person.
+        A booking made in breach of this clause, and any transfer of it, shall not be binding on Aorbo Treks or the Vendor.
+      </p>
+      <h4>Verification and Consequences of Breach</h4>
+      <p>
+        Aorbo Treks may monitor booking patterns, including the number and frequency of bookings from an account, the
+        number of distinct travellers booked, and the accounts, devices and payment instruments used, in order to detect a
+        breach of the clause above. Where Aorbo Treks reasonably suspects such a breach, it may require the User to
+        establish, within a reasonable time, the User&rsquo;s relationship with the travellers and that no consideration was received.
+      </p>
+      <p>
+        Where Aorbo Treks reasonably determines, after giving the User an opportunity to respond (save where doing so would
+        prejudice an investigation or the safety of others), that a booking was made or dealt with in breach of the clause
+        above, Aorbo Treks may do any one or more of the following:
+      </p>
+      <ul>
+        <li><p>cancel the booking, with a refund as if the User had cancelled it under the <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>, save that a traveller who establishes that they were not party to the breach may, with the Vendor&rsquo;s consent, be permitted to travel or receive a refund;</p></li>
+        <li><p>refuse further bookings, and suspend or terminate the User&rsquo;s account and any other account that Aorbo Treks reasonably believes is operated by the User or on the User&rsquo;s behalf;</p></li>
+        <li><p>withdraw any coupon, referral benefit or other benefit obtained through the breach; and</p></li>
+        <li><p>recover from the User any loss, chargeback, fee or cost (including reasonable legal costs) incurred by Aorbo Treks by reason of the breach.</p></li>
+      </ul>
+      <p>
+        These rights are without prejudice to any other right or remedy available to Aorbo Treks or any Vendor in law or
+        in equity, including a claim for damages and an injunction.
+      </p>
+      <p>
+        Where the conduct also discloses an offence, including cheating, cheating by personation, forgery, the use of
+        another person&rsquo;s identity, account or payment instrument without authorisation, or unauthorised access to a
+        computer resource, Aorbo Treks shall report it to the police and other competent authorities and may initiate and
+        pursue criminal proceedings under the Bharatiya Nyaya Sanhita, 2023, the Information Technology Act, 2000 and any
+        other applicable law. Aorbo Treks shall co-operate with any investigating agency and may furnish to it the records
+        relating to the accounts, bookings, devices and payments concerned, in accordance with
+        our <Link to="/privacy-policy">Privacy Policy</Link> and applicable law.
       </p>
       <p>
         <strong>Refunds:</strong> Cancellations and refunds of bookings made through the Platform are processed by
@@ -271,7 +334,7 @@ export default function Terms() {
               </p>
             </li>
             <li><p>Arrive at the designated pickup or assembly location at least thirty (30) minutes prior to the scheduled departure time.</p></li>
-            <li><p>Acknowledge that trek passes or tickets are non-transferable unless explicitly permitted by the Vendor.</p></li>
+            <li><p>Acknowledge that trek passes or tickets are non-transferable unless explicitly permitted by the Vendor, and that a booking shall in no case be sold or transferred for money or any other benefit (see &ldquo;No Agents, Resale or Commercial Booking&rdquo; in Section 4).</p></li>
           </ul>
         </li>
         <li>
@@ -294,7 +357,7 @@ export default function Terms() {
       {/* 9. Platform Usage and Restrictions */}
       <h3 id="platform-usage">9. Platform Usage and Restrictions</h3>
       <p>
-        Users agree not to misuse the Platform, engage in fraudulent activities, or infringe upon any intellectual
+        Users agree not to misuse the Platform, act as an agent, broker or reseller of bookings (see Section 4), engage in fraudulent activities, or infringe upon any intellectual
         property rights. Aorbo Treks reserves the right to suspend or terminate any User account found in violation of these Terms.
       </p>
 

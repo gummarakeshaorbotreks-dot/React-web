@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
 
 // Admin-added sections continue the lettering after section N.
@@ -5,7 +6,7 @@ const letterAfterN = (i) => String.fromCharCode('N'.charCodeAt(0) + i + 1);
 
 export default function PrivacyPolicy() {
   return (
-    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="30 September 2026" contentKind="privacy" numberSection={letterAfterN}>
+    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="2 October 2026" contentKind="privacy" numberSection={letterAfterN}>
       {/* A. INTRODUCTION */}
       <div>
         <h3>A. INTRODUCTION</h3>
@@ -267,6 +268,7 @@ export default function PrivacyPolicy() {
           <li><p>By law, as required by any law enforcement authority for investigation, court order, or legal process.</p></li>
           <li><p>To conduct business operations or for regulatory, compliance, and audit purposes.</p></li>
           <li><p>To secure our systems and protect against unauthorized access or fraud.</p></li>
+          <li><p>To report to the police or other competent authorities an offence committed through the Platform &mdash; such as cheating, the misuse of another person&rsquo;s identity, account or payment instrument, unauthorised access, or the resale of bookings by an unauthorised agent in breach of our <Link to="/terms">Terms and Conditions</Link> &mdash; and to assist its investigation and prosecution.</p></li>
           <li><p>To enforce or protect Aorbo Treks' rights, properties, or those of its affiliates, associates, employees, directors, or officers. This may also include situations where disclosing your personal information is necessary to identify, contact, or take legal action against individuals causing interference with Aorbo Treks' operations or when harm could come to others.</p></li>
         </ul>
         <p>Such disclosures may occur without prior notice, and Aorbo Treks will not be liable for any damages resulting from such disclosure or storage of information.</p>
