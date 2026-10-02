@@ -3,7 +3,7 @@ import LegalPage from '../components/legal/LegalPage';
 
 export default function Terms() {
   return (
-    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="terms" numberSection={(i) => 20 + i + 1}>
+    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="terms" numberSection={(i) => 19 + i + 1}>
 
       {/* 1. Introduction */}
       <h3 id="introduction">1. Introduction</h3>
@@ -220,8 +220,8 @@ export default function Terms() {
         gateways. Aorbo Treks does not store any sensitive financial information.
       </p>
       <p>
-        <strong>Service Charges:</strong> A facilitation fee may be charged by Aorbo Treks and will be clearly
-        disclosed at the time of booking.
+        <strong>Platform Fee:</strong> Aorbo Treks charges a platform fee of ₹10 per booking (inclusive of GST),
+        shown before you pay.
       </p>
       <p>
         <strong>Taxes:</strong> Users are responsible for the payment of all applicable taxes in accordance with local laws.
@@ -480,18 +480,9 @@ export default function Terms() {
         <li><p>Aorbo Treks shall not be held liable for any indirect, incidental, or consequential damages beyond the actual amount paid by the User for the specific service in question.</p></li>
       </ul>
 
-      {/* 16. Third-Party Insurance */}
-      <h3 id="governing-law">16. Third-Party Insurance</h3>
-      <p>
-        Aorbo Treks may provide Users the option to purchase third-party travel insurance. All matters relating to such
-        insurance—including coverage, claims, liabilities, and disputes—are solely between the User and the respective
-        insurance provider. Aorbo Treks assumes no responsibility or liability for the processing, approval, or denial
-        of any claims submitted under third-party insurance policies.
-      </p>
-
-      {/* 17. Contact Information */}
-      <h3 id="contact">17. Contact Information</h3>
-      <p>17.1 If the User has any questions or concerns regarding this Agreement or the services provided by Aorbo Treks, they can contact us at:</p>
+      {/* 16. Contact Information */}
+      <h3 id="contact">16. Contact Information</h3>
+      <p>16.1 If the User has any questions or concerns regarding this Agreement or the services provided by Aorbo Treks, they can contact us at:</p>
       <ul>
         <li><p>Company: AORBO INFOCOM</p></li>
         <li><p>Platform: Aorbo Treks (www.aorbotreks.com)</p></li>
@@ -500,23 +491,23 @@ export default function Terms() {
         <li><p>Registered Office: [Aorbo Treks, Sri Krupa Market, Malakpet, Hyderabad, Telangana]</p></li>
       </ul>
 
-      {/* 18. Additional Provisions */}
-      <h3 id="additional-provisions">18. Additional Provisions</h3>
+      {/* 17. Additional Provisions */}
+      <h3 id="additional-provisions">17. Additional Provisions</h3>
       <ul>
         <li>
-          <h5>18.1 Force Majeure</h5>
+          <h5>17.1 Force Majeure</h5>
           <p>We are not liable for delays or failures caused by events beyond our reasonable control, including natural disasters, strikes, or internet outages.</p>
         </li>
         <li>
-          <h5>18.2 Severability</h5>
+          <h5>17.2 Severability</h5>
           <p>If any provision is invalid or unenforceable, it will be severed without affecting the remaining Terms.</p>
         </li>
         <li>
-          <h5>18.3 Entire Agreement</h5>
+          <h5>17.3 Entire Agreement</h5>
           <p>These Terms, together with our Privacy Policy and other policies, constitute the entire agreement between you and AORBO INFOCOM regarding Platform use.</p>
         </li>
         <li>
-          <h5>18.4 Termination and Suspension</h5>
+          <h5>17.4 Termination and Suspension</h5>
           <ul>
             <li><p>We may suspend or terminate your access to the Platform without notice if you breach these Terms or engage in harmful conduct.</p></li>
             <li><p>Termination does not affect accrued rights or liabilities.</p></li>
@@ -524,8 +515,8 @@ export default function Terms() {
         </li>
       </ul>
 
-      {/* 19. Direct Dealings with Vendors */}
-      <h3 id="additional-provisions">19. Direct Dealings with Vendors or Organizers</h3>
+      {/* 18. Direct Dealings with Vendors */}
+      <h3 id="additional-provisions">18. Direct Dealings with Vendors or Organizers</h3>
       <p>
         If users choose to engage directly with any trek operator outside of the Aorbo Treks platform, Aorbo Treks shall
         bear no responsibility or liability for any disputes, claims, losses, damages, or inconveniences that may arise.
@@ -534,8 +525,8 @@ export default function Terms() {
         and the trek operator.
       </p>
 
-      {/* 20. Personalized Treks Disclaimer */}
-      <h3 id="contact">20. Personalized Treks Disclaimer</h3>
+      {/* 19. Personalized Treks Disclaimer */}
+      <h3 id="contact">19. Personalized Treks Disclaimer</h3>
       <p>
         For personalized or custom trek requests submitted through Aorbo Treks, our role is strictly limited to acting
         as a platform to connect users with trek operators. Once a trek inquiry is submitted, Aorbo Treks forwards the
