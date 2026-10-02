@@ -146,6 +146,13 @@ export default function Terms() {
         A traveller may reimburse the User for that traveller&rsquo;s own share of the amount actually paid by the User for
         the booking. Such reimbursement, without any addition, is not consideration for the purposes of the clause below.
       </p>
+      <h4>Fare Quotes Are Personal</h4>
+      <p>
+        The fare calculated for a User at checkout, including any coupon, referral benefit or offer applied to it, is
+        personal to that User&rsquo;s account and valid only for the booking for which it was calculated. It shall not be
+        shared with, transferred to or used from any other account. A booking made with a fare calculated for another
+        account is a breach of these Terms and may be cancelled under &ldquo;Verification and Consequences of Breach&rdquo; below.
+      </p>
       <h4>No Agents, Resale or Commercial Booking</h4>
       <p>
         Bookings are for personal, non-commercial use only. A User shall not, directly or indirectly, whether on the
@@ -154,10 +161,10 @@ export default function Terms() {
       <ul>
         <li><p>act as a travel agent, tour operator, broker, aggregator, sub-agent or reseller in respect of any trek or booking;</p></li>
         <li><p>make, or offer to make, a booking for any person in return for any fee, commission, mark-up, service charge or other consideration;</p></li>
-        <li><p>sell, resell, auction, transfer or offer for sale any booking, seat or booking ID, or any coupon, referral benefit or account;</p></li>
+        <li><p>sell, resell, auction, transfer or offer for sale any booking, slot, booking ID or fare quote, or any coupon, referral benefit or account, or use a fare quote calculated for another account;</p></li>
         <li><p>advertise or solicit bookings for treks listed on the Platform, or represent themselves as acting for Aorbo Treks or any Vendor;</p></li>
-        <li><p>reserve or hold seats in bulk, or without a genuine intention that the named travellers shall travel, including in order to create scarcity or to resell; or</p></li>
-        <li><p>use any script, bot or other automated means to search, reserve, hold or book seats.</p></li>
+        <li><p>reserve or hold slots in bulk, or without a genuine intention that the named travellers shall travel, including in order to create scarcity or to resell; or</p></li>
+        <li><p>use any script, bot or other automated means to search, reserve, hold or book slots.</p></li>
       </ul>
       <p>
         &ldquo;Consideration&rdquo; includes money, goods, services or any other benefit, received or receivable from any person.
