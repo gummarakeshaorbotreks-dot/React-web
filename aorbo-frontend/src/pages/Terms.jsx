@@ -93,21 +93,30 @@ export default function Terms() {
           </p>
         </li>
         <li>
-          <h4>2. Partial Payment:</h4>
+          <h4>2. Partial Payment (deposit online, balance to the Vendor):</h4>
           <p>
-            The User pays a non-refundable booking fee through the Platform, with the remaining balance payable
-            directly to the Vendor via the payment method and timeline agreed upon at the time of booking.
-          </p>
-        </li>
-        <li>
-          <h4>3. Pay at Site:</h4>
-          <p>
-            The User pays a defined portion through the Platform and agrees to settle the remaining balance in
-            person—by cash, UPI, or card—at the designated trek start point. Aorbo Treks does not assume
-            responsibility for any disputes arising from in-person payments made directly to the Vendor.
+            Where the listing offers it, the User pays a deposit through the Platform and pays the remaining balance
+            directly to the Vendor, in the manner and by the time the Vendor specifies &mdash; for example before the
+            trek, or in person by cash, UPI or card at the trek start point (&ldquo;Pay at Site&rdquo;). The deposit is
+            refundable only as set out in the <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>.
           </p>
         </li>
       </ul>
+      <h4>Balance Paid Directly to the Vendor:</h4>
+      <p>
+        Any balance paid directly to the Vendor, whether before the trek or in person at the trek start point, is paid to
+        the Vendor and not to Aorbo Treks. Aorbo Treks does not receive, hold, track or verify that money, and gives no
+        assurance, guarantee or undertaking of any kind about it, including its amount, its receipt by the Vendor, any
+        receipt or invoice for it, or its refund. Any confirmation of such a payment shown on the Platform is the
+        Vendor&rsquo;s own statement. Users should pay the balance only as stated in their booking, and should obtain
+        and keep proof of every such payment.
+      </p>
+      <p>
+        In respect of such money, Aorbo Treks provides assistance only: on a request made through customer care, Aorbo
+        Treks will contact the Vendor, share the booking records available to it, and make reasonable efforts to help the
+        User and the Vendor resolve the matter. Aorbo Treks is not obliged to pay, refund or compensate any such amount
+        itself.
+      </p>
       <h4>Liability Disclaimer:</h4>
       <p>
         Aorbo Treks acts solely as an intermediary in the booking and payment process. We are not responsible for

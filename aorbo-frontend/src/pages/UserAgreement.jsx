@@ -3,7 +3,7 @@ import LegalPage from '../components/legal/LegalPage';
 
 export default function UserAgreement() {
   return (
-    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="30 September 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
+    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
       
       {/* 1. DEFINITIONS AND INTERPRETATION */}
       <h3>1. DEFINITIONS AND INTERPRETATION</h3>
@@ -131,6 +131,12 @@ export default function UserAgreement() {
           <p><strong>Pay at Site:</strong> A portion of the payment is collected via the platform, and the remaining balance is settled in person—by cash or UPI—at the designated trek commencement point.</p>
         </li>
       </ul>
+      <p>
+        Any balance paid directly to the Vendor (under Partial Payment or Pay at Site) is paid to the Vendor and not to
+        Aorbo Treks. Aorbo Treks does not receive, hold, track or verify that money and gives no assurance or guarantee
+        about it, including its refund; it provides assistance only, by contacting the Vendor and helping to resolve the
+        matter when asked through customer care. Users should keep proof of every such payment.
+      </p>
       <p>
         6.3 <strong>Additional Charges:</strong>{' '}
         The User acknowledges that they are solely responsible for any additional charges that are not included in
