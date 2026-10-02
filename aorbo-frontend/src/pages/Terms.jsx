@@ -241,9 +241,9 @@ export default function Terms() {
         </li>
         <li>
           <p>
-            The ₹10 platform fee is never refunded. The payment gateway fee on card and net-banking payments is
-            deducted from refunds; UPI payments have no such fee. If you cancel before the trek starts, the GST
-            you paid is refunded in full.
+            The ₹10 platform fee is never refunded. If the payment gateway charged a fee on your payment, that
+            actual fee is deducted from refunds; it depends on how you paid, and a UPI payment from a bank account
+            usually has no fee. If you cancel before the trek starts, the GST you paid is refunded in full.
           </p>
         </li>
         <li>

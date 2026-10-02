@@ -10,7 +10,7 @@ const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="n
 // is the fixed text only.
 export default function RefundPolicy() {
   return (
-    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="30 September 2026">
+    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="2 October 2026">
       <p>
         This policy explains how to cancel a trek booked on Aorbo Treks and how much of your money is refunded.
         It is part of our <Link to="/terms">Terms and Conditions</Link>.
@@ -167,11 +167,11 @@ export default function RefundPolicy() {
         </li>
         <li>
           <p>
-            <strong>Payment gateway fee.</strong> If you paid by credit card, debit card or net banking, the payment
-            network charges a fee on your payment and does not return it when a refund is made. This fee is
-            deducted from your refund. It depends on your payment method and card, and we deduct the actual fee
-            charged on your payment, not an estimate. UPI payments have no such fee, so paying by UPI avoids this
-            deduction.
+            <strong>Payment gateway fee.</strong> The payment gateway may charge a fee on your payment, and it does
+            not return that fee when a refund is made. If a fee was charged, it is deducted from your refund. We
+            deduct the actual fee charged on your payment, not an estimate. It depends on how you paid: a UPI
+            payment from a bank account usually has no fee, while a card, net banking or wallet payment, or a
+            credit card used through UPI, may have one.
           </p>
         </li>
         <li>
@@ -193,7 +193,7 @@ export default function RefundPolicy() {
       </p>
       <ul>
         <li><p>the ₹10 platform fee; and</p></li>
-        <li><p>the payment gateway fee, if you paid by card or net banking.</p></li>
+        <li><p>the payment gateway fee, if one was charged on your payment (see <a href="#not-refunded">section 5</a>).</p></li>
       </ul>
       <p>
         Any balance you paid directly to the organizer is refunded by the organizer. Write to {careLink} if you need

@@ -179,8 +179,8 @@ export default function UserAgreement() {
         7.2 In summary, the cancellation charge depends on whether the trek follows the Standard Policy or the
         Flexible Policy (shown before booking) and on how close to departure the booking is cancelled. Under the
         Flexible Policy, the ₹999 advance per traveller is non-refundable. The ₹10 platform fee is never refunded,
-        the payment gateway fee on card and net-banking payments is deducted from refunds (UPI payments have no such
-        fee), and GST is refunded in full when the booking is cancelled before the trek starts.
+        any fee the payment gateway actually charged on the payment is deducted from refunds (a UPI payment from a
+        bank account usually has none), and GST is refunded in full when the booking is cancelled before the trek starts.
       </p>
       <p>
         7.3 If the organizer cancels, the User is refunded the amount paid, less the ₹10 platform fee and any payment
