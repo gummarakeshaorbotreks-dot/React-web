@@ -9,12 +9,15 @@ import FactList from '../components/ui/FactList';
 import Loader from '../components/ui/Loader';
 import EmptyState from '../components/ui/EmptyState';
 import '../styles/Details.css';
+import useSeo from '../seo/useSeo';
+import { notFoundMeta, trekMeta } from '../seo/meta';
 
 const initials = (name) => name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 export default function CardDetails() {
   const { id } = useParams();
   const { data: trek, loading, error } = useApi(`/api/treks/${encodeURIComponent(id)}/`);
+  useSeo(trek ? trekMeta(trek) : error ? notFoundMeta(`/treks/${id}`) : null);
 
   if (loading) return <Loader label="Loading trek details…" />;
 

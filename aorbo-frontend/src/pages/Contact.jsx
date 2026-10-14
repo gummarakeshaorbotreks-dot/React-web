@@ -7,6 +7,8 @@ import { CATEGORIES } from '../data/categories';
 import PageHeader from '../components/ui/PageHeader';
 import InfoCard from '../components/ui/InfoCard';
 import '../styles/Contact.css';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const EMPTY_FORM = { name: '', email: '', mobile: '', user_type: '', trek_category: '', comment: '' };
 const REQUIRED = ['name', 'email', 'mobile', 'comment'];
@@ -167,6 +169,7 @@ function ContactForm() {
 }
 
 export default function Contact() {
+  useSeo(staticPageMeta('/contact'));
   const { data: contactData } = useApi('/api/contact-info/');
   const { data: socialData } = useApi('/api/social-media/');
   const contact = contactData?.company_name ? contactData : FALLBACK_CONTACT;

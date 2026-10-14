@@ -9,6 +9,8 @@ import { TrekGrid } from '../components/trek/TrekCard';
 import Pagination from '../components/ui/Pagination';
 import SectionHeading from '../components/ui/SectionHeading';
 import '../styles/Home.css';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const REASONS = [
   { icon: SlidersHorizontal, title: 'Tailored Experience', text: 'Customize your trek according to your preferences and comfort level.' },
@@ -18,6 +20,7 @@ const REASONS = [
 ];
 
 export default function Home() {
+  useSeo(staticPageMeta('/'));
   const [searchParams] = useSearchParams();
   const tag = searchParams.get('tag') || '';
   const page = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);

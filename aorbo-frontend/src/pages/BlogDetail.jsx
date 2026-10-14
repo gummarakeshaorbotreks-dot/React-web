@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { FileQuestion, ListOrdered, Share2 } from 'lucide-react';
 import { imageCors, mediaUrl } from '../api/client';
@@ -13,6 +12,8 @@ import InfoCard from '../components/ui/InfoCard';
 import SectionHeading from '../components/ui/SectionHeading';
 import BlogCard from '../components/blog/BlogCard';
 import '../styles/Blogs.css';
+import useSeo from '../seo/useSeo';
+import { blogMeta, notFoundMeta } from '../seo/meta';
 
 // Sanitises the CMS HTML, gives every <h2> an id, and returns the list of
 // headings for the table of contents.
@@ -65,6 +66,7 @@ export default function BlogDetail() {
   const page = searchParams.get('page') || 1;
   const { data, loading, error } = useApi(`/api/blogs/${encodeURIComponent(slug)}/?page=${page}`);
   const blog = data?.blog;
+  useSeo(blog ? blogMeta(blog) : error ? notFoundMeta(`/blogs/${slug}`) : null);
   const article = useMemo(() => prepareArticle(blog?.content), [blog?.content]);
 
   if (loading) return <Loader label="Loading blog post…" />;
@@ -86,11 +88,6 @@ export default function BlogDetail() {
 
   return (
     <div className="page">
-      <Helmet>
-        <title>{`${blog.title} - Aorbo Treks`}</title>
-        <meta name="description" content={`${blog.title?.slice(0, 120)}...`} />
-        {blog.author && <meta name="author" content={blog.author} />}
-      </Helmet>
 
       <PageHeader back={{ to: '/blogs', label: 'All blogs' }} eyebrow="Blog" title={blog.title}>
         <div className="blog-post__meta">

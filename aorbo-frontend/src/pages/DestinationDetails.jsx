@@ -12,6 +12,7 @@ import FactList from '../components/ui/FactList';
 import Loader from '../components/ui/Loader';
 import EmptyState from '../components/ui/EmptyState';
 import '../styles/Details.css';
+import useSeo from '../seo/useSeo';
 
 // The search page passes the OpenStreetMap result along in router state;
 // if someone opens the URL directly we only have the slug.
@@ -56,6 +57,14 @@ export default function DestinationDetails() {
   const navigate = useNavigate();
   const passed = useLocation().state?.destination;
   const { data, loading, error } = useApi(enrichPath(slug, passed));
+  // Generated from a map search (thin, near-identical pages): reachable, but
+  // kept out of search results.
+  useSeo({
+    title: `${passed?.name || slugToName(slug)} | Aorbo Treks`,
+    description: `Treks and trails near ${passed?.name || slugToName(slug)} from verified organisers on Aorbo Treks.`,
+    path: `/destination/${slug}`,
+    noindex: true,
+  });
 
   if (loading) return <Loader label="Loading destination details…" />;
 

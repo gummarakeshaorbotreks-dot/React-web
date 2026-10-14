@@ -6,6 +6,8 @@ import PageHeader from '../components/ui/PageHeader';
 import InfoCard from '../components/ui/InfoCard';
 import SectionHeading from '../components/ui/SectionHeading';
 import '../styles/About.css';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const REASONS = [
   { icon: BadgeCheck, title: 'Trusted Organizers', text: 'We partner with experienced and verified trekking experts to ensure your safety and satisfaction.' },
@@ -15,6 +17,7 @@ const REASONS = [
 ];
 
 export default function About() {
+  useSeo(staticPageMeta('/about'));
   return (
     <div className="page">
       <PageHeader

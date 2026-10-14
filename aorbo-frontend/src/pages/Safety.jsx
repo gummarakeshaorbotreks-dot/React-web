@@ -6,6 +6,8 @@ import useApi from '../hooks/useApi';
 import PageHeader from '../components/ui/PageHeader';
 import SectionHeading from '../components/ui/SectionHeading';
 import '../styles/Safety.css';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const SAFETY_FEATURES = [
   { icon: HeartHandshake, title: 'Women-Friendly Treks', text: "Trekkers rate every trek on women's safety, so you can choose organizers that other women trust." },
@@ -65,6 +67,7 @@ function groupTips(tips) {
 }
 
 export default function Safety() {
+  useSeo(staticPageMeta('/safety'));
   const { data: tips } = useApi('/api/safety-tips/');
 
   return (

@@ -7,8 +7,11 @@ import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import BlogCard from '../components/blog/BlogCard';
 import '../styles/Blogs.css';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 export default function Blogs() {
+  useSeo(staticPageMeta('/blogs'));
   const [searchParams] = useSearchParams();
   const page = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);
   const { data, loading, error } = useApi(`/api/blogs/?page=${page}`, { cache: true });

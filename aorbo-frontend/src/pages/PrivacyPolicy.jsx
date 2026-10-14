@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 // Admin-added sections continue the lettering after section N.
 const letterAfterN = (i) => String.fromCharCode('N'.charCodeAt(0) + i + 1);
 
 export default function PrivacyPolicy() {
+  useSeo(staticPageMeta('/privacy-policy'));
   return (
     <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="2 October 2026" contentKind="privacy" numberSection={letterAfterN}>
       {/* A. INTRODUCTION */}

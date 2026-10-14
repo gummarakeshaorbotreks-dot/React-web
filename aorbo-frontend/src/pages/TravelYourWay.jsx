@@ -6,10 +6,13 @@ import { CATEGORIES, categoryByTag } from '../data/categories';
 import PageHeader from '../components/ui/PageHeader';
 import Pagination from '../components/ui/Pagination';
 import { TrekGrid } from '../components/trek/TrekCard';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const endpoint = (tag, page) => `/api/travel-your-way/?${qs({ tag, page })}`;
 
 export default function TravelYourWay() {
+  useSeo(staticPageMeta('/travel-your-way'));
   const [searchParams] = useSearchParams();
   const tag = (searchParams.get('tag') || 'adventure').toLowerCase();
   const page = Math.max(1, parseInt(searchParams.get('page'), 10) || 1);

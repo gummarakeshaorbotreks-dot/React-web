@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 const CARE_EMAIL = 'care@aorbotreks.com';
 const careLink = <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a>;
@@ -9,6 +11,7 @@ const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="n
 // No `contentKind`: the Django admin has no "refund" sections, so this page
 // is the fixed text only.
 export default function RefundPolicy() {
+  useSeo(staticPageMeta('/refund-policy'));
   return (
     <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="2 October 2026">
       <p>

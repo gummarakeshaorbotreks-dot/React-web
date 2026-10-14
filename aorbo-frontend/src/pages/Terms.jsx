@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import LegalPage from '../components/legal/LegalPage';
+import useSeo from '../seo/useSeo';
+import { staticPageMeta } from '../seo/meta';
 
 export default function Terms() {
+  useSeo(staticPageMeta('/terms'));
   return (
     <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="terms" numberSection={(i) => 19 + i + 1}>
 
