@@ -242,6 +242,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# The SEO bot writes page overrides with this token (treks_app.views.api_seo_overrides_upsert).
+# Empty = writing disabled.
+SEO_BOT_TOKEN = config('SEO_BOT_TOKEN', default='')
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

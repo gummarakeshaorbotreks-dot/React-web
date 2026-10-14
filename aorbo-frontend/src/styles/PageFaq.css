@@ -1,0 +1,23 @@
+.page-faq__title {
+  font-size: var(--fs-h3);
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.page-faq__item {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+}
+
+.page-faq__item summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink);
+  list-style-position: outside;
+}
+
+.page-faq__item p {
+  margin: 10px 0 0;
+  color: var(--text);
+  line-height: 1.6;
+}

@@ -1015,3 +1015,68 @@ api_crash_report.throttle_scope = 'crash_report'
 api_crash_report = throttle_classes([ScopedRateThrottle])(api_crash_report)
 api_crash_report = api_view(['POST'])(api_crash_report)
 api_crash_report = csrf_exempt(api_crash_report)
+
+# ---------- SEO overrides (read by the site build and the browser; written by the SEO bot) ----------
+
+SEO_MAX_FAQS = 10
+
+
+@api_view(['GET'])
+def api_seo_overrides(request):
+    """Active page overrides: {"results": [{path, title, description, faqs, updated_at}]}."""
+    from .models import SeoOverride
+    rows = SeoOverride.objects.filter(active=True).values("path", "title", "description", "faqs", "updated_at")
+    response = Response({"results": [
+        {**r, "updated_at": r["updated_at"].isoformat()} for r in rows
+    ]})
+    response["Cache-Control"] = "public, max-age=300"
+    return response
+
+
+def _clean_faqs(value):
+    if not isinstance(value, list) or len(value) > SEO_MAX_FAQS:
+        raise ValidationError(f"faqs must be a list of at most {SEO_MAX_FAQS} items")
+    faqs = []
+    for item in value:
+        q = str((item or {}).get("q", "")).strip()
+        a = str((item or {}).get("a", "")).strip()
+        if not q or not a or len(q) > 200 or len(a) > 1200:
+            raise ValidationError("each FAQ needs q (max 200 chars) and a (max 1200 chars)")
+        faqs.append({"q": q, "a": a})
+    return faqs
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([])
+def api_seo_overrides_upsert(request):
+    """Create or update one page's override. Only the SEO bot: header 'Authorization: Bearer <SEO_BOT_TOKEN>'."""
+    import hmac
+    from .models import SeoOverride
+    token = getattr(settings, "SEO_BOT_TOKEN", "")
+    given = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+    if not token or not hmac.compare_digest(given, token):
+        return Response({"error": "forbidden"}, status=403)
+
+    data = request.data
+    path = str(data.get("path", "")).strip()
+    if not path.startswith("/") or len(path) > 300 or any(c in path for c in "?#\n"):
+        return Response({"error": "path must be a site address like /treks/Coorg"}, status=400)
+    fields = {"source": "bot"}
+    try:
+        for name, limit in (("title", 70), ("description", 170)):
+            if name in data:
+                value = str(data[name] or "").strip()
+                if len(value) > limit:
+                    raise ValidationError(f"{name} is longer than {limit} characters")
+                fields[name] = value
+        if "faqs" in data:
+            fields["faqs"] = _clean_faqs(data["faqs"])
+    except ValidationError as e:
+        return Response({"error": "; ".join(e.messages)}, status=400)
+    if "active" in data:
+        fields["active"] = bool(data["active"])
+    fields["note"] = str(data.get("note", ""))[:300]
+
+    obj, created = SeoOverride.objects.update_or_create(path=path, defaults=fields)
+    return Response({"path": obj.path, "created": created, "updated_at": obj.updated_at.isoformat()})

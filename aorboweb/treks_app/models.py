@@ -581,3 +581,32 @@ class CrashReport(models.Model):
 
     def __str__(self):
         return f"{self.report_id} [{self.severity}] {self.error_message[:60]}"
+
+class SeoOverride(models.Model):
+    """Search-facing text for one page, set by the team or the SEO bot.
+
+    Read at build time (aorbo-frontend/scripts/seo-pages.mjs) and in the browser
+    (src/seo/overrides.js): the title and description replace the page's default
+    ones, and FAQs are shown on the page and marked up as FAQPage for Google.
+    """
+    SOURCE_CHOICES = [("team", "Team"), ("bot", "SEO bot")]
+
+    path = models.CharField(max_length=300, unique=True,
+                            help_text="Page address exactly as on the site, e.g. /treks/Coorg or /about")
+    title = models.CharField(max_length=70, blank=True, help_text="Google shows about 60 characters")
+    description = models.CharField(max_length=170, blank=True, help_text="Google shows about 155 characters")
+    faqs = models.JSONField(default=list, blank=True,
+                            help_text='List of {"q": "question", "a": "answer"}; shown on the page')
+    active = models.BooleanField(default=True)
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="team")
+    note = models.CharField(max_length=300, blank=True, help_text="Why it was changed")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["path"]
+        verbose_name = "SEO override"
+        verbose_name_plural = "SEO overrides"
+
+    def __str__(self):
+        return f"{self.path} ({self.get_source_display()})"

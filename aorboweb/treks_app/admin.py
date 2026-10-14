@@ -21,7 +21,7 @@ from .models import (
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
     SocialMedia, ContactInfo, TrekList, Visitor,
     Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection,
-    CrashReport,
+    CrashReport, SeoOverride,
 )
 
 
@@ -665,3 +665,12 @@ class CrashReportAdmin(admin.ModelAdmin):
         queryset.filter(is_resolved=False).update(
             is_resolved=True, resolved_by=request.user, resolved_at=timezone.now()
         )
+
+
+@admin.register(SeoOverride)
+class SeoOverrideAdmin(admin.ModelAdmin):
+    list_display = ("path", "title", "source", "active", "updated_at")
+    list_filter = ("source", "active")
+    search_fields = ("path", "title", "description", "note")
+    readonly_fields = ("created_at", "updated_at")
+

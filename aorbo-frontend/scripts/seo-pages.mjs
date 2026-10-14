@@ -14,6 +14,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, notFoundMeta, staticPageMeta, trekMeta } from '../src/seo/meta.js';
+import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 
 const DIST = process.env.PRERENDER_DIST || 'dist';
 const API = (process.env.SEO_API_URL || process.env.VITE_API_URL || SITE_URL).replace(/\/$/, '');
@@ -100,7 +101,7 @@ async function writePage(p, meta) {
   writtenLower.add(p.toLowerCase());
   const file = p === '/' ? path.join(DIST, 'index.html') : path.join(DIST, p.replace(/^\//, ''), 'index.html');
   await mkdir(path.dirname(file), { recursive: true });
-  await writeFile(file, withHead(meta));
+  await writeFile(file, withHead(withOverride(meta, overrides[p])));
   return true;
 }
 
@@ -108,6 +109,7 @@ async function writePage(p, meta) {
 // every trek and blog post from the sitemap).
 let treks = [];
 let blogs = [];
+let overrides = {};
 try {
   const list = await allPages('/api/treks/');
   treks = (await pool(list, 6, async (t) => {
@@ -119,6 +121,13 @@ try {
     }
   })).filter((t) => t && (t.id || t.slug) && t.name);
   blogs = (await allPages('/api/blogs/')).filter((b) => b && b.slug && b.title);
+  // Page overrides from the admin / SEO bot. Optional: an older backend without the
+  // endpoint answers 404, and the build goes on with the default titles.
+  try {
+    overrides = indexOverrides(await getJson(`${API}/api/seo-overrides/`));
+  } catch (e) {
+    console.warn(`seo-pages: no SEO overrides (${e.message})`);
+  }
 } catch (e) {
   if (!ALLOW_OFFLINE) throw new Error(`seo-pages: the website API (${API}) is unreachable: ${e.message}. Set SEO_ALLOW_OFFLINE=1 to build static pages only.`);
   console.warn(`seo-pages: API unreachable (${e.message}); static pages only.`);
@@ -174,4 +183,4 @@ await writeFile(
     '',
   ].join('\n'),
 );
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts, sitemap ${urls.length} URLs, 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

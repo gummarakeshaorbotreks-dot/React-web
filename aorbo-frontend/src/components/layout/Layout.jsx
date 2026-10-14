@@ -2,6 +2,7 @@ import { Outlet, ScrollRestoration, useNavigation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CookieBanner from './CookieBanner';
+import PageFaq from './PageFaq';
 import EmptyState from '../ui/EmptyState';
 
 // The frame around every page.
@@ -15,6 +16,7 @@ export default function Layout() {
       <Navbar />
       <main id="main">
         <Outlet />
+        <PageFaq />
       </main>
       <Footer />
       <CookieBanner />

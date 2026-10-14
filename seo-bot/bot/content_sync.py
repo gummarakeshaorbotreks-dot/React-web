@@ -1,4 +1,4 @@
-"""Rebuild the site when the content behind it changed (new / removed / edited treks or blogs).
+"""Rebuild the site when the content behind it changed (treks, blogs, or SEO overrides).
 
 Every page's title, price, schema and the sitemap are generated at build time from the
 API, so a new trek gets no SEO page until the next build. This compares a fingerprint
@@ -10,6 +10,7 @@ import sys
 import urllib.request
 
 from common import SITE, state_get, state_set
+from overrides import list_overrides
 from sitedeploy import deploy
 
 
@@ -28,7 +29,8 @@ def fingerprint():
     treks = sorted((t.get("id") or t.get("slug"), t.get("name"), t.get("state"), t.get("price_start"),
                     t.get("duration_days"), len(t.get("images") or [])) for t in all_pages("/api/treks/"))
     blogs = sorted((b.get("slug"), b.get("title"), b.get("updated_at") or b.get("created_at")) for b in all_pages("/api/blogs/"))
-    raw = json.dumps({"treks": treks, "blogs": blogs}, sort_keys=True, default=str)
+    overrides = sorted((o["path"], o["updated_at"]) for o in list_overrides())
+    raw = json.dumps({"treks": treks, "blogs": blogs, "overrides": overrides}, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest(), len(treks), len(blogs)
 
 
@@ -42,7 +44,7 @@ def main():
         state_set("content_fingerprint", digest)  # first run: the site was just built from this data
         print(f"fingerprint recorded ({n_treks} treks, {n_blogs} blogs)")
         return 0
-    code, out = deploy(f"trek/blog content changed ({n_treks} treks, {n_blogs} blogs)")
+    code, out = deploy(f"content changed ({n_treks} treks, {n_blogs} blogs, or an SEO override)")
     print(out)
     if code == 0:
         state_set("content_fingerprint", digest)
