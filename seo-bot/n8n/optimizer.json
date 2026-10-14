@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoOptimz01",
+ "name": "SEO bot: improve pages (titles, FAQs) and judge earlier changes",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 10 * * *"
+      }
+     ]
+    }
+   },
+   "id": "f19c1988-f302-5638-8592-ce347890553c",
+   "name": "Every day 10:00 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python optimizer.py"
+   },
+   "id": "4226bc78-2fad-52e2-b838-32be44bf097c",
+   "name": "Evaluate, pick pages, write, check, publish",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every day 10:00 IST": {
+   "main": [
+    [
+     {
+      "node": "Evaluate, pick pages, write, check, publish",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

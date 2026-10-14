@@ -11,9 +11,24 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Site health check (quick) | every 6 h at :30 | `bot/health_guard.py --quiet` | Only when something broke |
 | Google Search daily pull | 09:00 daily | `bot/gsc_pull.py` | Clicks, impressions, position moves, indexing of key pages |
 | Rebuild site when treks or blogs change | every 3 h at :15 | `bot/content_sync.py` → `bot/sitedeploy.py` | Quiet 🚀 line per rebuild; loud if it failed or rolled back |
+| Improve pages + judge earlier changes | 10:00 daily | `bot/optimizer.py` | ✏️ new titles / ❓ FAQs with the reason; ↩️ rollbacks; ⏸ frozen during Google updates |
+| Trek data check | Monday 08:00 | `bot/data_quality.py` | 🧹 treks with wrong state (vs map position), lowercase names, collisions, missing data |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
 
 The scripts send their own alerts; n8n schedules them and catches crashes.
+
+## How the optimizer decides (playbook: Desktop\AORBO_SEO_PLAYBOOK.md)
+
+- **CTR fix:** a page seen in Google (30+ impressions in 28 days, position <= 15) but clicked under 60% of the
+  usual rate for its position gets a new title + description.
+- **FAQs:** position 4-20 for 3+ searches and no FAQs yet: 3-5 FAQs answering those searches.
+- Text comes from Gemini (`bot/ai.py`) using **only our data**; every result is checked (lengths, every number
+  must exist in our data, no "best / No.1 / certified / 24/7 / guaranteed / seat") and retried with the
+  reasons, else not published. Max 5 edits a day, 21-day cooldown per page, never touches pages the team
+  edited, skips treks flagged by the data check, frozen while Google rolls out a ranking update.
+- After 21 days (+3 for Search Console's delay) each change is judged: kept, or **rolled back** if CTR or
+  position got worse.
+- Test without publishing: `optimizer.py --dry-run --page /treks/<id> --kind ctr|faq`
 
 ## Deploys (web server 37.187.139.100)
 

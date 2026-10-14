@@ -255,7 +255,7 @@ def api_featured_treks(request):
                 output_field=IntegerField()
             )
         )
-        .order_by('pin_order', 'pin_priority', '-created_at')
+        .order_by('pin_order', 'pin_priority', '-created_at', 'id')  # 'id': stable order, or pages repeat/skip treks
     )
 
     if selected_tag:

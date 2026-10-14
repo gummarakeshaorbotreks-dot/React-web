@@ -65,6 +65,16 @@ WORKFLOWS = {
         run("Compare content, deploy if changed", "content_sync.py", [260, 0]),
     ], link(("Every 3 hours", "Compare content, deploy if changed"))),
 
+    "optimizer": workflow("aorboSeoOptimz01", "SEO bot: improve pages (titles, FAQs) and judge earlier changes", [
+        cron("Every day 10:00 IST", "0 10 * * *", [0, 0]),
+        run("Evaluate, pick pages, write, check, publish", "optimizer.py", [260, 0]),
+    ], link(("Every day 10:00 IST", "Evaluate, pick pages, write, check, publish"))),
+
+    "data-quality": workflow("aorboSeoDataQa01", "SEO bot: weekly trek data check", [
+        cron("Monday 08:00 IST", "0 8 * * 1", [0, 0]),
+        run("Check trek data (states, names, duplicates)", "data_quality.py", [260, 0]),
+    ], link(("Monday 08:00 IST", "Check trek data (states, names, duplicates)"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),

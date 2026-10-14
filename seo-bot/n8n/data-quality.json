@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoDataQa01",
+ "name": "SEO bot: weekly trek data check",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "05d7b493-a86d-5ef5-9f52-843c1982a290",
+   "name": "Monday 08:00 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python data_quality.py"
+   },
+   "id": "1c2bf4c1-2f51-5a4c-9cab-1cca9ef9acab",
+   "name": "Check trek data (states, names, duplicates)",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Monday 08:00 IST": {
+   "main": [
+    [
+     {
+      "node": "Check trek data (states, names, duplicates)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}
