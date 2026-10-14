@@ -131,6 +131,101 @@ class LoginFlowTests(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertContains(response, "correct username and password")
 
+    def test_non_staff_account_is_refused_at_login(self):
+        # An account with no staff profile/role at all.
+        User.objects.create_user(username="carol", password="correct-horse")
+        response = self.client.post(reverse("access_control:staff_login"), {
+            "username": "carol", "password": "correct-horse",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertContains(response, "give it a role")
+
+    def test_assigning_a_role_grants_admin_access(self):
+        # Created exactly like the admin "Add user" form does: is_staff left
+        # unticked, role picked in the Staff profile section.
+        dave = User.objects.create_user(username="dave", password="correct-horse")
+        StaffProfile.objects.create(user=dave, role=Role.objects.get(name="admin"))
+        dave.refresh_from_db()
+        self.assertTrue(dave.is_staff)
+
+        response = self.client.post(reverse("access_control:staff_login"), {
+            "username": "dave", "password": "correct-horse",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(reverse("admin:index")).status_code, 200)
+
+    def test_deactivating_profile_removes_admin_access_and_reactivating_restores_it(self):
+        profile = self.user.staff_profile
+        profile.status = "inactive"
+        profile.save()
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_staff)
+
+        profile.status = "active"
+        profile.save()
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_staff)
+
+    def test_migration_repairs_existing_role_holders_without_staff_status(self):
+        import importlib
+        from django.apps import apps
+        migration = importlib.import_module("access_control.migrations.0004_sync_is_staff_with_profile")
+        # Simulate an account created before the signal existed.
+        User.objects.filter(pk=self.user.pk).update(is_staff=False)
+        no_role = User.objects.create_user(username="customer", password="x")
+
+        migration.grant_staff_to_active_profiles(apps, None)
+
+        self.user.refresh_from_db()
+        no_role.refresh_from_db()
+        self.assertTrue(self.user.is_staff)
+        self.assertFalse(no_role.is_staff)
+
+    def test_user_added_through_admin_form_with_a_role_can_log_in(self):
+        root = User.objects.create_superuser(username="root", password="root-pw-123", email="r@example.com")
+        self.client.force_login(root)
+        response = self.client.post(reverse("admin:auth_user_add"), {
+            "username": "erin@example.com",
+            "usable_password": "true",
+            "password1": "Very-Long-Passw0rd!", "password2": "Very-Long-Passw0rd!",
+            "staff_profile-TOTAL_FORMS": "1", "staff_profile-INITIAL_FORMS": "0",
+            "staff_profile-MIN_NUM_FORMS": "0", "staff_profile-MAX_NUM_FORMS": "1",
+            "staff_profile-0-role": Role.objects.get(name="admin").pk,
+            "staff_profile-0-status": "active",
+            "staff_profile-0-account_locked_until": "",
+            "permission_overrides-TOTAL_FORMS": "0", "permission_overrides-INITIAL_FORMS": "0",
+            "permission_overrides-MIN_NUM_FORMS": "0", "permission_overrides-MAX_NUM_FORMS": "1000",
+        })
+        self.assertEqual(response.status_code, 302, getattr(response, "context", None) and response.context.get("errors"))
+        erin = User.objects.get(username="erin@example.com")
+        self.assertTrue(erin.is_staff)
+
+        self.client.logout()
+        response = self.client.post(reverse("access_control:staff_login"), {
+            "username": "erin@example.com", "password": "Very-Long-Passw0rd!",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.get(reverse("admin:index")).status_code, 200)
+
+    def test_logged_in_non_staff_session_does_not_redirect_loop(self):
+        # Already-open session for an account the admin index rejects: the
+        # login page must show the form instead of bouncing back to the index.
+        self.user.is_staff = False
+        self.user.save()
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("access_control:staff_login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_superuser_without_staff_profile_can_log_in(self):
+        User.objects.create_superuser(username="root", password="root-pw-123", email="r@example.com")
+        response = self.client.post(reverse("access_control:staff_login"), {
+            "username": "root", "password": "root-pw-123",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("_auth_user_id", self.client.session)
+
 
 class MfaFlowTests(TestCase):
     def setUp(self):
