@@ -75,6 +75,11 @@ WORKFLOWS = {
         run("Check trek data (states, names, duplicates)", "data_quality.py", [260, 0]),
     ], link(("Monday 08:00 IST", "Check trek data (states, names, duplicates)"))),
 
+    "radar": workflow("aorboSeoRadar001", "SEO bot: weekly competitor radar (Google rankings, who beat us, why)", [
+        cron("Sunday 07:00 IST", "0 7 * * 0", [0, 0]),
+        run("Check rankings, diagnose drops, queue fixes", "radar.py", [260, 0]),
+    ], link(("Sunday 07:00 IST", "Check rankings, diagnose drops, queue fixes"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),

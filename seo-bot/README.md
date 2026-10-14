@@ -13,6 +13,7 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Rebuild site when treks or blogs change | every 3 h at :15 | `bot/content_sync.py` → `bot/sitedeploy.py` | Quiet 🚀 line per rebuild; loud if it failed or rolled back |
 | Improve pages + judge earlier changes | 10:00 daily | `bot/optimizer.py` | ✏️ new titles / ❓ FAQs with the reason; ↩️ rollbacks; ⏸ frozen during Google updates |
 | Trek data check | Monday 08:00 | `bot/data_quality.py` | 🧹 treks with wrong state (vs map position), lowercase names, collisions, missing data |
+| Competitor radar | Sunday 07:00 | `bot/radar.py` | 📡 our Google positions, 📉 drops with the cause + fix or team to-do, 🛡 top-3 defence, 🔥 #1 streaks, 👑 who rules |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
 
 The scripts send their own alerts; n8n schedules them and catches crashes.
@@ -29,6 +30,21 @@ The scripts send their own alerts; n8n schedules them and catches crashes.
 - After 21 days (+3 for Search Console's delay) each change is judged: kept, or **rolled back** if CTR or
   position got worse.
 - Test without publishing: `optimizer.py --dry-run --page /treks/<id> --kind ctr|faq`
+
+## How the radar works
+
+- SerpApi free plan: 250 Google searches a month. Each Sunday run uses up to 48 and always keeps 10 spare.
+- Every week: "aorbo treks", "treks near me" from Hyderabad, Bengaluru, Chennai, Pune, Mumbai, Delhi plus
+  2 tier-2 towns in rotation (Google answers "near me" from the searcher's location), 4 generic searches.
+  The rest goes to trek names: the 10 with most Search Console impressions every week, the others in rotation.
+- Searches are Google India, mobile, English. Each result keeps the top 10, map pack, AI overview and
+  "People also ask" questions (table `serp`; the full results are trimmed after a year).
+- A search we lost (down 2+ places, out of the top 10, or passed by a new site) is diagnosed: rules first
+  (Google update, our page broken, our own recent change), then Gemini compares both results
+  (table `radar_diagnoses`). Fixes for trek/blog pages go to `radar_queue` in state.json; the optimizer
+  applies them next morning under its usual limits. Home and listing pages are only reported.
+- Top-3 searches whose page has no FAQs get FAQs answering "People also ask" (max 2 a week).
+- Small test: `radar.py --max 3` (uses 3 searches).
 
 ## Deploys (web server 37.187.139.100)
 
@@ -54,6 +70,7 @@ unpack into `/opt/aorbo-site/src` (keep its `node_modules`), then `/opt/aorbo-si
   - `seo-api-token`: writes page overrides (same value as `SEO_BOT_TOKEN` in the web server's `/opt/aorboweb/.env`)
   - `web-deploy-key`: SSH key locked to `ops/site/bot-entry.sh` on the web server
   - `gemini-api-key`: Gemini API (free tier), project `aorbo-seo-bot`, key restricted to the Gemini API. `bot/ai.py` tries `gemini-flash-latest`, then `gemini-flash-lite-latest` when busy.
+  - `serpapi-api-key`: SerpApi free plan (250 searches/month), account abhishek.aorbotreks@gmail.com.
 
 ## Change and redeploy
 

@@ -24,7 +24,7 @@ import urllib.request
 from datetime import date, datetime, timedelta
 
 from ai import generate_json
-from common import SITE, db, esc, fetch, state_get, telegram
+from common import SITE, db, esc, fetch, state_get, state_set, telegram
 from overrides import list_overrides, upsert
 
 COOLDOWN_DAYS = 21          # Google needs weeks to re-judge a page; no second edit before this
@@ -108,10 +108,11 @@ def write_snippet(facts, queries):
     return out, problems
 
 
-def write_faqs(facts, queries):
+def write_faqs(facts, queries, asked=()):
     prompt = (f"Facts about the page (JSON): {json.dumps(facts, ensure_ascii=False)}\n"
               f"Real Google searches that show this page: {json.dumps(queries[:15], ensure_ascii=False)}\n"
-              "Write 3 to 5 FAQs a trekker would ask, answering those searches. Answer ONLY from the facts; "
+              f"Questions Google shows under 'People also ask' for these searches: {json.dumps(list(asked)[:15], ensure_ascii=False)}\n"
+              "Write 3 to 5 FAQs a trekker would ask, answering those searches and questions. Answer ONLY from the facts; "
               "if the facts cannot answer a question, leave that question out. Each answer 1-3 sentences.")
     schema = {"type": "object", "properties": {"faqs": {"type": "array", "items": {
         "type": "object", "properties": {"q": {"type": "string"}, "a": {"type": "string"}}, "required": ["q", "a"]}}},
@@ -210,25 +211,38 @@ def candidates(con):
     faq_pages = {o["path"] for o in overrides if o.get("faqs")}
     picks = []
     bad_data = {f"/treks/{t}" for t in state_get("data_issues", [])}  # wrong facts must not spread (data_quality.py)
+    queue, kept = state_get("radar_queue", []), []
+    for item in queue:  # fixes queued by radar.py after we lost a search or to protect a top-3 one
+        page = item["page"]
+        if page in cooling or page in team_owned or page in bad_data or len(picks) >= MAX_EDITS_PER_DAY \
+                or any(p[0] == page for p in picks):
+            kept.append(item)
+            continue
+        picks.append((page, item["kind"], stats.get(page, {}), item["reason"], item.get("queries", [])))
+    state_set("radar_queue", kept)
     for page, s in sorted(stats.items(), key=lambda kv: -kv[1]["impressions"]):
+        if any(p[0] == page for p in picks):
+            continue
         if page in cooling or page in team_owned or page in bad_data or s["impressions"] < MIN_IMPRESSIONS:
             continue
         if s["position"] <= 15 and s["ctr"] < 0.6 * expected_ctr(s["position"]):
-            picks.append((page, "ctr", s, f"CTR {s['ctr']:.1%} at position {s['position']:.1f} (expected ~{expected_ctr(s['position']):.0%})"))
+            picks.append((page, "ctr", s, f"CTR {s['ctr']:.1%} at position {s['position']:.1f} (expected ~{expected_ctr(s['position']):.0%})", []))
         elif 4 <= s["position"] <= 20 and page not in faq_pages and len(top_queries(con, page, start, end)) >= 3:
-            picks.append((page, "faq", s, f"position {s['position']:.1f}: add FAQs for the searches it almost wins"))
+            picks.append((page, "faq", s, f"position {s['position']:.1f}: add FAQs for the searches it almost wins", []))
     return picks[:MAX_EDITS_PER_DAY], start, end
 
 
-def apply(con, page, kind, stats, reason, start, end, dry_run=False):
+def apply(con, page, kind, stats, reason, start, end, dry_run=False, extra=()):
+    """extra: from radar.py, [the search we lost or defend, its 'People also ask' questions...]."""
     facts = page_facts(page)
-    queries = top_queries(con, page, start, end)
+    queries = list(dict.fromkeys(list(extra[:1]) + top_queries(con, page, start, end)))
+    asked = list(dict.fromkeys(list(extra[1:]) + state_get("radar_paa", {}).get(page, [])))
     current = next((o for o in list_overrides() if o["path"] == page), None)
     if kind == "ctr":
         out, problems = write_snippet(facts, queries)
         fields = {"title": out["title"], "description": out["description"]}
     else:
-        faqs, problems = write_faqs(facts, queries)
+        faqs, problems = write_faqs(facts, queries, asked)
         fields = {"faqs": faqs}
     if problems:
         return f"🛑 {esc(page)}: AI text failed the checks, not published ({esc('; '.join(problems[:3]))})"
@@ -266,9 +280,9 @@ def main():
         picks = []
     else:
         picks, start, end = candidates(con)
-        for page, kind, stats, reason in picks:
+        for page, kind, stats, reason, extra in picks:
             try:
-                report.append(apply(con, page, kind, stats, reason, start, end))
+                report.append(apply(con, page, kind, stats, reason, start, end, extra=extra))
             except Exception as e:  # noqa: BLE001 - one page failing must not stop the others
                 report.append(f"⚠️ {esc(page)}: {esc(e)}")
     if any(line.startswith(("✏️", "❓", "↩️")) for line in report):

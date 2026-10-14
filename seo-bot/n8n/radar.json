@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoRadar001",
+ "name": "SEO bot: weekly competitor radar (Google rankings, who beat us, why)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 7 * * 0"
+      }
+     ]
+    }
+   },
+   "id": "41d22702-35e9-5226-8aea-a42c356d13b3",
+   "name": "Sunday 07:00 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python radar.py"
+   },
+   "id": "c08ca8ae-b8de-5834-a7ad-a037e7c1bda0",
+   "name": "Check rankings, diagnose drops, queue fixes",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Sunday 07:00 IST": {
+   "main": [
+    [
+     {
+      "node": "Check rankings, diagnose drops, queue fixes",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}
