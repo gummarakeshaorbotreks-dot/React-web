@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, CalendarDays, WifiOff } from 'lucide-react';
+import { MapPin, Clock, CalendarDays, Navigation, WifiOff } from 'lucide-react';
 import { imageCors, logClick, mediaUrl } from '../../api/client';
 import { formatDuration, formatPrice, sentenceCase } from '../../utils/format';
 import EmptyState from '../ui/EmptyState';
@@ -7,7 +7,8 @@ import '../../styles/TrekCard.css';
 
 // The one trek card used everywhere treks are listed.
 // `tag` is passed through to click analytics when the list is filtered.
-export default function TrekCard({ trek, tag = '' }) {
+// `distance` ({ km, from }) adds "65 km from Hyderabad" (city pages).
+export default function TrekCard({ trek, tag = '', distance = null }) {
   const image = mediaUrl(trek.images?.[0]?.image_url);
 
   return (
@@ -34,6 +35,9 @@ export default function TrekCard({ trek, tag = '' }) {
           </p>
         )}
         <ul className="trek-card__meta">
+          {distance && (
+            <li><Navigation aria-hidden="true" /> {distance.km} km from {distance.from}</li>
+          )}
           {trek.duration_days && (
             <li><Clock aria-hidden="true" /> {formatDuration(trek.duration_days)}</li>
           )}

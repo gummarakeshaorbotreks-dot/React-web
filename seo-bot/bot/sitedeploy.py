@@ -1,7 +1,7 @@
 """Ask the web server to rebuild and deploy the site (ops/site/deploy.sh there).
 
 The bot's SSH key is locked on the web server to bot-entry.sh, so it can only run:
-deploy, last-deploy, status.
+deploy, last-deploy, status, geo (trek positions for the city pages, see trek_geo.py).
 
     python sitedeploy.py deploy "reason"    build + gate + swap + post-check (+ rollback)
     python sitedeploy.py status

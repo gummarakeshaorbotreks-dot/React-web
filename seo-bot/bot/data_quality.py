@@ -15,8 +15,10 @@ import time
 import urllib.parse
 import urllib.request
 
-from common import SITE, db, esc, state_set, telegram
+from common import SITE, db, esc, state_get, state_set, telegram
 from content_sync import all_pages
+from trek_geo import push as push_geo
+from trek_geo import update as locate_treks
 
 NOMINATIM = "https://nominatim.openstreetmap.org/reverse"
 
@@ -96,8 +98,19 @@ def main():
                 add(t, f"state '{state}' but its map position is in {real}: fix whichever is wrong")
 
     state_set("data_issues", sorted(issues))
-    if not issues:
+    # Trek positions for the city pages (also re-tries treks it couldn't place before).
+    # Wrong admin coordinates are reported but don't block page edits: the text never uses them.
+    try:
+        geo, geo_problems = locate_treks()
+        push_geo(geo)
+    except Exception as e:  # noqa: BLE001 - reported below with the last known problems
+        print("trek positions failed:", e)
+        geo_problems = state_get("geo_problems", {})
+    names = {t.get("id"): t.get("name") for t in treks}
+    if not issues and not geo_problems:
         msg = f"✅ Trek data check: {len(treks)} treks, no problems found."
+    elif not issues:
+        msg = f"✅ Trek data check: {len(treks)} treks, no blocking problems."
     else:
         lines = [f"🧹 <b>Trek data check</b>: {len(issues)} of {len(treks)} treks need fixing in the admin.",
                  "The bot won't rewrite these pages until they're fixed.", ""]
@@ -106,7 +119,10 @@ def main():
         if len(issues) > 25:
             lines.append(f"…and {len(issues) - 25} more")
         msg = "\n".join(lines)
-    telegram(msg, silent=not issues)
+    if geo_problems:
+        msg += ("\n\n📍 <b>Map positions in the admin to fix</b> (the city pages use the verified position meanwhile):\n"
+                + "\n".join(f"• {esc(names.get(tid) or tid)}: {esc(p)}" for tid, p in sorted(geo_problems.items())[:15]))
+    telegram(msg, silent=not issues and not geo_problems)
     print(msg)
     return 0
 

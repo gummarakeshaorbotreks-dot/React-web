@@ -197,6 +197,123 @@ export function blogMeta(blog) {
   };
 }
 
+// ---------- "Treks near <city>" pages (data from scripts/near-pages.mjs) ----------
+
+const capital = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+const rupees = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
+const joinNames = (names) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`);
+export const WEEKEND_MAX_DAYS = 2;
+export const WEEKEND_MAX_KM = 300;
+
+/** The facts every city page states, all computed from its data (nothing invented). */
+export function nearFacts(page) {
+  const treks = page.treks || [];
+  const prices = treks.map((t) => t.price).filter((p) => p != null && Number(p) > 0).map(Number);
+  const weekend = treks.filter((t) => t.days != null && t.days <= WEEKEND_MAX_DAYS && t.km <= WEEKEND_MAX_KM);
+  const states = [...new Set(treks.map((t) => t.state).filter(Boolean))];
+  return {
+    nearest: treks[0],
+    next: treks.slice(1, 3),
+    weekend,
+    minPrice: prices.length ? Math.min(...prices) : null,
+    maxPrice: prices.length ? Math.max(...prices) : null,
+    states,
+  };
+}
+
+/** Questions and answers shown on a city page; the same text goes into its FAQPage data. */
+export function nearFaqs(page) {
+  const { nearest, next, weekend, minPrice, maxPrice, states } = nearFacts(page);
+  const city = page.name;
+  if (!nearest) return [];
+  const faqs = [{
+    q: `Which is the nearest trek to ${city}?`,
+    a: `${capital(nearest.name)}${nearest.state ? ` in ${nearest.state}` : ''}, about ${nearest.km} km from ${city} in a straight line.`
+      + (next.length ? ` Next are ${joinNames(next.map((t) => `${capital(t.name)} (${t.km} km)`))}.` : ''),
+  }];
+  faqs.push(weekend.length
+    ? {
+      q: `Are there weekend treks near ${city}?`,
+      a: `Yes. ${joinNames(weekend.slice(0, 4).map((t) => capital(t.name)))} ${weekend.length === 1 ? 'can' : 'can each'} be done in ${WEEKEND_MAX_DAYS} days or less and ${weekend.length === 1 ? 'is' : 'are'} within ${WEEKEND_MAX_KM} km of ${city}.`,
+    }
+    : {
+      q: `Are there weekend treks near ${city}?`,
+      a: `Not within ${WEEKEND_MAX_KM} km yet: the treks listed for ${city} take more than ${WEEKEND_MAX_DAYS} days or are further away. New treks are added regularly.`,
+    });
+  if (minPrice != null) {
+    faqs.push({
+      q: `How much does a trek near ${city} cost?`,
+      a: minPrice === maxPrice
+        ? `The treks listed here start from ${rupees(minPrice)} per person on Aorbo Treks.`
+        : `Starting prices on Aorbo Treks for the treks listed here range from ${rupees(minPrice)} to ${rupees(maxPrice)} per person.`,
+    });
+  }
+  if (states.length) {
+    faqs.push({
+      q: `Which states can I trek in from ${city}?`,
+      a: `Within ${page.radius} km of ${city} there are treks in ${joinNames(states)}.`,
+    });
+  }
+  faqs.push({
+    q: `How do I book a trek near ${city}?`,
+    a: 'Open a trek above, choose your dates and book on Aorbo Treks, on the website or in the Aorbo Treks app.',
+  });
+  return faqs;
+}
+
+const faqPage = (faqs) => (faqs.length ? {
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+} : null);
+
+/** Tags for a "Treks near <city>" page. */
+export function nearMeta(page) {
+  const { nearest, weekend, minPrice } = nearFacts(page);
+  const description = snippet(
+    `${page.total} treks within ${page.radius} km of ${page.name}, ${page.state}.`
+    + (nearest ? ` Nearest: ${capital(nearest.name)} (${nearest.km} km).` : '')
+    + (weekend.length ? ` ${weekend.length} weekend trek${weekend.length > 1 ? 's' : ''}.` : '')
+    + (minPrice != null ? ` Prices from ${rupees(minPrice)}.` : '')
+    + ' Compare and book on Aorbo Treks.',
+  );
+  const url = absoluteUrl(page.path);
+  return {
+    title: `Treks near ${page.name} (${page.total} within ${page.radius} km) | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.treks?.find((t) => t.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'CollectionPage',
+        name: `Treks near ${page.name}`,
+        description,
+        url,
+        about: { '@type': 'Place', name: page.name, address: { '@type': 'PostalAddress', addressLocality: page.name, addressRegion: page.state, addressCountry: 'IN' } },
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: page.treks.length,
+          itemListElement: page.treks.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${t.id}`), name: t.name })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Treks near you', '/treks-near'], [`Treks near ${page.name}`, page.path]]),
+      faqPage(nearFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for the list of all city pages. */
+export function nearHubMeta(hub) {
+  return {
+    title: 'Treks Near You: Treks Near Your City or Town in India | Aorbo Treks',
+    description: snippet(`Find the treks closest to you: ${hub.cities} cities and towns across India with the nearest treks, distances, weekend options and prices on Aorbo Treks.`),
+    path: hub.path,
+    jsonLd: graph(
+      { '@type': 'CollectionPage', name: 'Treks near you', url: absoluteUrl(hub.path) },
+      breadcrumb([['Home', '/'], ['Treks near you', hub.path]]),
+    ),
+  };
+}
+
 /** Pages that must stay out of search results. */
 export const notFoundMeta = (path = '/404') => ({
   title: 'Page not found | Aorbo Treks',

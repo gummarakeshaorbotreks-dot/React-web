@@ -227,7 +227,8 @@ def candidates(con):
             continue
         if s["position"] <= 15 and s["ctr"] < 0.6 * expected_ctr(s["position"]):
             picks.append((page, "ctr", s, f"CTR {s['ctr']:.1%} at position {s['position']:.1f} (expected ~{expected_ctr(s['position']):.0%})", []))
-        elif 4 <= s["position"] <= 20 and page not in faq_pages and len(top_queries(con, page, start, end)) >= 3:
+        elif 4 <= s["position"] <= 20 and page.startswith(("/treks/", "/blogs/")) and page not in faq_pages \
+                and len(top_queries(con, page, start, end)) >= 3:  # city pages have their own FAQs
             picks.append((page, "faq", s, f"position {s['position']:.1f}: add FAQs for the searches it almost wins", []))
     return picks[:MAX_EDITS_PER_DAY], start, end
 

@@ -1,0 +1,85 @@
+/* "Treks near <city>" pages and their index (components/near). */
+.near-lead {
+  max-width: var(--container-narrow);
+  margin: 0 0 var(--stack);
+  font-size: var(--fs-lg);
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.near-lead a,
+.near-list a,
+.near-cities a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--brand);
+  text-underline-offset: 3px;
+}
+
+.near-section {
+  padding-bottom: 0;
+}
+
+.near-section .section-title {
+  margin-bottom: 16px;
+}
+
+.near-section .page-faq__item summary {
+  list-style-position: inside;
+}
+
+.near-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.near-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.near-list span,
+.near-cities span {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.near-note {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.near-note a {
+  color: inherit;
+}
+
+.near-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--stack);
+}
+
+.near-cities {
+  list-style: none;
+  margin: 0 0 var(--stack);
+  padding: 0;
+  columns: 3 220px;
+  column-gap: 24px;
+}
+
+.near-cities li {
+  break-inside: avoid;
+  padding: 4px 0;
+}

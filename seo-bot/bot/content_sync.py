@@ -8,6 +8,7 @@ import hashlib
 import json
 import sys
 import urllib.request
+from datetime import date
 
 from common import SITE, state_get, state_set
 from overrides import list_overrides
@@ -30,7 +31,9 @@ def fingerprint():
                     t.get("duration_days"), len(t.get("images") or [])) for t in all_pages("/api/treks/"))
     blogs = sorted((b.get("slug"), b.get("title"), b.get("updated_at") or b.get("created_at")) for b in all_pages("/api/blogs/"))
     overrides = sorted((o["path"], o["updated_at"]) for o in list_overrides())
-    raw = json.dumps({"treks": treks, "blogs": blogs, "overrides": overrides}, sort_keys=True, default=str)
+    # The week number: "Treks near <city>" pages are released in weekly waves (scripts/near-pages.mjs).
+    week = date.today().isocalendar()[:2]
+    raw = json.dumps({"treks": treks, "blogs": blogs, "overrides": overrides, "week": week}, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest(), len(treks), len(blogs)
 
 
@@ -44,7 +47,12 @@ def main():
         state_set("content_fingerprint", digest)  # first run: the site was just built from this data
         print(f"fingerprint recorded ({n_treks} treks, {n_blogs} blogs)")
         return 0
-    code, out = deploy(f"content changed ({n_treks} treks, {n_blogs} blogs, or an SEO override)")
+    try:  # new or renamed treks need a map position for the city pages
+        from trek_geo import push as push_geo, update as locate_treks
+        push_geo(locate_treks()[0])
+    except Exception as e:  # noqa: BLE001 - the site still builds with the last positions
+        print("trek positions not updated:", e)
+    code, out = deploy(f"content changed ({n_treks} treks, {n_blogs} blogs, an SEO override, or the weekly city-page wave)")
     print(out)
     if code == 0:
         state_set("content_fingerprint", digest)

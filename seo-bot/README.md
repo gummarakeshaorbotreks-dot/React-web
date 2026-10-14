@@ -46,6 +46,27 @@ The scripts send their own alerts; n8n schedules them and catches crashes.
 - Top-3 searches whose page has no FAQs get FAQs answering "People also ask" (max 2 a week).
 - Small test: `radar.py --max 3` (uses 3 searches).
 
+## "Treks near <city>" pages (/treks-near/<town>)
+
+- Built by the website build (`aorbo-frontend/scripts/near-pages.mjs`) from the trek list, the trek map
+  positions and GeoNames' India towns (`scripts/data/india-places.json`, 6,475 towns of 5,000+ people).
+- A town gets a page only with real, distinct content (Google penalises near-identical "near X" pages):
+  3+ treks within a radius that grows 150 → 250 → 400 → 600 km (max 250 km for towns under 100k
+  people, 400 km under 1M); a town whose treks are mostly already on a bigger town's page within
+  60 km gets none (suburbs). Currently 328 towns qualify.
+- Released in weekly waves, biggest towns first: 150 from 15 Oct 2026, +100 a week. `content_sync.py`
+  includes the week number in its fingerprint, so the weekly rebuild happens on its own.
+- Trek positions: `bot/trek_geo.py`. Gemini says what to put on the map (trailhead, first stop, or
+  "region" = left out), OpenStreetMap finds it, accepted only in the right state, as a real place and
+  within 80 km of Gemini's own estimate. The admin's coordinates were often wrong (three Andhra treks
+  shared one default point), so they are used only when they agree; wrong ones are listed in the
+  Monday data report. Positions go to the web server with the SSH command `geo` (`ops/site/put_geo.py`
+  -> `/opt/aorbo-site/data/trek-geo.json`, read by the build via `TREK_GEO_FILE`). The trek data
+  itself is never changed.
+- Every page is full HTML at build time (the app's own components), with CollectionPage + ItemList +
+  breadcrumb + FAQPage data; the FAQs are computed from the data and shown on the page. The optimizer
+  never adds FAQs there.
+
 ## Deploys (web server 37.187.139.100)
 
 `ops/site/` in this repo is installed at `/opt/aorbo-site` on the web server: `deploy.sh` builds

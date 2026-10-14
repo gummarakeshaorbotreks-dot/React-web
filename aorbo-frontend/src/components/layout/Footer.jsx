@@ -15,6 +15,7 @@ const COLUMNS = [
       { to: '/terms', label: 'T&C' },
       { to: '/privacy-policy', label: 'Privacy Policy' },
       { to: '/blogs', label: 'Blogs' },
+      { to: '/treks-near', label: 'Treks near you' },
       { to: '/user-agreement', label: 'User Agreement' },
       { to: '/refund-policy', label: 'Refund Policy' },
       { href: '#', label: 'Insurance Partner' },

@@ -28,9 +28,10 @@ const app = (
 
 // On the home page the HTML was built ahead of time (scripts/prerender.mjs):
 // React takes it over in place, so nothing is re-drawn or re-downloaded.
-// On other pages the pre-built header/footer stay on screen until that page's
-// code has loaded, then React draws the whole page in one go.
-if (container.querySelector('#main[data-prerendered] > *')) {
+// On other pages the pre-built header/footer (and, on city pages, the pre-built
+// content: data-static) stay on screen until that page's code has loaded, then
+// React draws the whole page in one go.
+if (container.querySelector('#main[data-prerendered]:not([data-static]) > *')) {
   ReactDOM.hydrateRoot(container, app);
 } else {
   routerReady().then(() => ReactDOM.createRoot(container).render(app));

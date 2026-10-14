@@ -11,10 +11,14 @@
 //   - dist/sitemap.xml and dist/robots.txt.
 // The tags come from src/seo/meta.js — the same table the app uses while
 // people move around the site (useSeo), so the two always agree.
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, notFoundMeta, staticPageMeta, trekMeta } from '../src/seo/meta.js';
+import { pathToFileURL } from 'node:url';
+import {
+  SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, nearHubMeta, nearMeta, notFoundMeta, staticPageMeta, trekMeta,
+} from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
+import { buildNearPages, loadGeo } from './near-pages.mjs';
 
 const DIST = process.env.PRERENDER_DIST || 'dist';
 const API = (process.env.SEO_API_URL || process.env.VITE_API_URL || SITE_URL).replace(/\/$/, '');
@@ -93,7 +97,15 @@ const withHead = (meta) => template.replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, he
 // (the health bot flagged /treks/coorg). Fix the data: give treks unique slugs.
 const writtenLower = new Set();
 
-async function writePage(p, meta) {
+const EMPTY_MAIN = '<main id="main" data-prerendered=""></main>';
+if (!template.includes(EMPTY_MAIN)) throw new Error(`dist/index.html is missing ${EMPTY_MAIN} (scripts/prerender.mjs)`);
+const json = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
+
+/**
+ * extra (city pages): { main: pre-rendered page HTML, data: the page's JSON (path
+ * of its file + content, so the app needs no request), css: [stylesheet urls] }.
+ */
+async function writePage(p, meta, extra = null) {
   if (writtenLower.has(p.toLowerCase())) {
     console.warn(`seo-pages: ${p} differs from another page only in capitals — no own file, left out of the sitemap`);
     return false;
@@ -101,7 +113,14 @@ async function writePage(p, meta) {
   writtenLower.add(p.toLowerCase());
   const file = p === '/' ? path.join(DIST, 'index.html') : path.join(DIST, p.replace(/^\//, ''), 'index.html');
   await mkdir(path.dirname(file), { recursive: true });
-  await writeFile(file, withHead(withOverride(meta, overrides[p])));
+  let html = withHead(withOverride(meta, overrides[p]));
+  if (extra) {
+    html = html
+      .replace(EMPTY_MAIN, `<main id="main" data-prerendered="" data-static="">${extra.main}</main>`)
+      .replace('<!--/seo-->', `<!--/seo-->\n    ${extra.css.map((href) => `<link rel="stylesheet" href="${esc(href)}">`).join('\n    ')}`)
+      .replace('</body>', `<script id="page-data" type="application/json" data-file="${esc(extra.data.file)}">${json(extra.data.content)}</script>\n  </body>`);
+  }
+  await writeFile(file, html);
   return true;
 }
 
@@ -150,6 +169,36 @@ for (const b of blogs) {
     urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
   }
 }
+// "Treks near <city>" pages (scripts/near-pages.mjs): full HTML built here with
+// the app's own components, plus a JSON file per page for in-app navigation.
+let near = { pages: [], hub: null, candidates: 0 };
+if (treks.length) {
+  const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
+  near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
+  const ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
+  // The pages' stylesheet is a separate chunk (loaded with the page's code); link it
+  // so the pre-built HTML looks right before the JavaScript arrives.
+  const css = [];
+  for (const f of await readdir(path.join(DIST, 'assets'))) {
+    if (f.endsWith('.css') && (await readFile(path.join(DIST, 'assets', f), 'utf8')).includes('.near-lead')) css.push(`/assets/${f}`);
+  }
+  await mkdir(path.join(DIST, 'data', 'near'), { recursive: true });
+  for (const page of near.pages) {
+    const file = `/data/near/${page.slug}.json`;
+    await writeFile(path.join(DIST, file), JSON.stringify(page));
+    if (await writePage(page.path, nearMeta(page), { main: ssr.renderNear(page), data: { file, content: page }, css })) {
+      urls.push({ loc: absoluteUrl(page.path), priority: '0.6' });
+    }
+  }
+  if (near.pages.length) {
+    await writeFile(path.join(DIST, 'data', 'near', 'index.json'), JSON.stringify(near.hub));
+    const hubData = { file: '/data/near/index.json', content: near.hub };
+    if (await writePage(near.hub.path, nearHubMeta(near.hub), { main: ssr.renderNearHub(near.hub), data: hubData, css })) {
+      urls.push({ loc: absoluteUrl(near.hub.path), priority: '0.7' });
+    }
+  }
+}
+
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
 
 const xml = [
@@ -183,4 +232,4 @@ await writeFile(
     '',
   ].join('\n'),
 );
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

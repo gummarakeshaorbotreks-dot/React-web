@@ -50,6 +50,8 @@ export const routes = [
           { path: 'treks/:id/details', lazy: page(() => import('./pages/CardDetails')) },
           { path: 'destination/:slug', lazy: page(() => import('./pages/DestinationDetails')) },
           { path: 'travel-your-way', lazy: page(() => import('./pages/TravelYourWay')) },
+          { path: 'treks-near', lazy: page(() => import('./pages/TreksNearHub')) },
+          { path: 'treks-near/:slug', lazy: page(() => import('./pages/TreksNear')) },
           { path: '*', lazy: page(() => import('./pages/NotFound')) },
         ],
       },

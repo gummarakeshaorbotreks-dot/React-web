@@ -2,7 +2,8 @@
 
 Weekly, on the SerpApi free plan (250 searches/month, so ~48 per run):
   - every week: our brand, "treks near me" from big cities and (in rotation) tier-2
-    towns (Google answers it from the searcher's location), a few generic searches;
+    towns (Google answers it from the searcher's location), a few generic searches,
+    and 3 of our city pages' searches ("treks near warangal" from Warangal) in rotation;
   - trek names: the treks with most Search Console impressions every week, the rest
     in rotation so each one is checked every few weeks.
 For each search we keep the top 10, our position, the map pack, AI overview and the
@@ -48,6 +49,7 @@ TIER2_TOWNS = ["Vijayawada", "Visakhapatnam", "Warangal", "Tirupati", "Guntur", 
 TIER2_PER_RUN = 2
 GENERIC = ["weekend treks", "trek booking online", "himalayan treks", "trekking companies in india"]
 TOP_TREKS = 10          # treks with most impressions, checked every week
+CITY_PAGES_PER_RUN = 3  # "treks near <city>" from that city, for our city pages
 
 CAUSES = {
     "their_snippet_is_more_attractive": "their title/description in Google is more attractive",
@@ -133,6 +135,13 @@ def plan(con, budget):
     jobs += [("treks near me", c, "/") for c in NEAR_ME_CITIES]
     jobs += [("treks near me", c, "/") for c in rotate(TIER2_TOWNS, "radar_town_offset", TIER2_PER_RUN)]
     jobs += [(k, HOME, "/") for k in GENERIC]
+    try:  # "treks near <city>" searched from that city, for the city pages (in rotation)
+        hub = json.load(urllib.request.urlopen(f"{SITE}/data/near/index.json", timeout=60))
+        cities = [(c["name"], c["slug"]) for s in hub["states"] for c in s["cities"]]
+        jobs += [(f"treks near {n.lower()}", n, f"/treks-near/{slug}")
+                 for n, slug in rotate(cities, "radar_city_offset", CITY_PAGES_PER_RUN)]
+    except Exception as e:  # noqa: BLE001 - no city pages: skip them
+        print("city pages list unavailable:", e)
     jobs = jobs[:budget]
 
     seen, treks = set(), []
