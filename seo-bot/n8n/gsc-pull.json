@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoGscPull1",
+ "name": "SEO bot: Google Search daily pull",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 9 * * *"
+      }
+     ]
+    }
+   },
+   "id": "2f5258a9-8461-5f2b-90db-f6f0f6d5a43e",
+   "name": "Every day 09:00 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python gsc_pull.py"
+   },
+   "id": "de717cd4-ba8d-567a-971b-2e9864158253",
+   "name": "Pull Search Console data + report",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every day 09:00 IST": {
+   "main": [
+    [
+     {
+      "node": "Pull Search Console data + report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

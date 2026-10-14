@@ -1,0 +1,72 @@
+"""Writes the n8n workflow files (n8n/*.json) for the SEO bot.
+
+    python n8n/build_workflows.py
+
+Then on the n8n server (see seo-bot/README.md): import with `n8n import:workflow`
+and publish. The bot logic itself lives in bot/*.py; n8n only schedules it and
+raises an alert when a run crashes.
+"""
+import json
+import uuid
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PY = "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python"
+ERRORS_ID = "aorboSeoErrors01"
+
+
+def node(name, typ, params, pos, ver=1):
+    return {"parameters": params, "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"aorbo-seo/{name}")),
+            "name": name, "type": typ, "typeVersion": ver, "position": pos}
+
+
+def cron(name, expr, pos):
+    return node(name, "n8n-nodes-base.scheduleTrigger",
+                {"rule": {"interval": [{"field": "cronExpression", "expression": expr}]}}, pos, 1.2)
+
+
+def run(name, script, pos):
+    return node(name, "n8n-nodes-base.executeCommand", {"command": f"{PY} {script}"}, pos)
+
+
+def link(*pairs):
+    return {a: {"main": [[{"node": b, "type": "main", "index": 0}]]} for a, b in pairs}
+
+
+def workflow(wid, name, nodes, connections, error_workflow=True):
+    settings = {"executionOrder": "v1", "saveDataSuccessExecution": "none", "saveDataErrorExecution": "all"}
+    if error_workflow:
+        settings["errorWorkflow"] = ERRORS_ID
+    return {"id": wid, "name": name, "nodes": nodes, "connections": connections,
+            "settings": settings, "active": False, "pinData": {}}
+
+
+# The failing workflow's name and error go into a shell command, so keep only safe characters.
+ALERT_CMD = ("={{ '" + PY + " notify.py \"' + ($json.workflow.name + ' failed: ' + "
+             "(($json.execution && $json.execution.error && $json.execution.error.message) || 'unknown error'))"
+             r".replace(/[^A-Za-z0-9 .,:()_-]/g, '') + '\"' }}")
+
+WORKFLOWS = {
+    "errors": workflow(ERRORS_ID, "SEO bot: alert when a bot workflow fails", [
+        node("When a bot workflow fails", "n8n-nodes-base.errorTrigger", {}, [0, 0]),
+        node("Send Telegram alert", "n8n-nodes-base.executeCommand", {"command": ALERT_CMD}, [260, 0]),
+    ], link(("When a bot workflow fails", "Send Telegram alert")), error_workflow=False),
+
+    "health": workflow("aorboSeoHealth01", "SEO bot: site health check", [
+        cron("Every day 06:00 IST", "0 6 * * *", [0, 0]),
+        run("Full check + daily report", "health_guard.py", [260, 0]),
+        cron("Every 6 hours", "30 */6 * * *", [0, 200]),
+        run("Quick check (alert only)", "health_guard.py --quiet", [260, 200]),
+    ], link(("Every day 06:00 IST", "Full check + daily report"),
+            ("Every 6 hours", "Quick check (alert only)"))),
+
+    "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
+        cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
+        run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),
+    ], link(("Every day 09:00 IST", "Pull Search Console data + report"))),
+}
+
+if __name__ == "__main__":
+    for name, wf in WORKFLOWS.items():
+        (HERE / f"{name}.json").write_text(json.dumps(wf, indent=1), encoding="utf-8")
+        print("wrote", f"n8n/{name}.json")

@@ -1,0 +1,50 @@
+{
+ "id": "aorboSeoErrors01",
+ "name": "SEO bot: alert when a bot workflow fails",
+ "nodes": [
+  {
+   "parameters": {},
+   "id": "e32f814c-190c-5cd3-80fd-12accc4dacfc",
+   "name": "When a bot workflow fails",
+   "type": "n8n-nodes-base.errorTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "={{ 'cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python notify.py \"' + ($json.workflow.name + ' failed: ' + (($json.execution && $json.execution.error && $json.execution.error.message) || 'unknown error')).replace(/[^A-Za-z0-9 .,:()_-]/g, '') + '\\\"' }}"
+   },
+   "id": "2eda19d7-9cbc-5976-8d93-0a2e67ea7f8b",
+   "name": "Send Telegram alert",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When a bot workflow fails": {
+   "main": [
+    [
+     {
+      "node": "Send Telegram alert",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all"
+ },
+ "active": false,
+ "pinData": {}
+}

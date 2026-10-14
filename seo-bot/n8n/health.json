@@ -1,0 +1,104 @@
+{
+ "id": "aorboSeoHealth01",
+ "name": "SEO bot: site health check",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 6 * * *"
+      }
+     ]
+    }
+   },
+   "id": "3f35e47a-85a0-5e7c-a470-cb05436e037d",
+   "name": "Every day 06:00 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python health_guard.py"
+   },
+   "id": "81cf3d03-840b-5679-90bd-5b3ef73cbdf6",
+   "name": "Full check + daily report",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 */6 * * *"
+      }
+     ]
+    }
+   },
+   "id": "262827b5-d5c7-5f63-a538-dbba70521eba",
+   "name": "Every 6 hours",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    200
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python health_guard.py --quiet"
+   },
+   "id": "ba730cb1-4aef-5b7f-86ee-186f473f5143",
+   "name": "Quick check (alert only)",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    200
+   ]
+  }
+ ],
+ "connections": {
+  "Every day 06:00 IST": {
+   "main": [
+    [
+     {
+      "node": "Full check + daily report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Every 6 hours": {
+   "main": [
+    [
+     {
+      "node": "Quick check (alert only)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

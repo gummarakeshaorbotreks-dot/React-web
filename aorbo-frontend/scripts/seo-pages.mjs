@@ -87,19 +87,21 @@ const withHead = (meta) => template.replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, he
 
 // Paths that differ only in capitals ("/treks/Coorg" vs "/treks/coorg" are two
 // different treks) would overwrite each other on a case-insensitive disk
-// (Windows builds): the second one gets no file and is served by the app
-// shell — it still loads, and stays in the sitemap.
+// (Windows builds): the second one gets no file. nginx answers addresses
+// without a file with a real 404, so such a page must stay out of the sitemap
+// (the health bot flagged /treks/coorg). Fix the data: give treks unique slugs.
 const writtenLower = new Set();
 
 async function writePage(p, meta) {
   if (writtenLower.has(p.toLowerCase())) {
-    console.warn(`seo-pages: ${p} differs from another page only in capitals — no own file`);
-    return;
+    console.warn(`seo-pages: ${p} differs from another page only in capitals — no own file, left out of the sitemap`);
+    return false;
   }
   writtenLower.add(p.toLowerCase());
   const file = p === '/' ? path.join(DIST, 'index.html') : path.join(DIST, p.replace(/^\//, ''), 'index.html');
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, withHead(meta));
+  return true;
 }
 
 // Data from the live API (the build fails rather than silently dropping
@@ -124,21 +126,20 @@ try {
 
 const urls = [];
 for (const p of Object.keys(STATIC_PAGES)) {
-  await writePage(p, staticPageMeta(p));
-  urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
+  if (await writePage(p, staticPageMeta(p))) urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
 }
 const seen = new Set();
 for (const t of treks) {
   const meta = trekMeta(t);
   if (seen.has(meta.path)) continue;
   seen.add(meta.path);
-  await writePage(meta.path, meta);
-  urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
+  if (await writePage(meta.path, meta)) urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
 }
 for (const b of blogs) {
   const meta = blogMeta(b);
-  await writePage(meta.path, meta);
-  urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
+  if (await writePage(meta.path, meta)) {
+    urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
+  }
 }
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
 
