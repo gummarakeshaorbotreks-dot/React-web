@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoContent1",
+ "name": "SEO bot: rebuild site when treks or blogs change",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "15 */3 * * *"
+      }
+     ]
+    }
+   },
+   "id": "70411090-9784-5bc5-9208-2c4ab52d93b7",
+   "name": "Every 3 hours",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python content_sync.py"
+   },
+   "id": "7748167c-87a6-58d7-b98f-5c00c2c6aa43",
+   "name": "Compare content, deploy if changed",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every 3 hours": {
+   "main": [
+    [
+     {
+      "node": "Compare content, deploy if changed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

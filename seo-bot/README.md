@@ -10,9 +10,24 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Site health check | 06:00 daily | `bot/health_guard.py` | Silent ✅ line, or a 🚨 alert listing broken pages |
 | Site health check (quick) | every 6 h at :30 | `bot/health_guard.py --quiet` | Only when something broke |
 | Google Search daily pull | 09:00 daily | `bot/gsc_pull.py` | Clicks, impressions, position moves, indexing of key pages |
+| Rebuild site when treks or blogs change | every 3 h at :15 | `bot/content_sync.py` → `bot/sitedeploy.py` | Quiet 🚀 line per rebuild; loud if it failed or rolled back |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
 
 The scripts send their own alerts; n8n schedules them and catches crashes.
+
+## Deploys (web server 37.187.139.100)
+
+`ops/site/` in this repo is installed at `/opt/aorbo-site` on the web server: `deploy.sh` builds
+`/opt/aorbo-site/src` (a copy of `aorbo-frontend`), runs `gate.py` (refuses an incomplete build),
+swaps it live, runs `post_check.py` through nginx and **rolls back** if that fails, then pings
+IndexNow for changed pages. Logs: `/opt/aorbo-site/logs` (30 days).
+
+The bot's SSH key (`/var/lib/n8n/secrets/web-deploy-key`) is locked on the web server to
+`bot-entry.sh`: it can only run `deploy`, `last-deploy` and `status`.
+
+When frontend **code** changes, refresh the source copy on the web server (data changes need nothing):
+`tar --exclude=node_modules --exclude=dist -czf /tmp/src.tar.gz -C aorbo-frontend .`, copy it over,
+unpack into `/opt/aorbo-site/src` (keep its `node_modules`), then `/opt/aorbo-site/deploy.sh`.
 
 ## Where things live on the server
 

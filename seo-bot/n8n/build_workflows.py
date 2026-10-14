@@ -60,6 +60,11 @@ WORKFLOWS = {
     ], link(("Every day 06:00 IST", "Full check + daily report"),
             ("Every 6 hours", "Quick check (alert only)"))),
 
+    "content-sync": workflow("aorboSeoContent1", "SEO bot: rebuild site when treks or blogs change", [
+        cron("Every 3 hours", "15 */3 * * *", [0, 0]),
+        run("Compare content, deploy if changed", "content_sync.py", [260, 0]),
+    ], link(("Every 3 hours", "Compare content, deploy if changed"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),
