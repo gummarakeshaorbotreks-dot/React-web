@@ -160,9 +160,12 @@ await writeFile(path.join(DIST, 'sitemap.xml'), xml);
 await writeFile(
   path.join(DIST, 'robots.txt'),
   [
+    // /api/ stays crawlable: trek and blog pages fetch their content from it in
+    // the browser, and Google renders pages the same way. Blocking it would
+    // show Google empty trek pages.
     'User-agent: *',
     'Allow: /',
-    'Disallow: /api/',
+    'Disallow: /api/crash-report/',
     'Disallow: /supersecretadmin/',
     'Disallow: /accounts/',
     '',
