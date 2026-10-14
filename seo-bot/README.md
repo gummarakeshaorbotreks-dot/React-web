@@ -36,6 +36,9 @@ unpack into `/opt/aorbo-site/src` (keep its `node_modules`), then `/opt/aorbo-si
 - Secrets (n8n user only, never in git): `/var/lib/n8n/secrets/`
   - `google-seo-bot.json`: service account `seo-bot@aorbo-seo-bot.iam.gserviceaccount.com` (owner in Search Console)
   - `bing-webmaster-api-key`, `telegram-bot-token`, `telegram-chat-id`
+  - `seo-api-token`: writes page overrides (same value as `SEO_BOT_TOKEN` in the web server's `/opt/aorboweb/.env`)
+  - `web-deploy-key`: SSH key locked to `ops/site/bot-entry.sh` on the web server
+  - `gemini-api-key`: Gemini API (free tier), project `aorbo-seo-bot`, key restricted to the Gemini API. `bot/ai.py` tries `gemini-flash-latest`, then `gemini-flash-lite-latest` when busy.
 
 ## Change and redeploy
 
