@@ -26,9 +26,26 @@ def all_pages(path):
     return items
 
 
+def detail(trek_id):
+    import urllib.parse
+    req = urllib.request.Request(f"{SITE}/api/treks/{urllib.parse.quote(trek_id)}/", headers={"User-Agent": "AorboSeoBot/1.0"})
+    return json.load(urllib.request.urlopen(req, timeout=60))
+
+
 def fingerprint():
-    treks = sorted((t.get("id") or t.get("slug"), t.get("name"), t.get("state"), t.get("price_start"),
-                    t.get("duration_days"), len(t.get("images") or [])) for t in all_pages("/api/treks/"))
+    listed = {t.get("id") or t.get("slug"): t for t in all_pages("/api/treks/")}
+    # Trek pages are built with the trek's full details (description, activities, places,
+    # organisers, departure days), so an edit to any of them needs a rebuild too.
+    treks = []
+    for tid, t in sorted(listed.items()):
+        try:
+            d = detail(tid)
+        except Exception:  # noqa: BLE001 - list data still catches most changes
+            d = {}
+        treks.append((tid, t.get("name"), t.get("state"), t.get("price_start"), t.get("duration_days"),
+                      len(t.get("images") or []), d.get("description"), d.get("activities"), d.get("famous_places"),
+                      d.get("operators"), d.get("operating_days"), d.get("main_image"), d.get("related_treks"),
+                      d.get("latitude"), d.get("longitude")))
     blogs = sorted((b.get("slug"), b.get("title"), b.get("updated_at") or b.get("created_at")) for b in all_pages("/api/blogs/"))
     overrides = sorted((o["path"], o["updated_at"]) for o in list_overrides())
     # The week number: "Treks near <city>" pages are released in weekly waves (scripts/near-pages.mjs).

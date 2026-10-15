@@ -47,7 +47,7 @@ OK_TYPES = {
               "county", "region"},
     "water": {"lake", "reservoir", "river", "pond"},
     "landuse": {"forest"},
-    "natural": {"peak", "hill", "ridge", "valley", "cave_entrance", "water", "beach", "cliff", "volcano", "wood",
+    "natural": {"peak", "hill", "ridge", "valley", "cave_entrance", "water", "beach", "cliff", "volcano", "wood", "fell", "grassland",
                 "saddle", "glacier", "spring", "bay", "cape", "rock"},
     "waterway": {"waterfall", "river", "dam"},
     "tourism": {"attraction", "viewpoint", "camp_site", "picnic_site"},
