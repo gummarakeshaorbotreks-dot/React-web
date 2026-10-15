@@ -137,12 +137,16 @@ export default function TrekView({ trek, links = null }) {
             <InfoCard icon={BadgeCheck} title="Trusted Operators" as="h3">
               {operators.length > 0 ? (
                 <ul className="operator-list">
-                  {operators.map((op) => (
-                    <li key={op}>
-                      <span className="operator-avatar" aria-hidden="true">{initials(op)}</span>
-                      {op}
-                    </li>
-                  ))}
+                  {operators.map((op) => {
+                    // Each organiser has a profile page with all its treks (marketplace).
+                    const profile = links?.organisers?.find((o) => o.name.toLowerCase() === op.toLowerCase());
+                    return (
+                      <li key={op}>
+                        <span className="operator-avatar" aria-hidden="true">{initials(op)}</span>
+                        {profile ? <Link to={`/organisers/${profile.slug}`}>{profile.name}</Link> : op}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="muted-note">Coming soon...</p>

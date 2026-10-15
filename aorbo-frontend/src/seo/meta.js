@@ -525,6 +525,102 @@ export function destinationHubMeta(hub) {
   };
 }
 
+// ---------- Organiser profile pages (scripts/organiser-pages.mjs) ----------
+
+export function organiserFacts(page) {
+  const prices = page.treks.map((t) => t.price).filter((p) => p != null && Number(p) > 0).map(Number);
+  const days = page.treks.map((t) => t.days).filter((d) => d != null);
+  return {
+    count: page.treks.length,
+    minPrice: prices.length ? Math.min(...prices) : null,
+    maxPrice: prices.length ? Math.max(...prices) : null,
+    minDays: days.length ? Math.min(...days) : null,
+    maxDays: days.length ? Math.max(...days) : null,
+    departures: departureDays(page.treks.map((t) => t.operating_days)),
+  };
+}
+
+/** Questions and answers shown on an organiser's page; the same text goes into its FAQPage data. */
+export function organiserFaqs(page) {
+  const f = organiserFacts(page);
+  const faqs = [{
+    q: `Which treks does ${page.name} run?`,
+    a: `${page.name} has ${f.count} ${f.count === 1 ? 'trek' : 'treks'} on Aorbo Treks, including ${joinNames(page.treks.slice(0, 5).map((t) => capital(t.name)))}.`,
+  }];
+  if (page.states.length) {
+    faqs.push({ q: `Where does ${page.name} run treks?`, a: `In ${joinNames(page.states)}.` });
+  }
+  if (f.minPrice != null) {
+    faqs.push({
+      q: `How much do ${page.name}'s treks cost?`,
+      a: f.minPrice === f.maxPrice
+        ? `From ${rupees(f.minPrice)} per person on Aorbo Treks.`
+        : `Starting prices range from ${rupees(f.minPrice)} to ${rupees(f.maxPrice)} per person on Aorbo Treks.`,
+    });
+  }
+  if (f.departures.length) {
+    faqs.push({ q: `On which days do ${page.name}'s treks start?`, a: `Departures are on ${joinNames(f.departures)}, depending on the trek.` });
+  }
+  faqs.push({
+    q: `How do I book a trek with ${page.name}?`,
+    a: `Open one of ${page.name}'s treks above, choose your dates and book on Aorbo Treks, on the website or in the app. Aorbo Treks is a marketplace: you can also compare ${page.name}'s treks with other organisers' for the same place.`,
+  });
+  return faqs;
+}
+
+/** Tags for an organiser's profile page. */
+export function organiserMeta(page) {
+  const f = organiserFacts(page);
+  const description = snippet(
+    `${page.name}: ${f.count} ${f.count === 1 ? 'trek' : 'treks and trips'} on Aorbo Treks`
+    + (page.states.length ? ` in ${joinNames(page.states.slice(0, 4))}` : '')
+    + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
+    + '. See all their treks, compare with other organisers and book.',
+  );
+  const url = absoluteUrl(page.path);
+  return {
+    title: `${page.name}: ${f.count} ${f.count === 1 ? 'Trek' : 'Treks'}${f.minPrice != null ? ` from ${rupees(f.minPrice)}` : ''} | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.treks.find((t) => t.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'ProfilePage',
+        name: `${page.name} on Aorbo Treks`,
+        description,
+        url,
+        mainEntity: {
+          '@type': 'TravelAgency',
+          name: page.name,
+          url,
+          ...(page.states.length ? { areaServed: page.states.map((s) => ({ '@type': 'State', name: s })) } : {}),
+          makesOffer: page.treks.map((t) => ({
+            '@type': 'Offer',
+            url: absoluteUrl(`/treks/${t.id}`),
+            itemOffered: { '@type': 'TouristTrip', name: t.name },
+            ...(t.price != null ? { price: Number(t.price), priceCurrency: 'INR' } : {}),
+          })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Trek organisers', '/organisers'], [page.name, page.path]]),
+      faqPage(organiserFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for the list of all organisers. */
+export function organiserHubMeta(hub) {
+  return {
+    title: 'Trek Organisers on Aorbo Treks: Compare Companies and Book',
+    description: snippet(`${hub.organisers.length} trek organisers on Aorbo Treks, with all their treks, places and prices. Compare organisers and book in one place.`),
+    path: hub.path,
+    jsonLd: graph(
+      { '@type': 'CollectionPage', name: 'Trek organisers', url: absoluteUrl(hub.path) },
+      breadcrumb([['Home', '/'], ['Trek organisers', hub.path]]),
+    ),
+  };
+}
+
 /** Pages that must stay out of search results. */
 export const notFoundMeta = (path = '/404') => ({
   title: 'Page not found | Aorbo Treks',
