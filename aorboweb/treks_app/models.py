@@ -353,7 +353,8 @@ class TrekList(models.Model):
             slug = base_slug
             counter = 1
 
-            while TrekList.objects.filter(id=slug).exists():
+            # iexact: "/treks/Coorg" and "/treks/coorg" must not both exist.
+            while TrekList.objects.filter(id__iexact=slug).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
 

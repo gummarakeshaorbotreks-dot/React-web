@@ -81,6 +81,22 @@ The scripts send their own alerts; n8n schedules them and catches crashes.
   prices, departure days, places, distance from the nearest metros (linked to city pages), FAQs from the
   data, more destinations in the state. `content_sync.py` refreshes destinations whenever packages change.
 
+## Locks against wrong trek data
+
+1. **Entry** (`aorboweb/treks_app/trek_rules.py`, used by the trek admin form and "Publish draft"):
+   durations must be days-first and sensible (`3D/2N`; refuses `D/2N`, `6D/5D`, `6N/7D`, `3D/4N`), states
+   must be official names (tidied: `karnataka` -> `Karnataka`), departure days real weekdays (`Thu, Fri, Sat`),
+   names not all-lowercase and not another trek's name, positions inside India/Nepal and not another trek's,
+   descriptions 40+ characters and not (almost) another trek's. Tests: `manage.py test treks_app.test_trek_rules`.
+   The model no longer fills in the state's centre as a trek's position; new ids can't differ only in capitals.
+2. **Weekly** (`bot/data_quality.py`, Mondays): Gemini lists suspicious places / activities / description lines,
+   then says only WHERE each thing and each stop of the trip is; the bot computes the distance and reports items
+   300+ km from every stop (copy-paste errors found were 1,000-2,500 km off; stops on the way are 50-250 km).
+   Only treks changed since their last check are re-checked (state `content_audit`). Flagged treks are skipped
+   by the optimizer until fixed. Also reported: wrong admin positions, treks without real organiser names.
+3. **Rebuild**: `content_sync.py` watches every trek detail (description, activities, places, organisers,
+   departure days, photo, position), so a fix in the admin reaches the site within 3 hours.
+
 ## Deploys (web server 37.187.139.100)
 
 `ops/site/` in this repo is installed at `/opt/aorbo-site` on the web server: `deploy.sh` builds

@@ -23,6 +23,7 @@ from .models import (
     Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection,
     CrashReport, SeoOverride,
 )
+from . import trek_rules
 
 
 # ── Contact Date Range Filter ────────────────────────────────────────────────
@@ -333,9 +334,59 @@ class VisitorAdmin(RBACAdminMixin, admin.ModelAdmin):
         return super().changelist_view(request, extra_context=extra_context)
 
 # ── Trek List ───────────────────────────────────────────────────────────────
+class TrekListAdminForm(forms.ModelForm):
+    """Checks every trek before it is saved (rules and reasons: trek_rules.py).
+
+    On the edit form only, not the list page's quick "pinned" edits, so pinning
+    never fails because of an unrelated field.
+    """
+
+    class Meta:
+        model = TrekList
+        fields = "__all__"
+
+    def _others(self):
+        qs = TrekList.objects.all()
+        return qs.exclude(pk=self.instance.pk) if self.instance.pk else qs
+
+    @staticmethod
+    def _rule(fn, *args):
+        try:
+            return fn(*args)
+        except ValueError as e:
+            raise forms.ValidationError(str(e))
+
+    def clean_name(self):
+        return self._rule(trek_rules.check_name, self.cleaned_data.get("name"),
+                          dict(self._others().values_list("id", "name")))
+
+    def clean_state(self):
+        return self._rule(trek_rules.normalize_state, self.cleaned_data.get("state"))
+
+    def clean_duration_days(self):
+        return self._rule(trek_rules.normalize_duration, self.cleaned_data.get("duration_days"))
+
+    def clean_operating_days(self):
+        return self._rule(trek_rules.normalize_operating_days, self.cleaned_data.get("operating_days"))
+
+    def clean_short_desc(self):
+        return self._rule(trek_rules.check_description, self.cleaned_data.get("short_desc"),
+                          dict(self._others().values_list("id", "short_desc")))
+
+    def clean(self):
+        data = super().clean()
+        others = {i: (la, lo) for i, la, lo in self._others().exclude(latitude=None).values_list("id", "latitude", "longitude")}
+        try:
+            trek_rules.check_position(data.get("latitude"), data.get("longitude"), others)
+        except ValueError as e:
+            self.add_error("latitude", str(e))
+        return data
+
+
 @admin.register(TrekList)
 class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
     resource = "treks"
+    form = TrekListAdminForm
     list_display = (
         'name', 'state', 'is_pinned', 'pin_priority',
         'duration_days', 'price_start', 'currency', 'is_ai_generated', 'created_at'
@@ -352,6 +403,11 @@ class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
                               "description": "Pinned treks appear first based on priority (1 = highest)"}),
         ("Pricing & Duration", {"fields": ('duration_days', 'price_start', 'currency', 'operating_days')}),
         ("Content",          {"fields": ('short_desc', 'activities')}),
+        ("📍 Map position",  {"fields": ('latitude', 'longitude'),
+                              "description": "The trek's real place (trailhead or peak), used for the 'Treks near your city' "
+                                             "pages. On Google Maps, right-click the place and click the numbers to copy them: "
+                                             "the first is the latitude, the second the longitude. Leave both empty if unsure: "
+                                             "the SEO bot finds a checked position itself."}),
         ("Relationships",    {"fields": ('tags', 'operators', 'trek_points', 'related_treks')}),
         ("🤖 AI Generation Status", {
             "fields": ('is_ai_generated',),
@@ -546,17 +602,30 @@ class OsmDraftTrekAdmin(RBACAdminMixin, admin.ModelAdmin):
                 skipped_count += 1
                 continue
 
+            # Same checks as the trek form (trek_rules.py): a draft with a wrong state,
+            # duration or a copied description is not published.
+            existing = TrekList.objects.all()
+            try:
+                checked = {
+                    "name": trek_rules.check_name(draft.name, dict(existing.values_list("id", "name"))),
+                    "state": trek_rules.normalize_state(draft.state),
+                    "duration_days": trek_rules.normalize_duration(draft.duration_days),
+                    "operating_days": trek_rules.normalize_operating_days(draft.operating_days),
+                    "short_desc": trek_rules.check_description(draft.short_desc, dict(existing.values_list("id", "short_desc"))),
+                }
+            except ValueError as e:
+                self.message_user(request, f"Skipped '{draft.name}': {e} Fix it in the draft, then publish again.",
+                                  level='warning')
+                skipped_count += 1
+                continue
+
             trek = TrekList.objects.create(
-                name=draft.name,
-                state=draft.state,
                 image=draft.image,
-                short_desc=draft.short_desc,
                 activities=draft.activities,
-                duration_days=draft.duration_days,
-                operating_days=draft.operating_days,
                 price_start=draft.price_start,
                 currency='INR',
                 is_ai_generated=True,
+                **checked,
             )
             trek.operators.set(draft.operators.all())
             trek.trek_points.set(draft.trek_points.all())
