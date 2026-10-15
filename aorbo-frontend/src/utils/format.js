@@ -1,5 +1,16 @@
-export const sentenceCase = (text = '') =>
-  text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : '';
+const SMALL_WORDS = new Set(['and', 'of', 'the', 'to', 'in', 'at', 'by', 'with', 'for', 'on', 'a', 'an', 'or', 'via', 'from']);
+
+/**
+ * Names with a capital at the start of each word ("Ananthagiri hills" -> "Ananthagiri Hills",
+ * "gokarna-dandeli" -> "Gokarna-Dandeli"); small words stay small inside, and words that
+ * already have capitals are kept (RK, McLeod). Same rule as the admin (aorboweb trek_rules.py).
+ */
+export const titleCase = (text = '') =>
+  String(text || '').trim().split(/(\s+)/).map((word, i) => word.split(/([-/(])/).map((part, j) => {
+    if (!part || /[-/(]/.test(part) || /[A-Z]/.test(part)) return part;
+    if (i > 0 && j === 0 && SMALL_WORDS.has(part.toLowerCase())) return part.toLowerCase();
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  }).join('')).join('');
 
 export const formatPrice = (value) =>
   `₹${Number(value).toLocaleString('en-IN')}`;

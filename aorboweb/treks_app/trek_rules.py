@@ -83,30 +83,99 @@ def normalize_duration(text):
     return ", ".join(f"{d}D/{n}N" if n is not None else f"{d}D" for d, n in options)
 
 
+FULL_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+DAY_TYPOS = {"thr": "Thu", "thurs": "Thu", "thrus": "Thu", "tues": "Tue", "weds": "Wed", "sund": "Sun", "satur": "Sat"}
+
+
+def _weekday(word):
+    """'thu' / 'THURSDAY' / typos like 'thr', 'fir', 'saturdy' -> 'Thu'; None if it isn't a weekday."""
+    w = word.lower()
+    if w in DAY_TYPOS:
+        return DAY_TYPOS[w]
+    for d, full in zip(WEEKDAYS, FULL_DAYS):
+        if len(w) >= 3 and full.startswith(w):
+            return d
+    close = difflib.get_close_matches(w, [d.lower() for d in WEEKDAYS] + FULL_DAYS, n=1, cutoff=0.6)
+    if close:
+        return WEEKDAYS[[d.lower() for d in WEEKDAYS].index(close[0])] if close[0] in [d.lower() for d in WEEKDAYS] \
+            else WEEKDAYS[FULL_DAYS.index(close[0])]
+    return None
+
+
 def normalize_operating_days(text):
-    """'THU, FRI, SAT' / 'fri,sat' -> 'Thu, Fri, Sat'. 'Daily' and 'On request' are allowed."""
+    """'THU, FRI, SAT' / 'fri,sat' / 'thr,fri' -> 'Thu, Fri, Sat'. 'Daily' and 'On request' are allowed."""
     raw = (text or "").strip()
     if not raw:
         raise ValueError("Enter the departure days, for example: Fri, Sat.")
     if raw.lower() in ("daily", "on request"):
         return raw.capitalize()
-    words = [w for w in re.split(r"[^A-Za-z]+", raw) if w]
     found = set()
-    for w in words:
-        day = next((d for d in WEEKDAYS if w.lower().startswith(d.lower()) and len(w) >= 3), None)
+    for w in [w for w in re.split(r"[^A-Za-z]+", raw) if w]:
+        day = _weekday(w)
         if not day:
             raise ValueError(f"'{w}' is not a weekday. Write the departure days like: Thu, Fri, Sat (or Daily).")
         found.add(day)
     return ", ".join(d for d in WEEKDAYS if d in found)
 
 
+SMALL_WORDS = {"and", "of", "the", "to", "in", "at", "by", "with", "for", "on", "a", "an", "or", "via", "from"}
+UNITS = {"km", "kms", "ft", "m", "hr", "hrs", "min", "mins", "approx"}
+
+
+def _cap(word):
+    return word[:1].upper() + word[1:]
+
+
+def title_case(text):
+    """Every word starts with a capital ('ananthagiri hills' -> 'Ananthagiri Hills', 'gokarna-dandeli' ->
+    'Gokarna-Dandeli'); small words stay small inside ('Rajgad to Torna Fort'); words that already have
+    capitals are kept (RK, DD, McLeod)."""
+    out = []
+    for i, word in enumerate(re.split(r"(\s+)", (text or "").strip())):
+        if not word.strip():
+            out.append(word)
+            continue
+        parts = re.split(r"([-/(])", word)
+        fixed = []
+        for p in parts:
+            if not p or p in "-/(" or any(c.isupper() for c in p):
+                fixed.append(p)
+            elif i > 0 and p.lower() in SMALL_WORDS and not fixed:
+                fixed.append(p.lower())
+            elif p.lower().rstrip(".)") in UNITS:
+                fixed.append(p)  # "6 km", "approx." stay small
+            else:
+                fixed.append(_cap(p))
+        out.append("".join(fixed))
+    return "".join(out)
+
+
+def tidy_place(text):
+    """Place names are names: 'malpe beach' -> 'Malpe Beach'. Long descriptive entries keep their
+    wording ('Rocky slopes and boulder sections'); with an explanation after a dash, only the name part
+    ('pratapgad fort – Historic Maratha fort' -> 'Pratapgad Fort – Historic Maratha fort')."""
+    text = re.sub(r"\s+", " ", (text or "").strip())
+    if not text:
+        raise ValueError("Enter the place name.")
+    dash = re.search(r"\s[–—-]\s", text)
+    if dash:
+        name, rest = text[:dash.start()], text[dash.end():]
+        return f"{title_case(name)}{dash.group(0)}{_cap(rest.strip())}"
+    return title_case(text) if len(text.split()) <= 6 else _cap(text)
+
+
+def tidy_activities(text):
+    """'boating, bonfire & music\\nphotography.' -> 'Boating, Bonfire & music, Photography' (each starts with a capital)."""
+    # Split on commas and line breaks (the admin sends "\r\n"); drop empty bits, stray quotes and dots.
+    items = [i.strip(" .\t\r\n\"'") for i in re.split(r"[,\r\n]+", text or "")]
+    return ", ".join(_cap(i) for i in items if i)
+
+
 def check_name(name, others):
     """others: {id: name} of the other treks."""
-    name = (name or "").strip()
+    name = title_case(re.sub(r"\s+", " ", (name or "").strip()))
     if not name:
         raise ValueError("Enter the trek name.")
-    if name == name.lower():
-        raise ValueError(f"Start the name with capitals, for example '{name.title()}'.")
     clash = next((i for i, n in others.items() if (n or "").strip().lower() == name.lower()), None)
     if clash:
         raise ValueError(f"Another trek is already called '{name}' (/{clash}). Make the name say what is "

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, CalendarDays, Navigation, WifiOff } from 'lucide-react';
 import { imageCors, logClick, mediaUrl } from '../../api/client';
-import { formatDepartureDays, formatDurationShort, formatPrice, sentenceCase } from '../../utils/format';
+import { formatDepartureDays, formatDurationShort, formatPrice, titleCase } from '../../utils/format';
 import EmptyState from '../ui/EmptyState';
 import '../../styles/TrekCard.css';
 
@@ -28,7 +28,7 @@ export default function TrekCard({ trek, tag = '', distance = null }) {
       </div>
 
       <div className="trek-card__body">
-        <h3 className="trek-card__title">{sentenceCase(trek.name)}</h3>
+        <h3 className="trek-card__title">{titleCase(trek.name)}</h3>
         {trek.state && (
           <p className="trek-card__location">
             <MapPin aria-hidden="true" /> {trek.state}

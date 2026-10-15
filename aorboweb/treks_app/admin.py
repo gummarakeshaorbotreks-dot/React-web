@@ -369,6 +369,9 @@ class TrekListAdminForm(forms.ModelForm):
     def clean_operating_days(self):
         return self._rule(trek_rules.normalize_operating_days, self.cleaned_data.get("operating_days"))
 
+    def clean_activities(self):
+        return trek_rules.tidy_activities(self.cleaned_data.get("activities"))
+
     def clean_short_desc(self):
         return self._rule(trek_rules.check_description, self.cleaned_data.get("short_desc"),
                           dict(self._others().values_list("id", "short_desc")))
@@ -436,21 +439,46 @@ class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
 
 
 # ── Operator / Tag / Trek Point ─────────────────────────────────────────────
+def _name_form(model, tidy, what):
+    """Admin form that tidies the name (capitals) and refuses a second entry of the same name:
+    the same place had been saved up to 4 times ("Mattupetty Dam")."""
+    class NameForm(forms.ModelForm):
+        class Meta:
+            fields = "__all__"
+
+        def clean_name(self):
+            try:
+                name = tidy(self.cleaned_data.get("name"))
+            except ValueError as e:
+                raise forms.ValidationError(str(e))
+            same = model.objects.filter(name__iexact=name)
+            if self.instance.pk:
+                same = same.exclude(pk=self.instance.pk)
+            if same.exists():
+                raise forms.ValidationError(f"{what} '{name}' already exists: pick it from the list instead of adding it again.")
+            return name
+    NameForm.Meta.model = model
+    return NameForm
+
+
 @admin.register(Operator)
 class OperatorAdmin(RBACAdminMixin, admin.ModelAdmin):
     resource = "treks"
+    form = _name_form(Operator, trek_rules.title_case, "Organiser")
     list_display  = ('name',)
     search_fields = ('name',)
 
 @admin.register(Tag)
 class TagAdmin(RBACAdminMixin, admin.ModelAdmin):
     resource = "treks"
+    form = _name_form(Tag, trek_rules.title_case, "Tag")
     list_display  = ('name',)
     search_fields = ('name',)
 
 @admin.register(TrekPoint)
 class TrekPointAdmin(RBACAdminMixin, admin.ModelAdmin):
     resource = "treks"
+    form = _name_form(TrekPoint, trek_rules.tidy_place, "Place")
     list_display = ('name',)
     search_fields = ('name',)
 
@@ -621,7 +649,7 @@ class OsmDraftTrekAdmin(RBACAdminMixin, admin.ModelAdmin):
 
             trek = TrekList.objects.create(
                 image=draft.image,
-                activities=draft.activities,
+                activities=trek_rules.tidy_activities(draft.activities),
                 price_start=draft.price_start,
                 currency='INR',
                 is_ai_generated=True,

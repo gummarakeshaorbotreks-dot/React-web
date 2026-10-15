@@ -43,9 +43,14 @@ class DepartureDayRuleTests(SimpleTestCase):
         self.assertEqual(rules.normalize_operating_days("sat,fri"), "Fri, Sat")
         self.assertEqual(rules.normalize_operating_days("daily"), "Daily")
 
-    def test_refuses_typos(self):
+    def test_corrects_typos(self):
+        self.assertEqual(rules.normalize_operating_days("thr,fri,sat"), "Thu, Fri, Sat")  # found on the site
+        self.assertEqual(rules.normalize_operating_days("fir, satur"), "Fri, Sat")
+        self.assertEqual(rules.normalize_operating_days("THURSDAY"), "Thu")
+
+    def test_refuses_non_days(self):
         with self.assertRaises(ValueError):
-            rules.normalize_operating_days("thr,fri,sat")
+            rules.normalize_operating_days("xyz")
 
 
 class NamePositionDescriptionRuleTests(SimpleTestCase):
@@ -53,8 +58,7 @@ class NamePositionDescriptionRuleTests(SimpleTestCase):
         self.assertEqual(rules.check_name("Coorg 4-Day Trip", {"coorg": "Coorg"}), "Coorg 4-Day Trip")
         with self.assertRaises(ValueError):
             rules.check_name("Coorg", {"coorg": "coorg"})  # same name as another package
-        with self.assertRaises(ValueError):
-            rules.check_name("char dham yatra", {})  # all lowercase
+        self.assertEqual(rules.check_name("char dham yatra", {}), "Char Dham Yatra")  # capitals added
 
     def test_position(self):
         rules.check_position(None, None, {})
@@ -74,3 +78,26 @@ class NamePositionDescriptionRuleTests(SimpleTestCase):
             rules.check_description(kerala, {"kerala-kanyakumari": kerala})  # copied
         with self.assertRaises(ValueError):
             rules.check_description("Nice trek.", {})  # too short
+
+
+class CapitalsRuleTests(SimpleTestCase):
+    def test_title_case(self):
+        self.assertEqual(rules.title_case("Ananthagiri hills"), "Ananthagiri Hills")
+        self.assertEqual(rules.title_case("Manali-kasol"), "Manali-Kasol")
+        self.assertEqual(rules.title_case("Rajgad to Torna fort"), "Rajgad to Torna Fort")
+        self.assertEqual(rules.title_case("McLeod Ganj trek"), "McLeod Ganj Trek")
+        self.assertEqual(rules.title_case("cute vogayes"), "Cute Vogayes")
+
+    def test_places(self):
+        self.assertEqual(rules.tidy_place("malpe beach"), "Malpe Beach")
+        self.assertEqual(rules.tidy_place("RK beach"), "RK Beach")
+        self.assertEqual(rules.tidy_place("forest Trekking Trail (6 km)"), "Forest Trekking Trail (6 km)")
+        self.assertEqual(rules.tidy_place("Pratapgad Fort – Historic Maratha fort"), "Pratapgad Fort – Historic Maratha fort")
+
+    def test_activities(self):
+        self.assertEqual(rules.tidy_activities("Water Sports,\nboat ride,\nbonfire & music."),
+                         "Water Sports, Boat ride, Bonfire & music")
+        # The admin's text box sends Windows line breaks; one bad run left "\r" items behind.
+        self.assertEqual(rules.tidy_activities('Cycling,\r\nTent Pitching,\r\nAdventure Rope Activities",\r\n'),
+                         "Cycling, Tent Pitching, Adventure Rope Activities")
+        self.assertEqual(rules.tidy_activities("Cycling, \r, Tent Pitching, \r, Camping"), "Cycling, Tent Pitching, Camping")
