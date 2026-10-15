@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, CalendarDays, Navigation, WifiOff } from 'lucide-react';
 import { imageCors, logClick, mediaUrl } from '../../api/client';
-import { formatDuration, formatPrice, sentenceCase } from '../../utils/format';
+import { formatDepartureDays, formatDurationShort, formatPrice, sentenceCase } from '../../utils/format';
 import EmptyState from '../ui/EmptyState';
 import '../../styles/TrekCard.css';
 
@@ -39,10 +39,10 @@ export default function TrekCard({ trek, tag = '', distance = null }) {
             <li><Navigation aria-hidden="true" /> {distance.km} km from {distance.from}</li>
           )}
           {trek.duration_days && (
-            <li><Clock aria-hidden="true" /> {formatDuration(trek.duration_days)}</li>
+            <li><Clock aria-hidden="true" /> {formatDurationShort(trek.duration_days)}</li>
           )}
           {trek.operating_days && (
-            <li><CalendarDays aria-hidden="true" /> {trek.operating_days}</li>
+            <li><CalendarDays aria-hidden="true" /> {formatDepartureDays(trek.operating_days)}</li>
           )}
         </ul>
       </div>

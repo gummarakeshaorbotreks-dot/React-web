@@ -66,14 +66,16 @@ def main():
         seen.add(t.get("id"))
         unique.append(t)
     treks = unique
+    # Addresses that differ only in capitals (/treks/Coorg, /treks/coorg) both work on the
+    # server; they only confuse people when the two packages also share a name.
     by_lower = {}
     for t in treks:
-        by_lower.setdefault((t.get("id") or "").lower(), []).append(t.get("id"))
+        by_lower.setdefault(((t.get("id") or "").lower(), (t.get("name") or "").strip().lower()), []).append(t.get("id"))
     for ids in by_lower.values():
         if len(ids) > 1:
             for t in treks:
                 if t.get("id") in ids:
-                    add(t, f"page address collides with {', '.join(i for i in ids if i != t.get('id'))} (differs only in capitals)")
+                    add(t, f"same name and address as {', '.join(i for i in ids if i != t.get('id'))} (differs only in capitals): rename one")
 
     for t in treks:
         name, state = t.get("name") or "", t.get("state") or ""

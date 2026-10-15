@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, MapPin, Route, Zap } from 'lucide-react';
 import { mediaUrl } from '../../api/client';
-import { formatDuration, formatPrice } from '../../utils/format';
+import { durationOptions, formatDepartureDays, formatDurationShort, formatPrice } from '../../utils/format';
 import { destinationHeading, isPlaceholderOperator, trekFaqs } from '../../seo/meta';
 import DetailHero from './DetailHero';
 import InfoCard from '../ui/InfoCard';
@@ -15,7 +15,9 @@ const list = (v) => (Array.isArray(v) ? v : []);
 // by scripts/seo-pages.mjs) the destination and city pages it belongs to, so the
 // build can render it to HTML ahead of time.
 export default function TrekView({ trek, links = null }) {
-  const duration = formatDuration(trek.duration_days);
+  const duration = formatDurationShort(trek.duration_days);
+  const options = durationOptions(trek.duration_days);
+  const departures = formatDepartureDays(trek.operating_days);
   const price = trek.price_start != null ? formatPrice(trek.price_start) : null;
   const related = list(trek.related_treks);
   const operators = list(trek.operators).filter((op) => !isPlaceholderOperator(op));
@@ -33,7 +35,7 @@ export default function TrekView({ trek, links = null }) {
           badges={trek.state ? [{ icon: MapPin, label: trek.state }] : []}
           meta={[
             { icon: Clock, label: duration },
-            { icon: CalendarDays, label: trek.operating_days },
+            { icon: CalendarDays, label: departures },
           ]}
           price={price && `${price} onwards`}
         />
@@ -125,8 +127,8 @@ export default function TrekView({ trek, links = null }) {
             <InfoCard icon={Info} title="Trip Info" as="h3">
               <FactList
                 items={[
-                  { icon: Clock, label: 'Duration', value: duration },
-                  { icon: CalendarDays, label: 'Departure', value: trek.operating_days },
+                  { icon: Clock, label: 'Duration', value: options.join(' · ') },
+                  { icon: CalendarDays, label: 'Departure', value: departures },
                   { icon: MapPin, label: 'Location', value: trek.state },
                 ]}
               />

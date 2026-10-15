@@ -359,17 +359,10 @@ class TrekList(models.Model):
 
             self.id = slug
 
-        # 🗺️ Auto-geocode if coordinates are missing but state is present
-        if self.state and (not self.latitude or not self.longitude):
-            from .utils import geocode_location
-            try:
-                coords = geocode_location(self.state)
-                if coords:
-                    self.latitude = coords['lat']
-                    self.longitude = coords['lon']
-            except Exception as e:
-                print(f"Geocoding failed for {self.state}: {e}")
-
+        # No automatic coordinates: geocoding the STATE gave every trek in a state the
+        # same point (the state's centre), e.g. Srikalahasti, Bhairavakona and Talakona
+        # all sat at one spot near Bapatla. Leave them empty unless the team enters the
+        # trek's real position; the SEO bot finds verified positions on its own.
         super().save(*args, **kwargs)
 
     @property

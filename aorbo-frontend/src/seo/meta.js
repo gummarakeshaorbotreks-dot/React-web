@@ -6,6 +6,8 @@
 // build (scripts/seo-pages.mjs, which writes one HTML file per page so the
 // very first HTML of every address already carries the right tags).
 
+import { durationOptions, formatDuration } from '../utils/format.js';
+
 export const SITE_URL = 'https://aorbotreks.com';
 export const SITE_NAME = 'Aorbo Treks';
 export const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
@@ -173,8 +175,8 @@ export function trekFaqs(trek, links = null) {
     faqs.push({
       q: `How many days is the ${name} trip?`,
       a: days.length === 1
-        ? `${days[0]} ${days[0] === 1 ? 'day' : 'days'} (${trek.duration_days}).`
-        : `It comes in ${joinNames(days.map((d) => `${d}-day`))} versions (${trek.duration_days}).`,
+        ? `${formatDuration(trek.duration_days)}.`
+        : `It comes in ${durationOptions(trek.duration_days).length} versions: ${joinNames(durationOptions(trek.duration_days))}.`,
     });
   }
   if (trek.price_start != null && Number(trek.price_start) > 0) {

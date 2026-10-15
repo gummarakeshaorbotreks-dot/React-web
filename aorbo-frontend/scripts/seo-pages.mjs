@@ -96,7 +96,9 @@ const withHead = (meta) => template.replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, he
 // different treks) would overwrite each other on a case-insensitive disk
 // (Windows builds): the second one gets no file. nginx answers addresses
 // without a file with a real 404, so such a page must stay out of the sitemap
-// (the health bot flagged /treks/coorg). Fix the data: give treks unique slugs.
+// (the health bot flagged /treks/coorg). The server's disk (Linux) keeps both, so
+// there both pages are written; only Windows / macOS builds skip the second one.
+const CASE_INSENSITIVE_DISK = process.platform === 'win32' || process.platform === 'darwin';
 const writtenLower = new Set();
 
 const EMPTY_MAIN = '<main id="main" data-prerendered=""></main>';
@@ -109,7 +111,7 @@ const json = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
  * preload: the hero image url (optional) }.
  */
 async function writePage(p, meta, extra = null) {
-  if (writtenLower.has(p.toLowerCase())) {
+  if (CASE_INSENSITIVE_DISK && writtenLower.has(p.toLowerCase())) {
     console.warn(`seo-pages: ${p} differs from another page only in capitals — no own file, left out of the sitemap`);
     return false;
   }
