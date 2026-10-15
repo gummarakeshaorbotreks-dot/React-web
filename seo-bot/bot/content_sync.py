@@ -52,6 +52,13 @@ def main():
         push_geo(locate_treks()[0])
     except Exception as e:  # noqa: BLE001 - the site still builds with the last positions
         print("trek positions not updated:", e)
+    try:  # ...and their destinations for the destination pages
+        from destinations import build as build_destinations, push as push_destinations
+        dests = build_destinations()
+        state_set("destinations", dests)
+        push_destinations(dests)
+    except Exception as e:  # noqa: BLE001 - the site still builds with the last destinations
+        print("destinations not updated:", e)
     code, out = deploy(f"content changed ({n_treks} treks, {n_blogs} blogs, an SEO override, or the weekly city-page wave)")
     print(out)
     if code == 0:

@@ -52,6 +52,8 @@ export const routes = [
           { path: 'travel-your-way', lazy: page(() => import('./pages/TravelYourWay')) },
           { path: 'treks-near', lazy: page(() => import('./pages/TreksNearHub')) },
           { path: 'treks-near/:slug', lazy: page(() => import('./pages/TreksNear')) },
+          { path: 'destinations', lazy: page(() => import('./pages/Destinations').then((m) => ({ default: m.DestinationsHub }))) },
+          { path: 'destinations/:slug', lazy: page(() => import('./pages/Destinations')) },
           { path: '*', lazy: page(() => import('./pages/NotFound')) },
         ],
       },

@@ -5,6 +5,8 @@ import { createStaticHandler, createStaticRouter, StaticRouter, StaticRouterProv
 import { routes } from './routes';
 import NearView from './components/near/NearView';
 import NearHubView from './components/near/NearHubView';
+import DestinationView from './components/near/DestinationView';
+import DestinationHubView from './components/near/DestinationHubView';
 
 export async function render(path) {
   const handler = createStaticHandler(routes);
@@ -21,4 +23,13 @@ export function renderNear(page) {
 
 export function renderNearHub(hub) {
   return renderToString(<StaticRouter location={hub.path}><NearHubView hub={hub} /></StaticRouter>);
+}
+
+// "<destination> trips & treks" pages and their index.
+export function renderDestination(page) {
+  return renderToString(<StaticRouter location={page.path}><DestinationView page={page} /></StaticRouter>);
+}
+
+export function renderDestinationHub(hub) {
+  return renderToString(<StaticRouter location={hub.path}><DestinationHubView hub={hub} /></StaticRouter>);
 }

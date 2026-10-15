@@ -314,6 +314,139 @@ export function nearHubMeta(hub) {
   };
 }
 
+// ---------- "<destination> trips & treks" pages (scripts/destination-pages.mjs) ----------
+
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+/** "THU, FRI, SAT" / "fri,sat" / "Wed, Thu, Fri ,Sat" -> ["Thursday", ...] in week order. */
+export function departureDays(texts) {
+  const found = new Set();
+  for (const text of texts) {
+    for (const token of String(text || '').toLowerCase().split(/[^a-z]+/)) {
+      const day = WEEKDAYS.find((d) => token.length >= 3 && d.toLowerCase().startsWith(token.slice(0, 3)));
+      if (day) found.add(day);
+    }
+  }
+  return WEEKDAYS.filter((d) => found.has(d));
+}
+
+/** Title-style name of a destination page: "Gokarna trips and treks" / "Treks and trips in Kerala". */
+export const destinationHeading = (page) => (page.kind === 'state' ? `Treks and trips in ${page.name}` : `${page.name} trips and treks`);
+
+export function destinationFacts(page) {
+  const treks = page.treks || [];
+  const prices = treks.map((t) => t.price).filter((p) => p != null && Number(p) > 0).map(Number);
+  const days = treks.map((t) => t.days).filter((d) => d != null);
+  return {
+    count: treks.length,
+    minPrice: prices.length ? Math.min(...prices) : null,
+    maxPrice: prices.length ? Math.max(...prices) : null,
+    minDays: days.length ? Math.min(...days) : null,
+    maxDays: days.length ? Math.max(...days) : null,
+    departures: departureDays(treks.map((t) => t.operating_days)),
+  };
+}
+
+const dayRange = (a, b) => (a === b ? `${a} ${a === 1 ? 'day' : 'days'}` : `${a} to ${b} days`);
+
+/** Questions and answers shown on a destination page; the same text goes into its FAQPage data. */
+export function destinationFaqs(page) {
+  const f = destinationFacts(page);
+  const where = page.name;
+  const trip = page.kind === 'state' ? `a trip in ${where}` : `a ${where} trip`;
+  const faqs = [];
+  if (f.minDays != null) {
+    faqs.push({
+      q: `How many days do you need for ${trip}?`,
+      a: `Packages on Aorbo Treks ${page.kind === 'state' ? 'in' : 'for'} ${where} take ${dayRange(f.minDays, f.maxDays)}, depending on the package.`,
+    });
+  }
+  if (f.minPrice != null) {
+    faqs.push({
+      q: `How much does ${trip} cost?`,
+      a: f.minPrice === f.maxPrice
+        ? `Packages start from ${rupees(f.minPrice)} per person on Aorbo Treks.`
+        : `Starting prices on Aorbo Treks range from ${rupees(f.minPrice)} to ${rupees(f.maxPrice)} per person, depending on the package.`,
+    });
+  }
+  if (page.places?.length) {
+    faqs.push({
+      q: `What can I see on ${trip}?`,
+      a: `The packages here include ${joinNames(page.places.slice(0, 8))}.`,
+    });
+  }
+  if (page.from?.length) {
+    faqs.push({
+      q: `How far is ${where} from ${page.from[0].city}?`,
+      a: `About ${page.from[0].km} km in a straight line; the road distance is longer.`
+        + (page.from.length > 1 ? ` From ${joinNames(page.from.slice(1).map((m) => `${m.city} it is about ${m.km} km`))}.` : ''),
+    });
+  }
+  if (f.departures.length) {
+    faqs.push({
+      q: `On which days do ${page.kind === 'state' ? `trips in ${where}` : `${where} trips`} start?`,
+      a: `Departures are on ${joinNames(f.departures)}, depending on the package.`,
+    });
+  }
+  faqs.push({
+    q: `How do I book ${trip}?`,
+    a: 'Open a package above, choose your dates and book on Aorbo Treks, on the website or in the Aorbo Treks app.',
+  });
+  return faqs;
+}
+
+/** Tags for a destination page. */
+export function destinationMeta(page) {
+  const f = destinationFacts(page);
+  const name = page.kind === 'state' ? `Treks & Trips in ${page.name}` : `${page.name} Trips & Treks`;
+  const description = snippet(
+    `${f.count} ${page.kind === 'state' ? `trek and trip packages in ${page.name}` : `${page.name} trip and trek packages`} on Aorbo Treks`
+    + (f.minDays != null ? `, ${dayRange(f.minDays, f.maxDays)}` : '')
+    + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
+    + '.'
+    + (page.places?.length ? ` See ${joinNames(page.places.slice(0, 3))}.` : '')
+    + ' Compare and book.',
+  );
+  const url = absoluteUrl(page.path);
+  return {
+    title: `${name}: ${f.count} Packages${f.minPrice != null ? ` from ${rupees(f.minPrice)}` : ''} | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.treks?.find((t) => t.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'CollectionPage',
+        name: destinationHeading(page),
+        description,
+        url,
+        about: page.kind === 'state'
+          ? { '@type': 'State', name: page.name }
+          : { '@type': 'TouristDestination', name: page.name, ...(page.state ? { containedInPlace: { '@type': 'State', name: page.state } } : {}) },
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: page.treks.length,
+          itemListElement: page.treks.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${t.id}`), name: t.name })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Destinations', '/destinations'], [destinationHeading(page), page.path]]),
+      faqPage(destinationFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for the list of all destination pages. */
+export function destinationHubMeta(hub) {
+  return {
+    title: 'Trek & Trip Destinations in India: Packages by Place | Aorbo Treks',
+    description: snippet(`${hub.destinations} destinations and states with trek and trip packages on Aorbo Treks: compare packages, prices and durations for each place and book.`),
+    path: hub.path,
+    jsonLd: graph(
+      { '@type': 'CollectionPage', name: 'Destinations', url: absoluteUrl(hub.path) },
+      breadcrumb([['Home', '/'], ['Destinations', hub.path]]),
+    ),
+  };
+}
+
 /** Pages that must stay out of search results. */
 export const notFoundMeta = (path = '/404') => ({
   title: 'Page not found | Aorbo Treks',

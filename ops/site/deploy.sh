@@ -31,8 +31,10 @@ if [ ! -d node_modules ] || [ "$(cat node_modules/.lock-sum 2>/dev/null)" != "$s
   nice -n 10 npm ci --no-audit --no-fund --loglevel=error
   echo "$sum" > node_modules/.lock-sum
 fi
-# Trek positions from the SEO bot (put_geo.py) for the "Treks near <city>" pages.
+# Data from the SEO bot (put_data.py): trek positions for the "Treks near <city>" pages,
+# destinations for the "<destination> trips" pages.
 export TREK_GEO_FILE=$HERE/data/trek-geo.json
+export DESTINATIONS_FILE=$HERE/data/destinations.json
 if ! nice -n 10 npm run build > "$HERE/logs/build-$ts.log" 2>&1; then
   tail -20 "$HERE/logs/build-$ts.log"; echo "BUILD FAILED - site unchanged"; exit 10
 fi

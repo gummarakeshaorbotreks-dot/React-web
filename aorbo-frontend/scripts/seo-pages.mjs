@@ -15,9 +15,11 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, nearHubMeta, nearMeta, notFoundMeta, staticPageMeta, trekMeta,
+  SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
+  notFoundMeta, staticPageMeta, trekMeta,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
+import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
 
 const DIST = process.env.PRERENDER_DIST || 'dist';
@@ -169,12 +171,15 @@ for (const b of blogs) {
     urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
   }
 }
-// "Treks near <city>" pages (scripts/near-pages.mjs): full HTML built here with
-// the app's own components, plus a JSON file per page for in-app navigation.
+// Data pages: "Treks near <city>" (scripts/near-pages.mjs) and "<destination> trips"
+// (scripts/destination-pages.mjs). Full HTML built here with the app's own
+// components, plus a JSON file per page for in-app navigation.
 let near = { pages: [], hub: null, candidates: 0 };
+let destinations = { pages: [], hub: null };
 if (treks.length) {
   const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
   near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
+  destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
   const ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
   // The pages' stylesheet is a separate chunk (loaded with the page's code); link it
   // so the pre-built HTML looks right before the JavaScript arrives.
@@ -182,21 +187,24 @@ if (treks.length) {
   for (const f of await readdir(path.join(DIST, 'assets'))) {
     if (f.endsWith('.css') && (await readFile(path.join(DIST, 'assets', f), 'utf8')).includes('.near-lead')) css.push(`/assets/${f}`);
   }
-  await mkdir(path.join(DIST, 'data', 'near'), { recursive: true });
-  for (const page of near.pages) {
-    const file = `/data/near/${page.slug}.json`;
-    await writeFile(path.join(DIST, file), JSON.stringify(page));
-    if (await writePage(page.path, nearMeta(page), { main: ssr.renderNear(page), data: { file, content: page }, css })) {
-      urls.push({ loc: absoluteUrl(page.path), priority: '0.6' });
+  const writeDataPages = async (dir, { pages, hub }, meta, render, hubMeta, renderHub) => {
+    if (!pages.length) return;
+    await mkdir(path.join(DIST, 'data', dir), { recursive: true });
+    for (const page of pages) {
+      const file = `/data/${dir}/${page.slug}.json`;
+      await writeFile(path.join(DIST, file), JSON.stringify(page));
+      if (await writePage(page.path, meta(page), { main: render(page), data: { file, content: page }, css })) {
+        urls.push({ loc: absoluteUrl(page.path), priority: '0.6' });
+      }
     }
-  }
-  if (near.pages.length) {
-    await writeFile(path.join(DIST, 'data', 'near', 'index.json'), JSON.stringify(near.hub));
-    const hubData = { file: '/data/near/index.json', content: near.hub };
-    if (await writePage(near.hub.path, nearHubMeta(near.hub), { main: ssr.renderNearHub(near.hub), data: hubData, css })) {
-      urls.push({ loc: absoluteUrl(near.hub.path), priority: '0.7' });
+    const file = `/data/${dir}/index.json`;
+    await writeFile(path.join(DIST, file), JSON.stringify(hub));
+    if (await writePage(hub.path, hubMeta(hub), { main: renderHub(hub), data: { file, content: hub }, css })) {
+      urls.push({ loc: absoluteUrl(hub.path), priority: '0.7' });
     }
-  }
+  };
+  await writeDataPages('near', near, nearMeta, ssr.renderNear, nearHubMeta, ssr.renderNearHub);
+  await writeDataPages('destinations', destinations, destinationMeta, ssr.renderDestination, destinationHubMeta, ssr.renderDestinationHub);
 }
 
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
@@ -232,4 +240,4 @@ await writeFile(
     '',
   ].join('\n'),
 );
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

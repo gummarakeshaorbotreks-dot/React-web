@@ -60,12 +60,26 @@ The scripts send their own alerts; n8n schedules them and catches crashes.
   "region" = left out), OpenStreetMap finds it, accepted only in the right state, as a real place and
   within 80 km of Gemini's own estimate. The admin's coordinates were often wrong (three Andhra treks
   shared one default point), so they are used only when they agree; wrong ones are listed in the
-  Monday data report. Positions go to the web server with the SSH command `geo` (`ops/site/put_geo.py`
+  Monday data report. Positions go to the web server with the SSH command `geo` (`ops/site/put_data.py`
   -> `/opt/aorbo-site/data/trek-geo.json`, read by the build via `TREK_GEO_FILE`). The trek data
   itself is never changed.
 - Every page is full HTML at build time (the app's own components), with CollectionPage + ItemList +
   breadcrumb + FAQPage data; the FAQs are computed from the data and shown on the page. The optimizer
   never adds FAQs there.
+
+## Destination pages (/destinations/<place>, /destinations/<state>)
+
+- People search the place, not the package ("coorg trip", "gokarna", "manali trek package").
+  `bot/destinations.py`: Gemini lists the destinations each package visits (searched spelling: Coorg, not
+  Kodagu), merges spellings, filters the admin's famous places to those really at the destination (some
+  were copy-pasted from other packages) and positions each place like the treks. Answers are remembered
+  (state `dest_pkg_cache`, `dest_canonical`), so a page's address never changes once decided.
+- A destination gets a page with 2+ packages (with one, the package page already is that page); every
+  state with 3+ packages gets a state page. Now: 58 places + 10 states.
+- Sent with the SSH command `destinations` (`put_data.py` -> `/opt/aorbo-site/data/destinations.json`,
+  `DESTINATIONS_FILE`); built by `aorbo-frontend/scripts/destination-pages.mjs`: packages, durations,
+  prices, departure days, places, distance from the nearest metros (linked to city pages), FAQs from the
+  data, more destinations in the state. `content_sync.py` refreshes destinations whenever packages change.
 
 ## Deploys (web server 37.187.139.100)
 
