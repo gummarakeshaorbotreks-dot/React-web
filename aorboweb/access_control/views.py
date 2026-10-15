@@ -10,7 +10,8 @@ from datetime import timedelta
 import qrcode
 
 from django.conf import settings
-from django.contrib.auth import authenticate, get_user_model, login as auth_login
+from django.contrib import admin
+from django.contrib.auth import authenticate, get_user_model, login as auth_login, logout
 from django.contrib.auth.views import redirect_to_login
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -39,16 +40,19 @@ def _qr_data_uri(otpauth_uri: str) -> str:
 
 
 def _issue_full_session(request, user, via: str, remember_device: bool = False):
-    profile = user.staff_profile
-    profile.session_version = (profile.session_version or 0) + 1
-    profile.failed_login_attempts = 0
-    profile.account_locked_until = None
-    profile.save(update_fields=["session_version", "failed_login_attempts", "account_locked_until"])
+    # None for a superuser made via createsuperuser before seed_rbac ran.
+    profile = getattr(user, "staff_profile", None)
+    if profile is not None:
+        profile.session_version = (profile.session_version or 0) + 1
+        profile.failed_login_attempts = 0
+        profile.account_locked_until = None
+        profile.save(update_fields=["session_version", "failed_login_attempts", "account_locked_until"])
 
     if not hasattr(user, "backend"):
         user.backend = "access_control.backends.StaffLockoutBackend"
     auth_login(request, user)
-    request.session["staff_session_version"] = profile.session_version
+    if profile is not None:
+        request.session["staff_session_version"] = profile.session_version
     request.session.pop("mfa_pending_user_id", None)
     request.session.pop("mfa_pending_deadline", None)
     request.session.pop("mfa_setup_user_id", None)
@@ -56,7 +60,7 @@ def _issue_full_session(request, user, via: str, remember_device: bool = False):
     audit.record(audit.from_request(
         request, staff_profile=profile,
         action="staff.login", resource_type="staff", resource_id=str(user.id),
-        after_json={"via": via, "session_version": profile.session_version},
+        after_json={"via": via, "session_version": profile.session_version if profile else None},
     ))
 
     response = redirect(request.POST.get("next") or request.GET.get("next") or _admin_index_url())
@@ -82,7 +86,12 @@ def _record_mfa_failure(user, reason: str):
 @csrf_protect
 def staff_login(request):
     if request.user.is_authenticated:
-        return redirect(_admin_index_url())
+        if admin.site.has_permission(request):
+            return redirect(_admin_index_url())
+        # Logged in but not allowed into the admin (e.g. "Staff status" not
+        # ticked). Redirecting to the index would bounce straight back here
+        # in an endless loop, so drop the session and show the login form.
+        logout(request)
 
     error = None
     if request.method == "POST":
@@ -92,6 +101,10 @@ def staff_login(request):
 
         if user is None:
             error = "Please enter the correct username and password for a staff account."
+        elif not user.is_staff:
+            # Django's own admin login refuses these too; letting them in
+            # here only leads to the admin index rejecting them (see above).
+            error = "This account doesn't have admin access yet. Ask an admin to give it a role in its Staff profile."
         elif not hasattr(user, "staff_profile"):
             # Superuser created via createsuperuser with no RBAC profile yet -
             # let them straight in rather than locking themselves out.

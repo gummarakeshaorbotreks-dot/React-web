@@ -162,6 +162,9 @@ class UserPermissionOverrideInline(admin.TabularInline):
 class StaffUserAdmin(DjangoUserAdmin):
     inlines = [StaffProfileInline, UserPermissionOverrideInline]
     list_display = ("get_serial", "username", "email", "get_role", "get_status", "is_active", "is_superuser")
+    # Set automatically from the staff profile (signals.sync_is_staff_with_profile):
+    # an active role grants admin access, so there's no checkbox to forget.
+    readonly_fields = ("is_staff",)
 
     @admin.display(description="Serial")
     def get_serial(self, obj):
