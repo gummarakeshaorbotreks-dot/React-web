@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoGoals001",
+ "name": "SEO bot: 45-day plan - targets and today's pages for Google",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 7 * * *"
+      }
+     ]
+    }
+   },
+   "id": "27f03def-3d2e-5dd1-ad57-6abdb07d76d2",
+   "name": "Every day 07:30 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python goals.py"
+   },
+   "id": "940e47d6-3f19-5b4a-9c20-94cb6d6785ad",
+   "name": "Measure targets, list pages to request",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every day 07:30 IST": {
+   "main": [
+    [
+     {
+      "node": "Measure targets, list pages to request",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

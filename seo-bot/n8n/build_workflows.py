@@ -80,6 +80,11 @@ WORKFLOWS = {
         run("Check rankings, diagnose drops, queue fixes", "radar.py", [260, 0]),
     ], link(("Sunday 07:00 IST", "Check rankings, diagnose drops, queue fixes"))),
 
+    "goals": workflow("aorboSeoGoals001", "SEO bot: 45-day plan - targets and today's pages for Google", [
+        cron("Every day 07:30 IST", "30 7 * * *", [0, 0]),
+        run("Measure targets, list pages to request", "goals.py", [260, 0]),
+    ], link(("Every day 07:30 IST", "Measure targets, list pages to request"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),

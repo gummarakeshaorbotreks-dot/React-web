@@ -81,6 +81,22 @@ The scripts send their own alerts; n8n schedules them and catches crashes.
   prices, departure days, places, distance from the nearest metros (linked to city pages), FAQs from the
   data, more destinations in the state. `content_sync.py` refreshes destinations whenever packages change.
 
+## 45-day plan (15 Oct -> 29 Nov 2026): `bot/goals.py`, every day 07:30
+
+| Target (by 29 Nov) | Day 7 | Day 14 | Day 30 | Day 45 |
+|---|---|---|---|---|
+| Pages indexed by Google | 20 | 80 | 200 | 300 |
+| Times shown in Google (28 days) | 50 | 300 | 1,500 | 3,000 |
+| Clicks from Google (28 days) | 2 | 10 | 50 | 100 |
+| Tracked searches in Google's top 10 | 2 | 4 | 12 | 25 |
+| Tracked searches in Google's top 3 | 1 | 2 | 5 | 10 |
+| Links to us from other sites (Bing count) | 5 | 15 | 35 | 60 |
+
+The bot checks every sitemap page with the URL Inspection API (table `page_index`), measures each target
+against today's value on a straight line between milestones (table `goals_daily`), and sends the 10 most
+important unindexed pages (destinations, treks, then towns) to request in Search Console. Mondays add the
+team's tasks for the week (organiser links, listings, YouTube Shorts, Quora/Reddit, press).
+
 ## Locks against wrong trek data
 
 1. **Entry** (`aorboweb/treks_app/trek_rules.py`, used by the trek admin form and "Publish draft"):
