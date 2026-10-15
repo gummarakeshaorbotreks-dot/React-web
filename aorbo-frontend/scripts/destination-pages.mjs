@@ -7,6 +7,7 @@
 // computed here from the live trek data. A destination needs at least
 // MIN_PACKAGES packages: with one, the package's own page already is that page.
 import { readFile } from 'node:fs/promises';
+import { organisersOf } from '../src/seo/meta.js';
 import { km, minDays, slugify } from './near-pages.mjs';
 
 export const DEST_BASE = '/destinations';
@@ -47,6 +48,7 @@ export function buildDestinationPages(dests, treks, places, nearPages = []) {
         duration: t.duration_days ?? '',
         days: minDays(t.duration_days),
         operating_days: t.operating_days || '',
+        operators: organisersOf(t),
         image: t.main_image || t.images?.[0]?.image_url || null,
       }));
     const byDistance = d.lat != null

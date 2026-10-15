@@ -135,8 +135,74 @@ export function staticPageMeta(path) {
   };
 }
 
-/** Tags for a trek page, from the website API's trek object. */
-export function trekMeta(trek) {
+// Organiser names the admin uses while the real one isn't entered yet.
+export const isPlaceholderOperator = (name) => /update soon|to be (added|updated)|^tbd$|^n\/?a$/i.test(String(name || '').trim());
+
+const asList = (v) => (Array.isArray(v) ? v.filter(Boolean).map(String) : []);
+
+/** Real organiser names of a trek, tidied ("cute vogayes" -> "Cute Vogayes"); not labels like "Aorbo Certified Partner". */
+export const organisersOf = (trek) => asList(trek.operators)
+  .filter((o) => !isPlaceholderOperator(o) && !/aorbo/i.test(o))
+  .map((o) => (o === o.toLowerCase() ? o.replace(/\b[a-z]/g, (c) => c.toUpperCase()) : o.trim()));
+
+/** [{ name, count }] over a list of page treks (each with `operators`), most treks first. */
+export function organiserCounts(treks) {
+  const counts = new Map();
+  for (const t of treks || []) for (const o of t.operators || []) counts.set(o, (counts.get(o) || 0) + 1);
+  return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+const organiserAnswer = (orgs) => `On Aorbo Treks: ${joinNames(orgs.slice(0, 6).map((o) => `${o.name} (${o.count} ${o.count === 1 ? 'trek' : 'treks'})`))}.`
+  + ' Each trek page shows who runs it.';
+/** Day counts in "3D/2N,4D/3N" / "6 Days" / "5" (nights don't count). */
+export function daysOf(duration) {
+  const text = String(duration ?? '').trim();
+  if (/^\d+$/.test(text)) return [Number(text)];
+  return [...text.matchAll(/(\d+)\s*D/gi)].map((m) => Number(m[1]));
+}
+
+/**
+ * Questions and answers shown on a trek page; the same text goes into its FAQPage data.
+ * links (built by scripts/seo-pages.mjs): { destinations: [{slug, name, count}], near: [{slug, name, km}] }.
+ */
+export function trekFaqs(trek, links = null) {
+  const name = trek.name;
+  const faqs = [];
+  const days = [...new Set(daysOf(trek.duration_days))].sort((a, b) => a - b);
+  if (days.length) {
+    faqs.push({
+      q: `How many days is the ${name} trip?`,
+      a: days.length === 1
+        ? `${days[0]} ${days[0] === 1 ? 'day' : 'days'} (${trek.duration_days}).`
+        : `It comes in ${joinNames(days.map((d) => `${d}-day`))} versions (${trek.duration_days}).`,
+    });
+  }
+  if (trek.price_start != null && Number(trek.price_start) > 0) {
+    faqs.push({ q: `What is the price of the ${name} trip?`, a: `It starts from ${rupees(trek.price_start)} per person on Aorbo Treks.` });
+  }
+  const departures = departureDays([trek.operating_days]);
+  if (departures.length) {
+    faqs.push({ q: `On which days does the ${name} trip start?`, a: `Departures are on ${joinNames(departures)}.` });
+  }
+  const near = links?.near || [];
+  if (trek.state || near.length) {
+    faqs.push({
+      q: `Where is ${name}?`,
+      a: [trek.state ? `In ${trek.state}.` : '', near.length ? `It is about ${near[0].km} km from ${near[0].name} in a straight line${near[1] ? `, and about ${near[1].km} km from ${near[1].name}` : ''}.` : '']
+        .filter(Boolean).join(' '),
+    });
+  }
+  const places = asList(trek.famous_places);
+  if (places.length) faqs.push({ q: `What can I see on the ${name} trip?`, a: `The trip includes ${joinNames(places.slice(0, 6))}.` });
+  const operators = asList(trek.operators).filter((o) => !isPlaceholderOperator(o));
+  if (operators.length) {
+    faqs.push({ q: `Who organises the ${name} trip?`, a: `${joinNames(operators)} ${operators.length === 1 ? 'runs' : 'run'} it; you book on Aorbo Treks.` });
+  }
+  return faqs;
+}
+
+/** Tags for a trek page, from the website API's trek object (links: see trekFaqs). */
+export function trekMeta(trek, links = null) {
   const path = `/treks/${trek.id || trek.slug}`;
   const where = trek.state ? ` in ${trek.state}` : '';
   const price = trek.price_start != null ? ` from ₹${Number(trek.price_start).toLocaleString('en-IN')}` : '';
@@ -159,12 +225,16 @@ export function trekMeta(trek) {
       ? { offers: { '@type': 'Offer', price: Number(trek.price_start), priceCurrency: 'INR', url: absoluteUrl(path), availability: 'https://schema.org/InStock' } }
       : {}),
   };
+  const dest = links?.destinations?.find((d) => d.kind !== 'state') || links?.destinations?.[0];
+  const crumbs = dest
+    ? [['Home', '/'], ['Destinations', '/destinations'], [destinationHeading(dest), `/destinations/${dest.slug}`], [trek.name, path]]
+    : [['Home', '/'], ['Treks', '/'], [trek.name, path]];
   return {
     title: `${trek.name}${trek.state ? `, ${trek.state}` : ''} | Book with Aorbo Treks`,
     description,
     path,
     image,
-    jsonLd: graph(trip, breadcrumb([['Home', '/'], ['Treks', '/'], [trek.name, path]])),
+    jsonLd: graph(trip, breadcrumb(crumbs), faqPage(trekFaqs(trek, links))),
   };
 }
 
@@ -254,6 +324,8 @@ export function nearFaqs(page) {
       a: `Within ${page.radius} km of ${city} there are treks in ${joinNames(states)}.`,
     });
   }
+  const orgs = organiserCounts(page.treks);
+  if (orgs.length) faqs.push({ q: `Which trek organisers run treks near ${city}?`, a: organiserAnswer(orgs) });
   faqs.push({
     q: `How do I book a trek near ${city}?`,
     a: 'Open a trek above, choose your dates and book on Aorbo Treks, on the website or in the Aorbo Treks app.',
@@ -387,6 +459,10 @@ export function destinationFaqs(page) {
       q: `On which days do ${page.kind === 'state' ? `trips in ${where}` : `${where} trips`} start?`,
       a: `Departures are on ${joinNames(f.departures)}, depending on the package.`,
     });
+  }
+  const orgs = organiserCounts(page.treks);
+  if (orgs.length) {
+    faqs.push({ q: `Which organisers run ${page.kind === 'state' ? `treks in ${where}` : `${where} trips`}?`, a: organiserAnswer(orgs) });
   }
   faqs.push({
     q: `How do I book ${trip}?`,

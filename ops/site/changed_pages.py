@@ -2,7 +2,7 @@
 
     python3 changed_pages.py <live dir> <new dist>
 
-Compares title, description, canonical and JSON-LD (not asset hashes, which change
+Compares title, description, canonical, JSON-LD and page content (not asset hashes, which change
 on every code build), and includes new pages. deploy.sh sends these to IndexNow.
 """
 import re
@@ -13,8 +13,11 @@ SITE = "https://aorbotreks.com"
 
 
 def seo_fingerprint(html):
+    # The JSON-LD tag carries an id (id="ld-json" type=...), and pre-built pages have
+    # their content in <main>: both count (asset hashes elsewhere don't).
     parts = re.findall(r"<title>[^<]*</title>|<meta name=\"description\"[^>]*>|<link rel=\"canonical\"[^>]*>"
-                       r"|<script type=\"application/ld\+json\">[\s\S]*?</script>", html)
+                       r"|<script[^>]*type=\"application/ld\+json\"[^>]*>[\s\S]*?</script>"
+                       r"|<main[^>]*>[\s\S]*?</main>", html)
     return "\n".join(parts)
 
 

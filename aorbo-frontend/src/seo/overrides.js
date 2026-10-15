@@ -11,14 +11,17 @@ export function withOverride(meta, override) {
   if (override.description) out.description = override.description;
   const faqs = (override.faqs || []).filter((f) => f && f.q && f.a);
   if (faqs.length) {
-    const faqPage = {
-      '@type': 'FAQPage',
-      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-    };
+    const questions = faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }));
     const ld = meta.jsonLd;
-    out.jsonLd = ld && ld['@graph']
-      ? { ...ld, '@graph': [...ld['@graph'], faqPage] }
-      : { '@context': 'https://schema.org', '@graph': [ld, faqPage].filter(Boolean) };
+    const graph = ld && ld['@graph'] ? ld['@graph'] : [ld].filter(Boolean);
+    // A page may only have one FAQPage: add to the page's own FAQs if it has them.
+    const own = graph.find((n) => n['@type'] === 'FAQPage');
+    out.jsonLd = {
+      '@context': 'https://schema.org',
+      '@graph': own
+        ? graph.map((n) => (n === own ? { ...own, mainEntity: [...own.mainEntity, ...questions] } : n))
+        : [...graph, { '@type': 'FAQPage', mainEntity: questions }],
+    };
   }
   return out;
 }

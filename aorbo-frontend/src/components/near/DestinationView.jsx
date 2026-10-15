@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
-import { destinationFacts, destinationFaqs, destinationHeading } from '../../seo/meta';
+import { destinationFacts, destinationFaqs, destinationHeading, organiserCounts } from '../../seo/meta';
 import { formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 
@@ -23,6 +23,7 @@ const days = (n) => `${n} ${n === 1 ? 'day' : 'days'}`;
 export default function DestinationView({ page }) {
   const f = destinationFacts(page);
   const faqs = destinationFaqs(page);
+  const organisers = organiserCounts(page.treks);
   const isState = page.kind === 'state';
 
   return (
@@ -63,6 +64,17 @@ export default function DestinationView({ page }) {
                   <strong>From {m.city}: about {m.km} km</strong>
                   {m.page && <Link to={`/treks-near/${m.page}`}>All treks near {m.city}</Link>}
                 </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {organisers.length > 0 && (
+          <section className="section near-section">
+            <SectionHeading title={`Organisers of ${isState ? `treks in ${page.name}` : `${page.name} trips`}`} subtitle="The companies that run these treks; you book them on Aorbo Treks." />
+            <ul className="near-list">
+              {organisers.map((o) => (
+                <li key={o.name}><strong>{o.name}</strong><span>{o.count} {o.count === 1 ? 'trek' : 'treks'} listed here</span></li>
               ))}
             </ul>
           </section>

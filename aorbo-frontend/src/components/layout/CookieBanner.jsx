@@ -39,7 +39,7 @@ export default function CookieBanner() {
     <div id="cookie-banner" className="cookie-banner" role="region" aria-label="Cookie consent">
       <p className="cookie-banner__text">
         We use cookies to personalize your experience.{' '}
-        <Link to="/privacy-policy">Learn more</Link>
+        <Link to="/privacy-policy">Learn more about cookies</Link>
       </p>
       <div className="cookie-banner__actions">
         <button type="button" onClick={() => choose('declined')} className="button button--sm button--ghost-light">

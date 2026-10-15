@@ -104,8 +104,9 @@ if (!template.includes(EMPTY_MAIN)) throw new Error(`dist/index.html is missing 
 const json = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
 
 /**
- * extra (city pages): { main: pre-rendered page HTML, data: the page's JSON (path
- * of its file + content, so the app needs no request), css: [stylesheet urls] }.
+ * extra (pre-built pages): { main: pre-rendered page HTML, data: the page's JSON (path
+ * of its file + content, so the app needs no request), css: [stylesheet texts, inlined],
+ * preload: the hero image url (optional) }.
  */
 async function writePage(p, meta, extra = null) {
   if (writtenLower.has(p.toLowerCase())) {
@@ -119,7 +120,15 @@ async function writePage(p, meta, extra = null) {
   if (extra) {
     html = html
       .replace(EMPTY_MAIN, `<main id="main" data-prerendered="" data-static="">${extra.main}</main>`)
-      .replace('<!--/seo-->', `<!--/seo-->\n    ${extra.css.map((href) => `<link rel="stylesheet" href="${esc(href)}">`).join('\n    ')}`)
+      .replace('<!--/seo-->', `<!--/seo-->\n    ${[
+        // The hero photo is the largest thing on a trek page: start downloading it at once
+        // (the page's own preload sits in <body>, found later).
+        extra.preload
+          ? `<link rel="preload" as="image" href="${esc(extra.preload)}" fetchpriority="high"${extra.preload.includes('.supabase.co/') ? ' crossorigin="anonymous"' : ''}>`
+          : '',
+        // The page's own small stylesheet, inline: no request before the first paint.
+        ...extra.css.map((text) => `<style>${text}</style>`),
+      ].filter(Boolean).join('\n    ')}`)
       .replace('</body>', `<script id="page-data" type="application/json" data-file="${esc(extra.data.file)}">${json(extra.data.content)}</script>\n  </body>`);
   }
   await writeFile(file, html);
@@ -154,16 +163,67 @@ try {
   console.warn(`seo-pages: API unreachable (${e.message}); static pages only.`);
 }
 
+// Computed before any page is written: trek pages link to the city and destination
+// pages they appear on. "Treks near <city>": scripts/near-pages.mjs; "<destination>
+// trips": scripts/destination-pages.mjs. These pages, and the trek pages, are full
+// HTML built with the app's own components (the SSR bundle), plus a JSON file per
+// page for in-app navigation.
+let near = { pages: [], hub: null, candidates: 0 };
+let destinations = { pages: [], hub: null };
+let ssr = null;
+if (treks.length) {
+  const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
+  near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
+  destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
+  ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
+}
+// A page's stylesheet is a separate chunk (loaded with the page's code); inline it so
+// the pre-built HTML looks right before the JavaScript arrives.
+async function cssWith(marker) {
+  const found = [];
+  for (const f of await readdir(path.join(DIST, 'assets'))) {
+    const text = f.endsWith('.css') ? await readFile(path.join(DIST, 'assets', f), 'utf8') : '';
+    if (text.includes(marker)) found.push(text.replaceAll('</', '<\\/'));
+  }
+  return found;
+}
+const trekLinks = new Map();
+const linksOf = (id) => {
+  if (!trekLinks.has(id)) trekLinks.set(id, { destinations: [], near: [] });
+  return trekLinks.get(id);
+};
+for (const d of destinations.pages) {
+  for (const t of d.treks) linksOf(t.id).destinations.push({ slug: d.slug, name: d.name, kind: d.kind, count: d.treks.length });
+}
+for (const c of near.pages) {
+  for (const t of c.treks) linksOf(t.id).near.push({ slug: c.slug, name: c.name, km: t.km });
+}
+for (const l of trekLinks.values()) {
+  l.destinations.sort((a, b) => (a.kind === 'state') - (b.kind === 'state') || b.count - a.count).splice(4);
+  l.near.sort((a, b) => a.km - b.km).splice(3);
+}
+
 const urls = [];
 for (const p of Object.keys(STATIC_PAGES)) {
   if (await writePage(p, staticPageMeta(p))) urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
 }
 const seen = new Set();
+const trekCss = ssr ? await cssWith('.detail-hero') : [];
+if (ssr) await mkdir(path.join(DIST, 'data', 'treks'), { recursive: true });
 for (const t of treks) {
-  const meta = trekMeta(t);
+  const id = t.id || t.slug;
+  const links = trekLinks.get(id) || { destinations: [], near: [] };
+  const meta = trekMeta(t, links);
   if (seen.has(meta.path)) continue;
   seen.add(meta.path);
-  if (await writePage(meta.path, meta)) urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
+  const file = `/data/treks/${encodeURIComponent(id)}.json`;
+  const content = { trek: t, links };
+  const hero = /^https?:/.test(t.main_image || '') ? t.main_image : null;
+  const extra = ssr ? { main: ssr.renderTrek(content, meta.path), data: { file, content }, css: trekCss, preload: hero } : null;
+  if (await writePage(meta.path, meta, extra)) {
+    urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
+    if (ssr) await writeFile(path.join(DIST, 'data', 'treks', `${id}.json`), JSON.stringify(content));
+  }
 }
 for (const b of blogs) {
   const meta = blogMeta(b);
@@ -171,22 +231,8 @@ for (const b of blogs) {
     urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
   }
 }
-// Data pages: "Treks near <city>" (scripts/near-pages.mjs) and "<destination> trips"
-// (scripts/destination-pages.mjs). Full HTML built here with the app's own
-// components, plus a JSON file per page for in-app navigation.
-let near = { pages: [], hub: null, candidates: 0 };
-let destinations = { pages: [], hub: null };
-if (treks.length) {
-  const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
-  near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
-  destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
-  const ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
-  // The pages' stylesheet is a separate chunk (loaded with the page's code); link it
-  // so the pre-built HTML looks right before the JavaScript arrives.
-  const css = [];
-  for (const f of await readdir(path.join(DIST, 'assets'))) {
-    if (f.endsWith('.css') && (await readFile(path.join(DIST, 'assets', f), 'utf8')).includes('.near-lead')) css.push(`/assets/${f}`);
-  }
+if (ssr) {
+  const css = await cssWith('.near-lead');
   const writeDataPages = async (dir, { pages, hub }, meta, render, hubMeta, renderHub) => {
     if (!pages.length) return;
     await mkdir(path.join(DIST, 'data', dir), { recursive: true });

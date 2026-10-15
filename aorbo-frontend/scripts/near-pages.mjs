@@ -14,6 +14,7 @@
 // Trek positions: the SEO bot's verified positions (TREK_GEO_FILE, see
 // seo-bot/bot/trek_geo.py); the admin's coordinates only when that file is missing.
 import { readFile } from 'node:fs/promises';
+import { organisersOf } from '../src/seo/meta.js';
 
 export const NEAR_BASE = '/treks-near';
 const RADII = [150, 250, 400, 600];
@@ -90,6 +91,7 @@ export function buildNearPages(treks, geo, places, { date = new Date() } = {}) {
       duration: t.duration_days ?? '',
       days: minDays(t.duration_days),
       operating_days: t.operating_days || '',
+      operators: organisersOf(t),
       image: t.main_image || t.images?.[0]?.image_url || null,
     });
   }
@@ -147,6 +149,7 @@ export function buildNearPages(treks, geo, places, { date = new Date() } = {}) {
       days: t.days,
       operating_days: t.operating_days,
       image: t.image,
+      operators: t.operators,
     })),
     nearby: released
       .filter((o) => o !== c)
