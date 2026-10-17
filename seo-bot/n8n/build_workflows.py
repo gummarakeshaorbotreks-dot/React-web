@@ -80,6 +80,11 @@ WORKFLOWS = {
         run("Check rankings, diagnose drops, queue fixes", "radar.py", [260, 0]),
     ], link(("Sunday 07:00 IST", "Check rankings, diagnose drops, queue fixes"))),
 
+    "uptime": workflow("aorboSeoUptime01", "SEO bot: is the website reachable? (every 5 minutes)", [
+        cron("Every 5 minutes", "*/5 * * * *", [0, 0]),
+        run("Check site, alert on change", "uptime.py", [260, 0]),
+    ], link(("Every 5 minutes", "Check site, alert on change"))),
+
     "goals": workflow("aorboSeoGoals001", "SEO bot: 45-day plan - targets and today's pages for Google", [
         cron("Every day 07:30 IST", "30 7 * * *", [0, 0]),
         run("Measure targets, list pages to request", "goals.py", [260, 0]),

@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoUptime01",
+ "name": "SEO bot: is the website reachable? (every 5 minutes)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "*/5 * * * *"
+      }
+     ]
+    }
+   },
+   "id": "158b0bd7-be95-57bf-95be-6c88c5e9d973",
+   "name": "Every 5 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python uptime.py"
+   },
+   "id": "29d00edb-8709-513d-a6ee-948a794e3904",
+   "name": "Check site, alert on change",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every 5 minutes": {
+   "main": [
+    [
+     {
+      "node": "Check site, alert on change",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

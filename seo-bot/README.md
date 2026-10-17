@@ -12,6 +12,7 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Google Search daily pull | 09:00 daily | `bot/gsc_pull.py` | Clicks, impressions, position moves, indexing of key pages |
 | Rebuild site when treks or blogs change | every 3 h at :15 | `bot/content_sync.py` → `bot/sitedeploy.py` | Quiet 🚀 line per rebuild; loud if it failed or rolled back |
 | Improve pages + judge earlier changes | 10:00 daily | `bot/optimizer.py` | ✏️ new titles / ❓ FAQs with the reason; ↩️ rollbacks; ⏸ frozen during Google updates |
+| Website reachable? | every 5 min | `bot/uptime.py` | 🔴 down after 2 failed checks (says whether our server or AIC's entry point is at fault), 🟢 back + how long |
 | Trek data check | Monday 08:00 | `bot/data_quality.py` | 🧹 treks with wrong state (vs map position), lowercase names, collisions, missing data |
 | Competitor radar | Sunday 07:00 | `bot/radar.py` | 📡 our Google positions, 📉 drops with the cause + fix or team to-do, 🛡 top-3 defence, 🔥 #1 streaks, 👑 who rules |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
