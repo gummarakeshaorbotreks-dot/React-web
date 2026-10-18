@@ -9,6 +9,7 @@ import DestinationView from './components/near/DestinationView';
 import DestinationHubView from './components/near/DestinationHubView';
 import RouteView from './components/near/RouteView';
 import TrekView from './components/trek/TrekView';
+import AppView from './components/AppView';
 import OrganiserView from './components/near/OrganiserView';
 import OrganiserHubView from './components/near/OrganiserHubView';
 
@@ -32,6 +33,11 @@ export function renderNearHub(hub) {
 // Trek pages (data: the API's trek object + destination / city links).
 export function renderTrek({ trek, links }, path) {
   return renderToString(<StaticRouter location={path}><TrekView trek={trek} links={links} /></StaticRouter>);
+}
+
+// The /app page (no data).
+export function renderApp() {
+  return renderToString(<StaticRouter location="/app"><AppView /></StaticRouter>);
 }
 
 // Organiser profile pages and their index.

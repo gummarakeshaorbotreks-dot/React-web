@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { PLAY_STORE_URL } from '../../seo/meta';
 import '../../styles/Navbar.css';
 
 const NAV_LINKS = [
@@ -43,7 +44,7 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <span className="chip site-nav__cta">App coming soon</span>
+          <a className="chip site-nav__cta" href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer">Get the app</a>
         </div>
       </div>
     </nav>

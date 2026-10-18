@@ -38,6 +38,7 @@ export const routes = [
         children: [
           { index: true, Component: Home },
           { path: 'about', lazy: page(() => import('./pages/About')) },
+          { path: 'app', lazy: page(() => import('./pages/AppPage')) },
           { path: 'blogs', lazy: page(() => import('./pages/Blogs')) },
           { path: 'blogs/:slug', lazy: page(() => import('./pages/BlogDetail')) },
           { path: 'contact', lazy: page(() => import('./pages/Contact')) },

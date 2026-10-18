@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PLAY_STORE_URL } from '../../seo/meta';
 import '../../styles/Footer.css';
 
 const COLUMNS = [
@@ -18,6 +19,7 @@ const COLUMNS = [
       { to: '/treks-near', label: 'Treks near you' },
       { to: '/destinations', label: 'Destinations' },
       { to: '/organisers', label: 'Trek organisers' },
+      { to: '/app', label: 'Aorbo Treks app' },
       { to: '/user-agreement', label: 'User Agreement' },
       { to: '/refund-policy', label: 'Refund Policy' },
       { href: '#', label: 'Insurance Partner' },
@@ -33,8 +35,8 @@ const SOCIALS = [
 ];
 
 const STORES = [
-  { name: 'Get it on Google Play', img: '/images/Vector.webp', href: 'https://play.google.com/store' },
-  { name: 'Download on the App Store', img: '/images/Vector-1.webp', href: 'https://www.apple.com/app-store/' },
+  // Android app (live). No iPhone app yet: no App Store badge until there is one.
+  { name: 'Get the Aorbo Treks app on Google Play', img: '/images/Vector.webp', href: PLAY_STORE_URL },
 ];
 
 export default function Footer() {
@@ -49,7 +51,7 @@ export default function Footer() {
             <p>
               Aorbo Treks is an online trek booking platform: compare treks from verified trek organisers across
               India and book them in one place. Whether you&apos;re going solo or with a group, we make trekking
-              simple and hassle-free.
+              simple and hassle-free. Based in Hyderabad, Telangana.
             </p>
             <div className="site-footer__stores">
               {STORES.map((store) => (

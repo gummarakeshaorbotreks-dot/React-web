@@ -94,9 +94,15 @@
 }
 
 .site-nav__cta {
-  background: var(--surface-alt);
-  color: var(--text);
+  background: var(--brand);
+  color: var(--ink);
+  font-weight: 600;
   white-space: nowrap;
+}
+
+.site-nav__cta:hover {
+  background: var(--brand-hover);
+  color: var(--ink);
 }
 
 /* Below 992px the links move into a drop-down opened by the menu button. */

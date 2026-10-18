@@ -86,7 +86,43 @@ function breadcrumb(items) {
 }
 
 /** Pages whose tags never depend on data. Keys are the site paths. */
+/** The /app page's questions (shown on the page and sent as FAQPage data). */
+export const APP_FAQS = [
+  { q: 'Is the Aorbo Treks app free?', a: 'Yes. The Aorbo Treks app is free to download on Google Play; you pay only for the trek you book.' },
+  { q: 'Which phones does the Aorbo Treks app work on?', a: 'Android phones. Download it from Google Play.' },
+  { q: 'What can I do in the Aorbo Treks app?', a: 'Search treks across India, compare organisers for the same place by price, dates and durations, and book your slot.' },
+  { q: 'Does Aorbo Treks run the treks?', a: 'No. Aorbo Treks is an online trek booking platform: each trek is run by the verified organiser named on it.' },
+  { q: 'Can I book on the website too?', a: 'Yes. The same treks are on aorbotreks.com.' },
+];
+
 export const STATIC_PAGES = {
+  '/app': {
+    title: 'Aorbo Treks App: Book Treks on Your Phone (Free, Android)',
+    description:
+      'The Aorbo Treks app is free on Android: search treks across India, compare verified organisers by price, dates and durations, and book your slot in a few taps.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'MobileApplication',
+          name: 'Aorbo Treks',
+          alternateName: 'AORBO TREKS',
+          operatingSystem: 'ANDROID',
+          applicationCategory: 'TravelApplication',
+          installUrl: PLAY_STORE_URL,
+          url: `${SITE_URL}/app`,
+          description: 'Book treks across India from verified organisers: compare prices, dates and durations and book in a few taps.',
+          offers: { '@type': 'Offer', price: 0, priceCurrency: 'INR' },
+          publisher: { '@id': `${SITE_URL}/#organization` },
+        },
+        { '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Aorbo Treks app', item: `${SITE_URL}/app` },
+        ] },
+        { '@type': 'FAQPage', mainEntity: APP_FAQS.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+      ],
+    },
+  },
   '/': {
     title: 'Aorbo Treks | Online Trek Booking Platform in India',
     description:

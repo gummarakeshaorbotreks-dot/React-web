@@ -133,7 +133,9 @@ async function writePage(p, meta, extra = null) {
         // The page's own small stylesheet, inline: no request before the first paint.
         ...extra.css.map((text) => `<style>${text}</style>`),
       ].filter(Boolean).join('\n    ')}`)
-      .replace('</body>', `<script id="page-data" type="application/json" data-file="${esc(extra.data.file)}">${json(extra.data.content)}</script>\n  </body>`);
+      .replace('</body>', extra.data
+        ? `<script id="page-data" type="application/json" data-file="${esc(extra.data.file)}">${json(extra.data.content)}</script>\n  </body>`
+        : '</body>');
   }
   await writeFile(file, html);
   return true;
@@ -217,7 +219,9 @@ for (const l of trekLinks.values()) {
 
 const urls = [];
 for (const p of Object.keys(STATIC_PAGES)) {
-  if (await writePage(p, staticPageMeta(p))) urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
+  // /app has no data: its content is pre-built too, so search engines read it without JavaScript.
+  const extra = p === '/app' && ssr ? { main: ssr.renderApp(), css: await cssWith('.near-lead') } : null;
+  if (await writePage(p, staticPageMeta(p), extra)) urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
 }
 const seen = new Set();
 const trekCss = ssr ? await cssWith('.detail-hero') : [];
