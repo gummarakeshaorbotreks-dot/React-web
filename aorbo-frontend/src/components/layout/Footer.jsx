@@ -47,8 +47,9 @@ export default function Footer() {
               <img src="/images/aorbo-wordmark-light.webp" alt="Aorbo Treks" width="129" height="36" loading="lazy" />
             </Link>
             <p>
-              Aorbo Treks helps travellers find and book treks easily by connecting them with trusted trek
-              organizers. Whether you're going solo or with a group, we make trekking simple and hassle-free.
+              Aorbo Treks is an online trek booking platform: compare treks from verified trek organisers across
+              India and book them in one place. Whether you&apos;re going solo or with a group, we make trekking
+              simple and hassle-free.
             </p>
             <div className="site-footer__stores">
               {STORES.map((store) => (

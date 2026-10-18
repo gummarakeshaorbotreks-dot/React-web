@@ -30,16 +30,30 @@ export function snippet(text, max = 158) {
   return `${cut.slice(0, cut.lastIndexOf(' ') > 60 ? cut.lastIndexOf(' ') : cut.length)}…`;
 }
 
+// What Aorbo Treks IS, in words search engines and AI summaries reuse: a booking
+// platform (marketplace), not a trek operator. Google's AI summary once called it a
+// "trekking organizer" (trek pages also named Aorbo as each trip's provider).
+export const ABOUT_AORBO = 'Aorbo Treks is an online trek booking platform: verified trek organisers list their '
+  + 'treks, and trekkers compare and book them in one place, on the website and in the app. Aorbo Treks does not '
+  + 'run treks itself; each trek is run by the organiser named on its page.';
+
 const organization = {
-  '@type': 'Organization',
+  '@type': ['Organization', 'OnlineBusiness'],
   '@id': `${SITE_URL}/#organization`,
   name: SITE_NAME,
   legalName: 'AORBO INFOCOM',
+  description: ABOUT_AORBO,
+  slogan: 'Your Trek, Just a Click Away!!',
   url: SITE_URL,
-  logo: `${SITE_URL}/images/apple-touch-icon.png`,
+  logo: `${SITE_URL}/images/favicon-192x192.png`,
   email: 'care@aorbotreks.com',
   address: { '@type': 'PostalAddress', addressLocality: 'Hyderabad', addressRegion: 'Telangana', addressCountry: 'IN' },
-  sameAs: [PLAY_STORE_URL],
+  sameAs: [
+    PLAY_STORE_URL,
+    'https://www.instagram.com/aorbo_treks_official',
+    'https://x.com/Aorbo_treks',
+    'https://www.quora.com/profile/Aorbo-Treks',
+  ],
 };
 
 const website = {
@@ -68,15 +82,15 @@ function breadcrumb(items) {
 /** Pages whose tags never depend on data. Keys are the site paths. */
 export const STATIC_PAGES = {
   '/': {
-    title: 'Aorbo Treks | Book Verified Treks Across India',
+    title: 'Aorbo Treks | Online Trek Booking Platform in India',
     description:
-      'Find and book treks across India from verified trek organisers. Compare Himalayan, Western Ghats and weekend treks by price, duration and reviews, and book in minutes.',
+      'Aorbo Treks is an online trek booking platform: compare treks from verified trek organisers across India by price, dates and duration, and book in one place.',
     jsonLd: graph(organization, website),
   },
   '/about': {
-    title: 'About Aorbo Treks | Verified Trek Organisers Across India',
+    title: 'About Aorbo Treks | Online Trek Booking Platform',
     description:
-      'Aorbo Treks connects trekkers with verified trek organisers across India. Learn how we check organisers, review every listing and help you book with confidence.',
+      'Aorbo Treks is an online trek booking platform: verified organisers list their treks, trekkers compare and book them in one place. How we check organisers and listings.',
     breadcrumb: [['Home', '/'], ['About', '/about']],
   },
   '/blogs': {
@@ -209,6 +223,10 @@ export function trekMeta(trek, links = null) {
   const where = trek.state ? ` in ${trek.state}` : '';
   const price = trek.price_start != null ? ` from ₹${Number(trek.price_start).toLocaleString('en-IN')}` : '';
   const image = trek.main_image || trek.images?.[0]?.image_url || DEFAULT_IMAGE;
+  const organisers = organisersOf(trek).map((name) => {
+    const page = links?.organisers?.find((o) => o.name.toLowerCase() === name.toLowerCase());
+    return { '@type': 'TravelAgency', name, ...(page ? { url: absoluteUrl(`/organisers/${page.slug}`) } : {}) };
+  });
   const description = snippet(
     trek.description
       ? `${trek.name}${where}${price}. ${trek.description}`
@@ -221,10 +239,16 @@ export function trekMeta(trek, links = null) {
     url: absoluteUrl(path),
     image,
     touristType: 'Trekking',
-    provider: { '@id': `${SITE_URL}/#organization` },
+    // The organiser runs the trek and sells it; Aorbo Treks is only the platform it's booked on.
+    ...(organisers.length ? { provider: organisers.length === 1 ? organisers[0] : organisers } : {}),
     ...(trek.state ? { itinerary: { '@type': 'Place', name: trek.state, address: { '@type': 'PostalAddress', addressRegion: trek.state, addressCountry: 'IN' } } } : {}),
     ...(trek.price_start != null
-      ? { offers: { '@type': 'Offer', price: Number(trek.price_start), priceCurrency: 'INR', url: absoluteUrl(path), availability: 'https://schema.org/InStock' } }
+      ? {
+        offers: {
+          '@type': 'Offer', price: Number(trek.price_start), priceCurrency: 'INR', url: absoluteUrl(path), availability: 'https://schema.org/InStock',
+          ...(organisers.length ? { seller: organisers[0] } : {}),
+        },
+      }
       : {}),
   };
   const dest = links?.destinations?.find((d) => d.kind !== 'state') || links?.destinations?.[0];

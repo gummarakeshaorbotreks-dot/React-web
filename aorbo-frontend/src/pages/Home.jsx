@@ -42,7 +42,7 @@ export default function Home() {
           <p className="hero-badge">Aorbo Treks</p>
           <h1 className="hero-heading">Discover Your Adventure</h1>
           <p className="hero-subtitle">
-            Search for your next trek or destination and start planning an unforgettable experience.
+            India&apos;s online trek booking platform: compare treks from verified organisers and book in one place.
           </p>
           <HeroSearch />
         </div>
