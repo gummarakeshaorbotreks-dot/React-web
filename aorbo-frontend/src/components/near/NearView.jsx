@@ -3,7 +3,7 @@ import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
 import { WEEKEND_MAX_DAYS, WEEKEND_MAX_KM, nearFacts, nearFaqs, organiserCounts } from '../../seo/meta';
-import { formatPrice } from '../../utils/format';
+import { formatDuration, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 
 const capital = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
@@ -64,7 +64,7 @@ export default function NearView({ page }) {
               {weekend.map((t) => (
                 <li key={t.id}>
                   <Link to={`/treks/${t.id}`}>{capital(t.name)}</Link>
-                  <span>{t.km} km · {t.days} {t.days === 1 ? 'day' : 'days'}{t.price != null ? ` · from ${formatPrice(t.price)}` : ''}</span>
+                  <span>{t.km} km · {formatDuration(t.duration)}{t.price != null ? ` · from ${formatPrice(t.price)}` : ''}</span>
                 </li>
               ))}
             </ul>

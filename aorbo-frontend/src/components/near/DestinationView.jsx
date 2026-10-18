@@ -3,7 +3,7 @@ import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
 import { destinationFacts, destinationFaqs, destinationHeading, organiserCounts } from '../../seo/meta';
-import { formatPrice } from '../../utils/format';
+import { allDurations, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 
 const asCard = (t) => ({
@@ -15,8 +15,6 @@ const asCard = (t) => ({
   operating_days: t.operating_days,
   images: t.image ? [{ image_url: t.image }] : [],
 });
-
-const days = (n) => `${n} ${n === 1 ? 'day' : 'days'}`;
 
 // A "<destination> trips & treks" page (or a state page). Pure: everything comes
 // from `page` (scripts/destination-pages.mjs), so the build can pre-render it.
@@ -36,7 +34,7 @@ export default function DestinationView({ page }) {
       />
       <div className="container">
         <p className="near-lead">
-          {f.minDays != null && `Trips take ${f.minDays === f.maxDays ? days(f.minDays) : `${f.minDays} to ${f.maxDays} days`}. `}
+          {allDurations(page.treks.map((t) => t.duration)).length > 0 && `Durations: ${allDurations(page.treks.map((t) => t.duration)).join(', ')}. `}
           {f.minPrice != null && `Prices start from ${formatPrice(f.minPrice)} per person. `}
           {f.departures.length > 0 && `Departures on ${f.departures.join(', ')}. `}
           {page.statePage && <>See also <Link to={`/destinations/${page.statePage}`}>all treks and trips in {page.state}</Link>.</>}

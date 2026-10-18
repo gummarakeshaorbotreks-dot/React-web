@@ -6,7 +6,7 @@
 // build (scripts/seo-pages.mjs, which writes one HTML file per page so the
 // very first HTML of every address already carries the right tags).
 
-import { durationOptions, formatDuration } from '../utils/format.js';
+import { allDurations, durationOptions, formatDuration } from '../utils/format.js';
 
 export const SITE_URL = 'https://aorbotreks.com';
 export const SITE_NAME = 'Aorbo Treks';
@@ -452,7 +452,12 @@ export function destinationFacts(page) {
   };
 }
 
-const dayRange = (a, b) => (a === b ? `${a} ${a === 1 ? 'day' : 'days'}` : `${a} to ${b} days`);
+// Durations are listed as the real options ("2 Days / 1 Night and 3 Days / 2 Nights"), never as a range.
+const durationList = (values) => joinNames(allDurations(values));
+const fewDurations = (values) => {
+  const all = allDurations(values);
+  return all.length > 2 ? `${all.slice(0, 2).join(', ')} and more` : joinNames(all);
+};
 
 /** Questions and answers shown on a destination page; the same text goes into its FAQPage data. */
 export function destinationFaqs(page) {
@@ -463,7 +468,7 @@ export function destinationFaqs(page) {
   if (f.minDays != null) {
     faqs.push({
       q: `How many days do you need for ${trip}?`,
-      a: `Packages on Aorbo Treks ${page.kind === 'state' ? 'in' : 'for'} ${where} take ${dayRange(f.minDays, f.maxDays)}, depending on the package.`,
+      a: `Packages on Aorbo Treks ${page.kind === 'state' ? 'in' : 'for'} ${where} come as ${durationList(page.treks.map((t) => t.duration))}, depending on the package.`,
     });
   }
   if (f.minPrice != null) {
@@ -510,7 +515,7 @@ export function destinationMeta(page) {
   const name = page.kind === 'state' ? `Treks & Trips in ${page.name}` : `${page.name} Trips & Treks`;
   const description = snippet(
     `${f.count} ${page.kind === 'state' ? `trek and trip packages in ${page.name}` : `${page.name} trip and trek packages`} on Aorbo Treks`
-    + (f.minDays != null ? `, ${dayRange(f.minDays, f.maxDays)}` : '')
+    + (f.minDays != null ? `, ${fewDurations(page.treks.map((t) => t.duration))}` : '')
     + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
     + '.'
     + (page.places?.length ? ` See ${joinNames(page.places.slice(0, 3))}.` : '')
@@ -594,7 +599,7 @@ export function routeFaqs(page) {
   if (f.minDays != null) {
     faqs.push({
       q: `How many days do you need for ${trip}?`,
-      a: `The packages here take ${dayRange(f.minDays, f.maxDays)}, travel from ${city} included.`,
+      a: `The packages here come as ${durationList(page.departures.map((d) => d.duration))}, travel from ${city} included.`,
     });
   }
   if (page.city.km != null) {

@@ -107,6 +107,22 @@ a.trek-card:hover .trek-card__media img {
   gap: 0.35rem;
 }
 
+/* Every duration option of the package, one per line ("3 Days / 2 Nights") */
+.trek-card__meta .trek-card__durations {
+  flex-basis: 100%;
+  align-items: flex-start;
+}
+
+.trek-card__durations > span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.trek-card__durations svg {
+  margin-top: 0.15rem;
+}
+
 /* Skeleton placeholders while treks load */
 .skeleton {
   display: block;

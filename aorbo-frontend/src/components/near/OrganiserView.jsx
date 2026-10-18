@@ -3,7 +3,7 @@ import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
 import { organiserFacts, organiserFaqs } from '../../seo/meta';
-import { formatPrice } from '../../utils/format';
+import { allDurations, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 
 const asCard = (t) => ({
@@ -33,7 +33,7 @@ export default function OrganiserView({ page }) {
       <div className="container">
         <p className="near-lead">
           {f.minPrice != null && `Prices start from ${formatPrice(f.minPrice)} per person. `}
-          {f.minDays != null && `Trips take ${f.minDays === f.maxDays ? `${f.minDays} days` : `${f.minDays} to ${f.maxDays} days`}. `}
+          {allDurations(page.treks.map((t) => t.duration)).length > 0 && `Durations: ${allDurations(page.treks.map((t) => t.duration)).join(', ')}. `}
           {f.departures.length > 0 && `Departures on ${f.departures.join(', ')}. `}
           Book any of these on Aorbo Treks, or compare them with other organisers&apos; treks for the same place.
         </p>

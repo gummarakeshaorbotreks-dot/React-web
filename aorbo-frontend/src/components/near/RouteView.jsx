@@ -2,10 +2,8 @@ import { Link } from 'react-router-dom';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
 import { routeFacts, routeFaqs, routeHeading } from '../../seo/meta';
-import { formatPrice } from '../../utils/format';
+import { allDurations, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
-
-const days = (n) => `${n} ${n === 1 ? 'day' : 'days'}`;
 
 // A "<destination> trip from <city>" page. Pure: everything comes from `page`
 // (scripts/route-pages.mjs), so the build can pre-render it. Every row is a real
@@ -27,7 +25,7 @@ export default function RouteView({ page }) {
       <div className="container">
         <p className="near-lead">
           {f.minPrice != null && `From ${formatPrice(f.minPrice)} per person from ${city}. `}
-          {f.minDays != null && `Trips take ${f.minDays === f.maxDays ? days(f.minDays) : `${f.minDays} to ${f.maxDays} days`}. `}
+          {allDurations(page.departures.map((d) => d.duration)).length > 0 && `Durations: ${allDurations(page.departures.map((d) => d.duration)).join(', ')}. `}
           {f.departures.length > 0 && `Leaves on ${f.departures.join(', ')}. `}
           {page.city.km != null && `${where} is about ${page.city.km} km from ${city} in a straight line.`}
         </p>

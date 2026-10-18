@@ -31,14 +31,15 @@ export function durationOptions(value) {
 /** Every option in full: "2 Days / 1 Night, 3 Days / 2 Nights". */
 export const formatDuration = (value) => durationOptions(value).join(', ');
 
-/** For small spaces (cards, the photo header): one option in full, several as "2 to 5 Days". */
-export function formatDurationShort(value) {
-  const options = durationOptions(value);
-  if (options.length < 2) return options[0] || '';
-  const days = options.map((o) => parseInt(o, 10)).filter((d) => !Number.isNaN(d));
-  const min = Math.min(...days);
-  const max = Math.max(...days);
-  return min === max ? options[0] : `${min} to ${max} Days`;
+/**
+ * Every distinct duration of several packages, shortest first:
+ * ["2D/1N, 3D/2N", "3D/2N"] -> ["2 Days / 1 Night", "3 Days / 2 Nights"].
+ * Durations are always shown as the real options, never as "2 to 5 Days".
+ */
+export function allDurations(values) {
+  const seen = new Set();
+  for (const v of values) for (const o of durationOptions(v)) seen.add(o);
+  return [...seen].sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || a.localeCompare(b));
 }
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

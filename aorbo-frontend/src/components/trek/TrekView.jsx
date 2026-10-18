@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, MapPin, Route, Zap } from 'lucide-react';
 import { mediaUrl } from '../../api/client';
-import { durationOptions, formatDepartureDays, formatDurationShort, formatPrice } from '../../utils/format';
+import { durationOptions, formatDepartureDays, formatPrice } from '../../utils/format';
 import { destinationHeading, isPlaceholderOperator, trekFaqs } from '../../seo/meta';
 import DetailHero from './DetailHero';
 import InfoCard from '../ui/InfoCard';
@@ -15,8 +15,8 @@ const list = (v) => (Array.isArray(v) ? v : []);
 // by scripts/seo-pages.mjs) the destination and city pages it belongs to, so the
 // build can render it to HTML ahead of time.
 export default function TrekView({ trek, links = null }) {
-  const duration = formatDurationShort(trek.duration_days);
   const options = durationOptions(trek.duration_days);
+  const duration = options.join(' · ');
   const departures = formatDepartureDays(trek.operating_days);
   const price = trek.price_start != null ? formatPrice(trek.price_start) : null;
   const related = list(trek.related_treks);
