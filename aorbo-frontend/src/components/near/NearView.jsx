@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
-import { WEEKEND_MAX_DAYS, WEEKEND_MAX_KM, nearFacts, nearFaqs, organiserCounts } from '../../seo/meta';
+import { WEEKEND_MAX_DAYS, WEEKEND_MAX_KM, cityDisplay, cityHeading, nearFacts, nearFaqs, organiserCounts } from '../../seo/meta';
 import { formatDuration, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 
@@ -30,8 +30,8 @@ export default function NearView({ page }) {
     <div className="page near-page">
       <PageHeader
         eyebrow="Treks near you"
-        title={`Treks near ${page.name}`}
-        subtitle={`${page.total} treks within ${page.radius} km of ${page.name}, ${page.state}, nearest first.`}
+        title={`Treks near ${cityHeading(page.name)}`}
+        subtitle={`${page.total} treks within ${page.radius} km of ${cityDisplay(page.name)}, ${page.state}, nearest first.`}
         back={{ to: '/treks-near', label: 'All cities and towns' }}
       />
       <div className="container">
@@ -57,7 +57,7 @@ export default function NearView({ page }) {
         {weekend.length > 0 && (
           <section className="section near-section">
             <SectionHeading
-              title={`Weekend treks near ${page.name}`}
+              title={`Weekend treks near ${cityDisplay(page.name)}`}
               subtitle={`${WEEKEND_MAX_DAYS} days or less, within ${WEEKEND_MAX_KM} km.`}
             />
             <ul className="near-list">
@@ -73,7 +73,7 @@ export default function NearView({ page }) {
 
         {page.routes?.length > 0 && (
           <section className="section near-section">
-            <SectionHeading title={`Trips leaving from ${page.name}`} subtitle="Packages with a pickup point in this city." />
+            <SectionHeading title={`Trips leaving from ${cityDisplay(page.name)}`} subtitle="Packages with a pickup point in this city." />
             <ul className="chip-list">
               {page.routes.map((r) => (
                 <li key={r.path}><Link className="chip chip--outline" to={r.path}>{r.name} · from {formatPrice(r.price)}</Link></li>
@@ -94,7 +94,7 @@ export default function NearView({ page }) {
         )}
 
         <section className="section near-section" aria-labelledby="near-faq-title">
-          <h2 id="near-faq-title" className="section-title">Treks near {page.name}: questions</h2>
+          <h2 id="near-faq-title" className="section-title">Treks near {cityDisplay(page.name)}: questions</h2>
           {faqs.map((f) => (
             <details key={f.q} className="page-faq__item" open>
               <summary>{f.q}</summary>
