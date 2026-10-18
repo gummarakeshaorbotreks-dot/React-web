@@ -107,20 +107,34 @@ a.trek-card:hover .trek-card__media img {
   gap: 0.35rem;
 }
 
-/* Every duration option of the package, one per line ("3 Days / 2 Nights") */
+/* Every duration option of the package as a small tag, wrapping two or three to a row */
 .trek-card__meta .trek-card__durations {
   flex-basis: 100%;
   align-items: flex-start;
 }
 
-.trek-card__durations > span {
+.duration-tags {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.duration-tags li {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-alt);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--ink);
 }
 
 .trek-card__durations svg {
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
 }
 
 /* Skeleton placeholders while treks load */

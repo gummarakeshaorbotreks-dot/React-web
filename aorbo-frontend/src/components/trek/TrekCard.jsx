@@ -41,7 +41,10 @@ export default function TrekCard({ trek, tag = '', distance = null }) {
           {trek.duration_days && (
             <li className="trek-card__durations">
               <Clock aria-hidden="true" />
-              <span>{durationOptions(trek.duration_days).map((d) => <span key={d}>{d}</span>)}</span>
+              {/* Every option as a small tag ("3 Days / 2 Nights"): all visible, card stays compact */}
+              <ul className="duration-tags" aria-label="Durations">
+                {durationOptions(trek.duration_days).map((d) => <li key={d}>{d}</li>)}
+              </ul>
             </li>
           )}
           {trek.operating_days && (
