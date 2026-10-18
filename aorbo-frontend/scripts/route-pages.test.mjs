@@ -1,4 +1,4 @@
-// node --test scripts/  — "<destination> trip from <city>" pages (route-pages.mjs + meta.js).
+// npm run test:unit  — "<destination> trip from <city>" pages (route-pages.mjs + meta.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildRoutePages } from './route-pages.mjs';

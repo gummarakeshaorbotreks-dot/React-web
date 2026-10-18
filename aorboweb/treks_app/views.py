@@ -32,6 +32,7 @@ from .models import (
     HomepageBanner, TrekList, SearchLog, OsmDraftTrek, ContactInfo, SocialMedia, ContentSection,
     CrashReport,
 )
+from .display import trek_display
 
 def send_email_async(mail):
     threading.Thread(target=mail.send).start()
@@ -308,6 +309,8 @@ def api_featured_treks(request):
             "operators": operators_list,
             "latitude": item.latitude,
             "longitude": item.longitude,
+            # Ready-to-show text; the app shows it as is (treks_app/display.py).
+            "display": trek_display(item.name, item.state, item.price_start, item.duration_days, item.operating_days),
         })
 
     response_data = {
@@ -367,6 +370,9 @@ def api_trek_detail(request, slug):
         # Where it leaves from (admin "Departure cities"): the "<destination> trip from
         # <city>" pages are built from these (aorbo-frontend/scripts/route-pages.mjs).
         "departures": departures_of(trek_item),
+        # Ready-to-show text; the app shows it as is (treks_app/display.py).
+        "display": trek_display(trek_item.name, trek_item.state, trek_item.price_start,
+                                trek_item.duration_days, trek_item.operating_days),
     })
 
 

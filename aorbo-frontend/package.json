@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "test:unit": "node --test scripts/"
+    "test:unit": "node --test \"scripts/*.test.mjs\""
   },
   "dependencies": {
     "dompurify": "^3.4.12",
