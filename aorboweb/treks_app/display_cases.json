@@ -1,0 +1,32 @@
+{
+  "_about": "Shared examples: the website (aorbo-frontend/src/utils/format.js) and the API (treks_app/display.py) must both give these outputs. Checked by aorbo-frontend/scripts/display-cases.test.mjs and treks_app/test_display.py.",
+  "price": [
+    [15000, "₹15,000"],
+    [7999, "₹7,999"],
+    [123456, "₹1,23,456"],
+    [1234567, "₹12,34,567"],
+    [999, "₹999"],
+    [4899, "₹4,899"]
+  ],
+  "durations": [
+    ["3D/2N, 4D/3N, 5D/4N", ["3 Days / 2 Nights", "4 Days / 3 Nights", "5 Days / 4 Nights"]],
+    ["3D/2N,2D/1N", ["2 Days / 1 Night", "3 Days / 2 Nights"]],
+    ["2D/1N, 2D/1N", ["2 Days / 1 Night"]],
+    ["3D / 2N", ["3 Days / 2 Nights"]],
+    ["2D-1N", ["2 Days / 1 Night"]],
+    ["1D", ["1 Day"]],
+    ["6 Days", ["6 Days"]],
+    ["5", ["5 Days"]],
+    ["10D/9N, 11D/10N", ["10 Days / 9 Nights", "11 Days / 10 Nights"]],
+    ["Flexible", ["Flexible"]],
+    ["", []]
+  ],
+  "days": [
+    ["THU, FRI, SAT", "Thu, Fri, Sat"],
+    ["fri,sat", "Fri, Sat"],
+    ["Wed, Thu, Fri ,Sat", "Wed, Thu, Fri, Sat"],
+    ["Sat, Fri", "Fri, Sat"],
+    ["Daily", "Daily"],
+    ["On request", "On request"]
+  ]
+}
