@@ -101,3 +101,28 @@ class CapitalsRuleTests(SimpleTestCase):
         self.assertEqual(rules.tidy_activities('Cycling,\r\nTent Pitching,\r\nAdventure Rope Activities",\r\n'),
                          "Cycling, Tent Pitching, Adventure Rope Activities")
         self.assertEqual(rules.tidy_activities("Cycling, \r, Tent Pitching, \r, Camping"), "Cycling, Tent Pitching, Camping")
+
+
+class DepartureCityRuleTests(SimpleTestCase):
+    """Departure cities (18 Oct 2026): one spelling per city, as on the "Treks near <city>" pages."""
+
+    def test_maps_popular_spellings_to_the_official_name(self):
+        for typed, official in (("bangalore", "Bengaluru"), ("Bangalore ", "Bengaluru"), ("BENGALURU", "Bengaluru"),
+                                ("vizag", "Visakhapatnam"), ("mysore", "Mysuru"), ("Gurgaon", "Gurugram")):
+            with self.subTest(typed=typed):
+                self.assertEqual(rules.normalize_city(typed), official)
+
+    def test_title_cases_other_cities(self):
+        self.assertEqual(rules.normalize_city("hyderabad"), "Hyderabad")
+        self.assertEqual(rules.normalize_city("  navi   mumbai "), "Navi Mumbai")
+
+    def test_refuses_what_is_not_a_city_name(self):
+        for wrong in ("", "  ", "Hyd123", "<script>", "https://x.in", "a"):
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError):
+                rules.normalize_city(wrong)
+
+    def test_pickup_point(self):
+        self.assertEqual(rules.tidy_pickup("ameerpet metro station"), "Ameerpet Metro Station")
+        for wrong in ("", "ab", "see https://maps.app", "<b>gate</b>"):
+            with self.subTest(wrong=wrong), self.assertRaises(ValueError):
+                rules.tidy_pickup(wrong)

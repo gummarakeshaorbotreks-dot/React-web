@@ -21,8 +21,9 @@ from .models import (
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
     SocialMedia, ContactInfo, TrekList, Visitor,
     Operator, Tag, TrekPoint, SearchLog, OsmDraftTrek, ContentSection,
-    CrashReport, SeoOverride,
+    CrashReport, SeoOverride, TrekDeparture,
 )
+from access_control.rbac_guards import actor_can
 from . import trek_rules
 
 
@@ -386,10 +387,73 @@ class TrekListAdminForm(forms.ModelForm):
         return data
 
 
+class TrekDepartureForm(forms.ModelForm):
+    """Checks a departure city before it is saved (rules: trek_rules.py)."""
+
+    class Meta:
+        model = TrekDeparture
+        fields = "__all__"
+
+    @staticmethod
+    def _rule(fn, value):
+        try:
+            return fn(value)
+        except ValueError as e:
+            raise forms.ValidationError(str(e))
+
+    def clean_city(self):
+        return self._rule(trek_rules.normalize_city, self.cleaned_data.get("city"))
+
+    def clean_pickup_point(self):
+        return self._rule(trek_rules.tidy_pickup, self.cleaned_data.get("pickup_point"))
+
+    def clean_days(self):
+        days = (self.cleaned_data.get("days") or "").strip()
+        return self._rule(trek_rules.normalize_operating_days, days) if days else ""
+
+    def clean_price_from(self):
+        price = self.cleaned_data.get("price_from")
+        if price is None or not (100 <= price <= 500000):
+            raise forms.ValidationError("Enter the price per person in rupees, between 100 and 5,00,000.")
+        return price
+
+
+class TrekDepartureInline(admin.TabularInline):
+    """Departure cities, edited on the trek's own page. Each one gives the trek a
+    "<destination> trip from <city>" page on the website (scripts/route-pages.mjs)."""
+    model = TrekDeparture
+    form = TrekDepartureForm
+    extra = 0
+    fields = ('city', 'pickup_point', 'departure_time', 'price_from', 'days', 'operator', 'is_active')
+    verbose_name = "Departure city"
+    verbose_name_plural = "🚌 Departure cities (city, pickup point, time and price from that city)"
+
+    # Same rule as the trek itself ("treks:edit"); the RBAC mixin's signatures don't fit inlines.
+    def _can(self, request, action):
+        return actor_can(request.user, f"treks:{action}") if hasattr(request.user, "staff_profile") else None
+
+    def has_view_permission(self, request, obj=None):
+        r = self._can(request, "read")
+        return super().has_view_permission(request, obj) if r is None else (r or bool(self._can(request, "edit")))
+
+    def has_add_permission(self, request, obj=None):
+        r = self._can(request, "edit")
+        return super().has_add_permission(request, obj) if r is None else r
+
+    def has_change_permission(self, request, obj=None):
+        r = self._can(request, "edit")
+        return super().has_change_permission(request, obj) if r is None else r
+
+    def has_delete_permission(self, request, obj=None):
+        r = self._can(request, "edit")
+        return super().has_delete_permission(request, obj) if r is None else r
+
+
 @admin.register(TrekList)
 class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
     resource = "treks"
     form = TrekListAdminForm
+    inlines = (TrekDepartureInline,)
     list_display = (
         'name', 'state', 'is_pinned', 'pin_priority',
         'duration_days', 'price_start', 'currency', 'is_ai_generated', 'created_at'
@@ -771,3 +835,14 @@ class SeoOverrideAdmin(admin.ModelAdmin):
     search_fields = ("path", "title", "description", "note")
     readonly_fields = ("created_at", "updated_at")
 
+
+@admin.register(TrekDeparture)
+class TrekDepartureAdmin(RBACAdminMixin, admin.ModelAdmin):
+    """All departure cities in one list (they are added on each trek's page)."""
+    resource = "treks"
+    form = TrekDepartureForm
+    list_display = ('trek', 'city', 'pickup_point', 'departure_time', 'price_from', 'operator', 'is_active', 'updated_at')
+    list_filter = ('city', 'is_active', 'operator')
+    search_fields = ('trek__name', 'city', 'pickup_point')
+    autocomplete_fields = ('trek',)
+    list_editable = ('is_active',)

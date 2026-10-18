@@ -604,3 +604,31 @@ class SeoOverride(models.Model):
 
     def __str__(self):
         return f"{self.path} ({self.get_source_display()})"
+
+
+class TrekDeparture(models.Model):
+    """Where a trek leaves from: one row per city (and pickup point).
+
+    Feeds the "<destination> trip from <city>" pages (aorbo-frontend/scripts/route-pages.mjs).
+    A page exists only for real departures: city, pickup point, departure time and the price
+    from that city are all required, so the page always has facts of its own.
+    """
+    trek = models.ForeignKey(TrekList, related_name="departures", on_delete=models.CASCADE)
+    city = models.CharField(max_length=60, help_text="The city the trip leaves from, e.g. Hyderabad, Bengaluru.")
+    pickup_point = models.CharField(max_length=200, help_text="Where travellers board, e.g. Ameerpet Metro Station.")
+    departure_time = models.TimeField(help_text="When the vehicle leaves the pickup point.")
+    price_from = models.PositiveIntegerField(help_text="Lowest price per person from this city, in rupees.")
+    days = models.CharField(max_length=100, blank=True,
+                            help_text="Days it leaves from this city, e.g. Fri, Sat. Empty = the trek's departure days.")
+    operator = models.ForeignKey(Operator, null=True, blank=True, on_delete=models.SET_NULL,
+                                 help_text="The organiser that runs this departure.")
+    is_active = models.BooleanField(default=True, help_text="Untick when it no longer runs (the page updates on the next rebuild).")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["city", "departure_time"]
+        verbose_name = "Departure city"
+        verbose_name_plural = "Departure cities"
+
+    def __str__(self):
+        return f"{self.trek.name} from {self.city} ({self.pickup_point})"

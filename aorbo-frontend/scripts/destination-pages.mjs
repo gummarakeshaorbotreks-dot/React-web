@@ -68,6 +68,10 @@ export function buildDestinationPages(dests, treks, places, nearPages = []) {
       // Some are typed in lowercase in the admin ("malpe beach").
       places: d.places.slice(0, 12).map((p) => (p === p.toLowerCase() ? p.replace(/\b[a-z]/g, (c) => c.toUpperCase()) : p)),
       from,
+      // Position, for the distance on its "trip from <city>" pages (scripts/route-pages.mjs).
+      lat: d.lat ?? null,
+      lon: d.lon ?? null,
+      routes: [],
     });
   }
   for (const p of pages) {

@@ -16,12 +16,13 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
-  notFoundMeta, organiserHubMeta, organiserMeta, staticPageMeta, trekMeta, ABOUT_AORBO, ALTERNATE_NAMES,
+  notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, ABOUT_AORBO, ALTERNATE_NAMES,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildOrganiserPages } from './organiser-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
+import { buildRoutePages } from './route-pages.mjs';
 
 const DIST = process.env.PRERENDER_DIST || 'dist';
 const API = (process.env.SEO_API_URL || process.env.VITE_API_URL || SITE_URL).replace(/\/$/, '');
@@ -174,12 +175,15 @@ try {
 let near = { pages: [], hub: null, candidates: 0 };
 let destinations = { pages: [], hub: null };
 let organisers = { pages: [], hub: null };
+let routes = { pages: [] };
 let ssr = null;
 if (treks.length) {
   const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
   near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
   destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
   organisers = buildOrganiserPages(treks, destinations.pages);
+  // "<destination> trip from <city>": only where the admin has real departures (scripts/route-pages.mjs).
+  routes = buildRoutePages(destinations.pages, treks, places, near.pages);
   ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
 }
 // A page's stylesheet is a separate chunk (loaded with the page's code); inline it so
@@ -251,6 +255,7 @@ if (ssr) {
         urls.push({ loc: absoluteUrl(page.path), priority: '0.6' });
       }
     }
+    if (!hub) return; // route pages have no index of their own
     const file = `/data/${dir}/index.json`;
     await writeFile(path.join(DIST, file), JSON.stringify(hub));
     if (await writePage(hub.path, hubMeta(hub), { main: renderHub(hub), data: { file, content: hub }, css })) {
@@ -260,6 +265,7 @@ if (ssr) {
   await writeDataPages('near', near, nearMeta, ssr.renderNear, nearHubMeta, ssr.renderNearHub);
   await writeDataPages('destinations', destinations, destinationMeta, ssr.renderDestination, destinationHubMeta, ssr.renderDestinationHub);
   await writeDataPages('organisers', organisers, organiserMeta, ssr.renderOrganiser, organiserHubMeta, ssr.renderOrganiserHub);
+  await writeDataPages('routes', { pages: routes.pages, hub: null }, routeMeta, ssr.renderRoute, null, null);
 }
 
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
@@ -325,4 +331,4 @@ await writeFile(
     '',
   ].join('\n'),
 );
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${organisers.pages.length} organiser pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

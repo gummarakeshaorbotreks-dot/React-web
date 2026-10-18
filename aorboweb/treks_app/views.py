@@ -321,7 +321,7 @@ def api_featured_treks(request):
 def api_trek_detail(request, slug):
     try:
         trek_item = TrekList.objects.prefetch_related(
-            'operators', 'trek_points', 'images', 'related_treks'
+            'operators', 'trek_points', 'images', 'related_treks', 'departures__operator'
         ).get(id=slug)
     except TrekList.DoesNotExist:
         return Response({"error": "Trek not found"}, status=404)
@@ -363,8 +363,25 @@ def api_trek_detail(request, slug):
         "operators": operators_list,
         "related_treks": related_treks,
         "latitude": trek_item.latitude,  # 🗺️ NEW: Map coordinates
-        "longitude": trek_item.longitude  # 🗺️ NEW: Map coordinates
+        "longitude": trek_item.longitude,  # 🗺️ NEW: Map coordinates
+        # Where it leaves from (admin "Departure cities"): the "<destination> trip from
+        # <city>" pages are built from these (aorbo-frontend/scripts/route-pages.mjs).
+        "departures": departures_of(trek_item),
     })
+
+
+def departures_of(trek_item):
+    """Active departure cities of a trek, in a stable order (city, then time)."""
+    rows = [d for d in trek_item.departures.all() if d.is_active]
+    rows.sort(key=lambda d: (d.city, d.departure_time, d.pk))
+    return [{
+        "city": d.city,
+        "pickup_point": d.pickup_point,
+        "departure_time": d.departure_time.strftime("%I:%M %p"),
+        "price_from": d.price_from,
+        "days": d.days or trek_item.operating_days or "",
+        "operator": d.operator.name if d.operator_id else None,
+    } for d in rows]
 
 
 @api_view(['GET'])

@@ -382,7 +382,8 @@ export function nearMeta(page) {
   );
   const url = absoluteUrl(page.path);
   return {
-    title: `Treks near ${page.name} (${page.total} within ${page.radius} km) | Aorbo Treks`,
+    // "weekend trips from <city>" is how many people search (research 18 Oct 2026).
+    title: `Treks & Weekend Trips near ${page.name}: ${page.total} Options | Aorbo Treks`,
     description,
     path: page.path,
     image: page.treks?.find((t) => t.image)?.image || DEFAULT_IMAGE,
@@ -538,6 +539,114 @@ export function destinationMeta(page) {
       },
       breadcrumb([['Home', '/'], ['Destinations', '/destinations'], [destinationHeading(page), page.path]]),
       faqPage(destinationFaqs(page)),
+    ),
+  };
+}
+
+// ---------- "<destination> trip from <city>" pages (scripts/route-pages.mjs) ----------
+
+/** "Gokarna trip from Hyderabad" / "Coorg trip from Bangalore (Bengaluru)". */
+export const routeHeading = (page) => `${page.destination.name} trip from ${page.city.display}`
+  + (page.city.display !== page.city.name ? ` (${page.city.name})` : '');
+
+export function routeFacts(page) {
+  const deps = page.departures || [];
+  const prices = deps.map((d) => d.price).filter((p) => p > 0);
+  const days = deps.map((d) => d.days).filter((d) => d != null);
+  return {
+    count: deps.length,
+    treks: new Set(deps.map((d) => d.trek)).size,
+    minPrice: prices.length ? Math.min(...prices) : null,
+    maxPrice: prices.length ? Math.max(...prices) : null,
+    minDays: days.length ? Math.min(...days) : null,
+    maxDays: days.length ? Math.max(...days) : null,
+    departures: departureDays(deps.map((d) => d.departs)),
+    pickups: [...new Set(deps.map((d) => d.pickup))],
+    organisers: [...new Set(deps.map((d) => d.operator).filter(Boolean))],
+  };
+}
+
+/** Questions and answers on a route page; the same text goes into its FAQPage data. */
+export function routeFaqs(page) {
+  const f = routeFacts(page);
+  const where = page.destination.name;
+  const city = page.city.display;
+  const trip = `a ${where} trip from ${city}`;
+  const faqs = [];
+  if (f.minPrice != null) {
+    faqs.push({
+      q: `How much does ${trip} cost?`,
+      a: f.minPrice === f.maxPrice
+        ? `From ${rupees(f.minPrice)} per person on Aorbo Treks, leaving from ${city}.`
+        : `From ${rupees(f.minPrice)} to ${rupees(f.maxPrice)} per person on Aorbo Treks, leaving from ${city}, depending on the package.`,
+    });
+  }
+  faqs.push({
+    q: `Where is the pickup in ${city}, and what time does it leave?`,
+    a: `${joinNames(page.departures.slice(0, 5).map((d) => `${d.pickup} at ${d.time}${d.operator ? ` (${d.operator})` : ''}`))}.`,
+  });
+  if (f.departures.length) {
+    faqs.push({
+      q: `On which days do ${where} trips leave from ${city}?`,
+      a: `On ${joinNames(f.departures)}, depending on the package.`,
+    });
+  }
+  if (f.minDays != null) {
+    faqs.push({
+      q: `How many days do you need for ${trip}?`,
+      a: `The packages here take ${dayRange(f.minDays, f.maxDays)}, travel from ${city} included.`,
+    });
+  }
+  if (page.city.km != null) {
+    faqs.push({
+      q: `How far is ${where} from ${city}?`,
+      a: `About ${page.city.km} km in a straight line; the road distance is longer.`,
+    });
+  }
+  if (f.organisers.length) {
+    faqs.push({ q: `Who runs ${where} trips from ${city}?`, a: `On Aorbo Treks: ${joinNames(f.organisers.slice(0, 6))}. Each trek page shows who runs it.` });
+  }
+  faqs.push({
+    q: `How do I book ${trip}?`,
+    a: 'Open a package above, choose your date and book on Aorbo Treks, on the website or in the Aorbo Treks app.',
+  });
+  return faqs;
+}
+
+/** Tags for a route page. */
+export function routeMeta(page) {
+  const f = routeFacts(page);
+  const where = page.destination.name;
+  const city = page.city.display;
+  const description = snippet(
+    `${f.count} ${where} ${f.count === 1 ? 'package' : 'packages'} leaving from ${city} on Aorbo Treks`
+    + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
+    + `. Pickup at ${joinNames(f.pickups.slice(0, 2))}`
+    + (f.departures.length ? `, on ${joinNames(f.departures.map((d) => d.slice(0, 3)))}` : '')
+    + '. Compare and book.',
+  );
+  const url = absoluteUrl(page.path);
+  const destHeading = destinationHeading({ name: where, kind: 'place' });
+  return {
+    title: `${where} Trip from ${city}: ${f.count} ${f.count === 1 ? 'Package' : 'Packages'}${f.minPrice != null ? ` from ${rupees(f.minPrice)}` : ''} | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.departures.find((d) => d.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'CollectionPage',
+        name: routeHeading(page),
+        description,
+        url,
+        about: { '@type': 'TouristDestination', name: where, ...(page.destination.state ? { containedInPlace: { '@type': 'State', name: page.destination.state } } : {}) },
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: page.departures.length,
+          itemListElement: page.departures.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${d.trek}`), name: d.name })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Destinations', '/destinations'], [destHeading, `/destinations/${page.destination.slug}`], [`From ${city}`, page.path]]),
+      faqPage(routeFaqs(page)),
     ),
   };
 }

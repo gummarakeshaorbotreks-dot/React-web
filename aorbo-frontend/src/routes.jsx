@@ -54,6 +54,7 @@ export const routes = [
           { path: 'treks-near/:slug', lazy: page(() => import('./pages/TreksNear')) },
           { path: 'destinations', lazy: page(() => import('./pages/Destinations').then((m) => ({ default: m.DestinationsHub }))) },
           { path: 'destinations/:slug', lazy: page(() => import('./pages/Destinations')) },
+          { path: 'destinations/:slug/:from', lazy: page(() => import('./pages/DestinationRoute')) },
           { path: 'organisers', lazy: page(() => import('./pages/Organisers').then((m) => ({ default: m.OrganisersHub }))) },
           { path: 'organisers/:slug', lazy: page(() => import('./pages/Organisers')) },
           { path: '*', lazy: page(() => import('./pages/NotFound')) },

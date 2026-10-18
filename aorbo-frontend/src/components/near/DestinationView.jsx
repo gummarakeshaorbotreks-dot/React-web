@@ -46,6 +46,17 @@ export default function DestinationView({ page }) {
           {page.treks.map((t) => <TrekCard key={t.id} trek={asCard(t)} tag={`destination:${page.slug}`} />)}
         </div>
 
+        {page.routes?.length > 0 && (
+          <section className="section near-section">
+            <SectionHeading title={`${page.name} trips from your city`} subtitle="Pickup points, times and prices from each city." />
+            <ul className="chip-list">
+              {page.routes.map((r) => (
+                <li key={r.path}><Link className="chip chip--outline" to={r.path}>From {r.city} · {formatPrice(r.price)}</Link></li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {page.places.length > 0 && (
           <section className="section near-section">
             <SectionHeading title={`What you can see${isState ? ` in ${page.name}` : ` on a ${page.name} trip`}`} />
