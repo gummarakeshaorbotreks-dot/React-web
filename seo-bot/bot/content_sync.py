@@ -45,7 +45,9 @@ def fingerprint():
         treks.append((tid, t.get("name"), t.get("state"), t.get("price_start"), t.get("duration_days"),
                       len(t.get("images") or []), d.get("description"), d.get("activities"), d.get("famous_places"),
                       d.get("operators"), d.get("operating_days"), d.get("main_image"), d.get("related_treks"),
-                      d.get("latitude"), d.get("longitude")))
+                      d.get("latitude"), d.get("longitude"),
+                      # Departure cities feed the "<destination> trip from <city>" pages.
+                      d.get("departures")))
     blogs = sorted((b.get("slug"), b.get("title"), b.get("updated_at") or b.get("created_at")) for b in all_pages("/api/blogs/"))
     overrides = sorted((o["path"], o["updated_at"]) for o in list_overrides())
     # The week number: "Treks near <city>" pages are released in weekly waves (scripts/near-pages.mjs).

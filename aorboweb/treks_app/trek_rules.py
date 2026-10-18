@@ -210,3 +210,33 @@ def check_description(text, others):
             raise ValueError(f"This description is (almost) the same as trek /{i}'s. Every trek needs its own "
                              f"description.")
     return text
+
+
+# Official town names, as on the "Treks near <city>" pages (GeoNames); the old or popular
+# spelling people type is mapped to it, so one city never gets two pages.
+CITY_ALIASES = {
+    "bangalore": "Bengaluru", "bengaluru": "Bengaluru", "bombay": "Mumbai", "gurgaon": "Gurugram",
+    "vizag": "Visakhapatnam", "vishakhapatnam": "Visakhapatnam", "cochin": "Kochi", "mysore": "Mysuru",
+    "trivandrum": "Thiruvananthapuram", "mangalore": "Mangaluru", "hubli": "Hubballi", "belgaum": "Belagavi",
+    "calcutta": "Kolkata", "madras": "Chennai", "poona": "Pune", "new delhi": "New Delhi", "delhi": "Delhi",
+}
+
+
+def normalize_city(text):
+    """'bangalore ' -> 'Bengaluru', 'hyderabad' -> 'Hyderabad'. Letters, spaces, dots and hyphens only."""
+    raw = re.sub(r"\s+", " ", (text or "").strip())
+    if not raw:
+        raise ValueError("Enter the city the trip leaves from, for example: Hyderabad.")
+    if not re.fullmatch(r"[A-Za-z][A-Za-z .\-']{1,59}", raw):
+        raise ValueError("Write the city name in letters only, for example: Hyderabad or Bengaluru.")
+    return CITY_ALIASES.get(raw.lower().rstrip("."), title_case(raw.lower()))
+
+
+def tidy_pickup(text):
+    """The pickup point people go to: 'ameerpet metro station' -> 'Ameerpet Metro Station'."""
+    raw = re.sub(r"\s+", " ", (text or "").strip())
+    if len(raw) < 3:
+        raise ValueError("Enter the pickup point, for example: Ameerpet Metro Station.")
+    if re.search(r"[<>{}]|https?://", raw):
+        raise ValueError("Write the pickup point as a place name, without links or symbols.")
+    return title_case(raw) if len(raw.split()) <= 8 else _cap(raw)

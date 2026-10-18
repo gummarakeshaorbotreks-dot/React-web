@@ -7,6 +7,7 @@ import NearView from './components/near/NearView';
 import NearHubView from './components/near/NearHubView';
 import DestinationView from './components/near/DestinationView';
 import DestinationHubView from './components/near/DestinationHubView';
+import RouteView from './components/near/RouteView';
 import TrekView from './components/trek/TrekView';
 import OrganiserView from './components/near/OrganiserView';
 import OrganiserHubView from './components/near/OrganiserHubView';
@@ -49,4 +50,9 @@ export function renderDestination(page) {
 
 export function renderDestinationHub(hub) {
   return renderToString(<StaticRouter location={hub.path}><DestinationHubView hub={hub} /></StaticRouter>);
+}
+
+// "<destination> trip from <city>" pages (no index page: the destination page lists them).
+export function renderRoute(page) {
+  return renderToString(<StaticRouter location={page.path}><RouteView page={page} /></StaticRouter>);
 }

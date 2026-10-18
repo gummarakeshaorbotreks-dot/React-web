@@ -71,6 +71,17 @@ export default function NearView({ page }) {
           </section>
         )}
 
+        {page.routes?.length > 0 && (
+          <section className="section near-section">
+            <SectionHeading title={`Trips leaving from ${page.name}`} subtitle="Packages with a pickup point in this city." />
+            <ul className="chip-list">
+              {page.routes.map((r) => (
+                <li key={r.path}><Link className="chip chip--outline" to={r.path}>{r.name} · from {formatPrice(r.price)}</Link></li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {organisers.length > 0 && (
           <section className="section near-section">
             <SectionHeading title={`Trek organisers for treks near ${page.name}`} subtitle="The companies that run these treks; you book them on Aorbo Treks." />
