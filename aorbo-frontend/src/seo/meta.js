@@ -362,7 +362,7 @@ export function nearFacts(page) {
 /** Questions and answers shown on a city page; the same text goes into its FAQPage data. */
 export function nearFaqs(page) {
   const { nearest, next, weekend, minPrice, maxPrice, states } = nearFacts(page);
-  const city = page.name;
+  const city = cityDisplay(page.name);
   if (!nearest) return [];
   const faqs = [{
     q: `Which is the nearest trek to ${city}?`,
@@ -406,11 +406,24 @@ const faqPage = (faqs) => (faqs.length ? {
   mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 } : null);
 
+// The name people type, for towns whose official (GeoNames) name differs: "treks near
+// bangalore" is searched far more than "bengaluru" (research 18 Oct 2026). Pages keep
+// the official name in their address; titles use the popular one.
+export const POPULAR_CITY_NAME = {
+  Bengaluru: 'Bangalore', Mysuru: 'Mysore', Mangaluru: 'Mangalore', Kochi: 'Cochin',
+  Thiruvananthapuram: 'Trivandrum', Visakhapatnam: 'Vizag', Gurugram: 'Gurgaon',
+  Hubballi: 'Hubli', Belagavi: 'Belgaum',
+};
+/** "Bengaluru" -> "Bangalore"; other towns unchanged. */
+export const cityDisplay = (name) => POPULAR_CITY_NAME[name] || name;
+/** "Bengaluru" -> "Bangalore (Bengaluru)"; other towns unchanged. */
+export const cityHeading = (name) => (POPULAR_CITY_NAME[name] ? `${POPULAR_CITY_NAME[name]} (${name})` : name);
+
 /** Tags for a "Treks near <city>" page. */
 export function nearMeta(page) {
   const { nearest, weekend, minPrice } = nearFacts(page);
   const description = snippet(
-    `${page.total} treks within ${page.radius} km of ${page.name}, ${page.state}.`
+    `${page.total} treks within ${page.radius} km of ${cityHeading(page.name)}, ${page.state}.`
     + (nearest ? ` Nearest: ${capital(nearest.name)} (${nearest.km} km).` : '')
     + (weekend.length ? ` ${weekend.length} weekend trek${weekend.length > 1 ? 's' : ''}.` : '')
     + (minPrice != null ? ` Prices from ${rupees(minPrice)}.` : '')
@@ -419,14 +432,14 @@ export function nearMeta(page) {
   const url = absoluteUrl(page.path);
   return {
     // "weekend trips from <city>" is how many people search (research 18 Oct 2026).
-    title: `Treks & Weekend Trips near ${page.name}: ${page.total} Options | Aorbo Treks`,
+    title: `Treks & Weekend Trips near ${cityDisplay(page.name)}: ${page.total} Options | Aorbo Treks`,
     description,
     path: page.path,
     image: page.treks?.find((t) => t.image)?.image || DEFAULT_IMAGE,
     jsonLd: graph(
       {
         '@type': 'CollectionPage',
-        name: `Treks near ${page.name}`,
+        name: `Treks near ${cityHeading(page.name)}`,
         description,
         url,
         about: { '@type': 'Place', name: page.name, address: { '@type': 'PostalAddress', addressLocality: page.name, addressRegion: page.state, addressCountry: 'IN' } },
@@ -436,7 +449,7 @@ export function nearMeta(page) {
           itemListElement: page.treks.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${t.id}`), name: t.name })),
         },
       },
-      breadcrumb([['Home', '/'], ['Treks near you', '/treks-near'], [`Treks near ${page.name}`, page.path]]),
+      breadcrumb([['Home', '/'], ['Treks near you', '/treks-near'], [`Treks near ${cityDisplay(page.name)}`, page.path]]),
       faqPage(nearFaqs(page)),
     ),
   };

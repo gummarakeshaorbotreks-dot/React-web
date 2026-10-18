@@ -7,15 +7,11 @@
 // facts of its own: where to board in that city, when, and what it costs from there.
 // No departures, no page: near-identical "trip from X" pages without them are doorway
 // pages to Google and would pull the whole site down (playbook, section I).
-import { organisersOf } from '../src/seo/meta.js';
+import { POPULAR_CITY_NAME, organisersOf } from '../src/seo/meta.js';
 import { km, minDays, slugify } from './near-pages.mjs';
 
-// The name people type, for cities whose official (GeoNames) name differs.
-export const POPULAR_NAME = {
-  Bengaluru: 'Bangalore', Mysuru: 'Mysore', Mangaluru: 'Mangalore', Kochi: 'Cochin',
-  Thiruvananthapuram: 'Trivandrum', Visakhapatnam: 'Vizag', Gurugram: 'Gurgaon',
-  Hubballi: 'Hubli', Belagavi: 'Belgaum',
-};
+// The name people type ("Bangalore"): one list for every page, in src/seo/meta.js.
+export const POPULAR_NAME = POPULAR_CITY_NAME;
 // A "trip from" a town that is (next to) the place itself is not a trip from anywhere.
 const MIN_KM = 40;
 
