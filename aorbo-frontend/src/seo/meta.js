@@ -37,10 +37,15 @@ export const ABOUT_AORBO = 'Aorbo Treks is an online trek booking platform: veri
   + 'treks, and trekkers compare and book them in one place, on the website and in the app. Aorbo Treks does not '
   + 'run treks itself; each trek is run by the organiser named on its page.';
 
+export const ALTERNATE_NAMES = ['Aorbo', 'Aorbo Trek', 'AorboTreks', 'Aorbo Treks App', 'AORBO INFOCOM'];
+
 const organization = {
   '@type': ['Organization', 'OnlineBusiness'],
   '@id': `${SITE_URL}/#organization`,
   name: SITE_NAME,
+  // Other ways people write the name: Google links them to this brand ("aorbo" alone was
+  // being read as a typo of "vrbo" / "arbo").
+  alternateName: ALTERNATE_NAMES,
   legalName: 'AORBO INFOCOM',
   description: ABOUT_AORBO,
   slogan: 'Your Trek, Just a Click Away!!',
@@ -61,6 +66,7 @@ const website = {
   '@id': `${SITE_URL}/#website`,
   url: SITE_URL,
   name: SITE_NAME,
+  alternateName: ALTERNATE_NAMES,
   publisher: { '@id': `${SITE_URL}/#organization` },
   inLanguage: 'en-IN',
 };

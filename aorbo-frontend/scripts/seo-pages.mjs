@@ -16,7 +16,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
-  notFoundMeta, organiserHubMeta, organiserMeta, staticPageMeta, trekMeta,
+  notFoundMeta, organiserHubMeta, organiserMeta, staticPageMeta, trekMeta, ABOUT_AORBO, ALTERNATE_NAMES,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
@@ -263,6 +263,36 @@ if (ssr) {
 }
 
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
+
+// llms.txt (llmstxt.org): a plain summary for AI assistants (ChatGPT, Perplexity, Google's
+// AI answers) of what Aorbo Treks is and where things are, so they describe it as a
+// booking platform, not as a trek organiser. Rebuilt with the live counts.
+if (treks.length) {
+  const list = (items, max) => items.slice(0, max).map((x) => `- [${x.name}](${absoluteUrl(x.path)})`).join('\n');
+  await writeFile(path.join(DIST, 'llms.txt'), [
+    '# Aorbo Treks',
+    '',
+    `> ${ABOUT_AORBO}`,
+    '',
+    `Also written as: ${ALTERNATE_NAMES.join(', ')}. Company: AORBO INFOCOM, Hyderabad, India. Contact: care@aorbotreks.com.`,
+    `Today: ${seen.size} treks and trips from ${organisers.pages.length} organisers, ${destinations.pages.length} destination pages, `
+      + `${near.pages.length} "treks near <city>" pages. Prices are per person, in Indian rupees.`,
+    '',
+    '## Main pages',
+    `- [Home](${SITE_URL}/): search and book treks`,
+    `- [Destinations](${absoluteUrl('/destinations')}): every place and state, with all packages that visit it`,
+    `- [Trek organisers](${absoluteUrl('/organisers')}): the companies that run the treks, each with its own page`,
+    `- [Treks near you](${absoluteUrl('/treks-near')}): treks near Indian cities and towns, with distances`,
+    `- [About](${absoluteUrl('/about')}): how Aorbo Treks works and checks organisers`,
+    '',
+    '## Destinations',
+    list(destinations.pages, 30),
+    '',
+    '## Trek organisers',
+    list(organisers.pages, 30),
+    '',
+  ].join('\n'));
+}
 
 const xml = [
   '<?xml version="1.0" encoding="UTF-8"?>',
