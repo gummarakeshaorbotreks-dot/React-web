@@ -20,6 +20,15 @@ CHECKS = ["/", "/api/treks/?page=1"]
 TIMEOUT = 15
 FAILS_BEFORE_ALERT = 2
 
+# The app's own server (AIC France, a different machine from the website): the API the
+# mobile app and portals use, and the two portals. Added 19 Oct 2026 - until then nobody
+# was told when the app's API was down. Same rules: 2 failed checks in a row -> alert.
+APP_CHECKS = [
+    ("App API", "https://api.aorbotreks.co.in/api/vendor/treks/health"),
+    ("Partner portal", "https://partners.aorbotreks.co.in/"),
+    ("Admin portal", "https://admin.aorbotreks.co.in/"),
+]
+
 
 def site_ok():
     problems = []
@@ -30,6 +39,42 @@ def site_ok():
         elif seconds > 10:
             problems.append(f"{path} took {seconds:.0f} s")
     return problems
+
+
+def app_ok():
+    problems = []
+    for name, url in APP_CHECKS:
+        status, _, _, seconds = fetch(url, timeout=TIMEOUT)
+        if status != 200:
+            problems.append(f"{name} -> {'no answer' if status == 0 else f'HTTP {status}'}")
+        elif seconds > 10:
+            problems.append(f"{name} took {seconds:.0f} s")
+    return problems
+
+
+def check(key, probe, down_text, up_text, extra=lambda: ""):
+    """One watched service: alert after FAILS_BEFORE_ALERT failed checks in a row, once; say when it's back."""
+    problems = probe()
+    if problems:  # one retry after a short pause: a single slow answer isn't an outage
+        time.sleep(20)
+        problems = probe()
+    s = state_get(key, {"fails": 0, "down_since": None, "alerted": False})
+    if problems:
+        s["fails"] += 1
+        s["down_since"] = s["down_since"] or datetime.now().isoformat(timespec="seconds")
+        if s["fails"] >= FAILS_BEFORE_ALERT and not s["alerted"]:
+            more = extra()
+            nl = chr(10)
+            telegram(f"🔴 <b>{down_text}</b> (since {s['down_since'][11:16]}){nl}"
+                     + nl.join(f"• {p}" for p in problems) + (f"{nl}{nl}{more}" if more else ""))
+            s["alerted"] = True
+        print(key, "DOWN:", problems)
+    else:
+        if s["alerted"]:
+            telegram(f"🟢 <b>{up_text}</b>, after about {minutes_since(s['down_since'])} minutes.")
+        s = {"fails": 0, "down_since": None, "alerted": False}
+        print(key, "up")
+    state_set(key, s)
 
 
 def server_side():
@@ -49,25 +94,10 @@ def minutes_since(iso):
 
 
 def main():
-    problems = site_ok()
-    if problems:  # one retry after a short pause: a single slow answer isn't an outage
-        time.sleep(20)
-        problems = site_ok()
-    s = state_get("uptime", {"fails": 0, "down_since": None, "alerted": False})
-    if problems:
-        s["fails"] += 1
-        s["down_since"] = s["down_since"] or datetime.now().isoformat(timespec="seconds")
-        if s["fails"] >= FAILS_BEFORE_ALERT and not s["alerted"]:
-            telegram(f"🔴 <b>aorbotreks.com is not reachable</b> (since {s['down_since'][11:16]})\n"
-                     + "\n".join(f"• {p}" for p in problems) + f"\n\n{server_side()}")
-            s["alerted"] = True
-        print("DOWN:", problems)
-    else:
-        if s["alerted"]:
-            telegram(f"🟢 <b>aorbotreks.com is back</b>, after about {minutes_since(s['down_since'])} minutes.")
-        s = {"fails": 0, "down_since": None, "alerted": False}
-        print("up")
-    state_set("uptime", s)
+    check("uptime", site_ok, "aorbotreks.com is not reachable", "aorbotreks.com is back", server_side)
+    check("uptime_app", app_ok, "Aorbo app API / portals not reachable", "Aorbo app API and portals are back",
+          lambda: "The app server (AIC France, ssh aorbo-prod) or Cloudflare in front of it. "
+                  "Customers can't sign in or book while the API is down.")
     return 0
 
 
