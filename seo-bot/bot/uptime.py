@@ -24,9 +24,13 @@ FAILS_BEFORE_ALERT = 2
 # mobile app and portals use, and the two portals. Added 19 Oct 2026 - until then nobody
 # was told when the app's API was down. Same rules: 2 failed checks in a row -> alert.
 APP_CHECKS = [
-    ("App API", "https://api.aorbotreks.co.in/api/vendor/treks/health"),
-    ("Partner portal", "https://partners.aorbotreks.co.in/"),
-    ("Admin portal", "https://admin.aorbotreks.co.in/"),
+    ("App API", "https://api.aorbotreks.co.in/api/vendor/treks/health", 200),
+    ("Partner portal", "https://partners.aorbotreks.co.in/", 200),
+    ("Admin portal", "https://admin.aorbotreks.co.in/", 200),
+    # Razorpay / Cashfree payment confirmations go to a separate listener (port 5001)
+    # behind nginx. A GET is refused by the listener itself (404 "Not found"); when the
+    # listener is down nginx answers 502 instead - so 404 here means it is alive.
+    ("Payment webhooks", "https://api.aorbotreks.co.in/webhooks/razorpay", 404),
 ]
 
 
@@ -43,9 +47,9 @@ def site_ok():
 
 def app_ok():
     problems = []
-    for name, url in APP_CHECKS:
+    for name, url, expected in APP_CHECKS:
         status, _, _, seconds = fetch(url, timeout=TIMEOUT)
-        if status != 200:
+        if status != expected:
             problems.append(f"{name} -> {'no answer' if status == 0 else f'HTTP {status}'}")
         elif seconds > 10:
             problems.append(f"{name} took {seconds:.0f} s")
