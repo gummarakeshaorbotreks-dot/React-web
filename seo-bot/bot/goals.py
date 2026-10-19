@@ -38,7 +38,7 @@ TARGETS = {
 TEAM_TASKS = {  # week of the plan -> what people do (the bot can't)
     1: ["Request indexing for the 10 pages in each morning's message (2 minutes)",
         "Put https://aorbotreks.com in the Instagram, Facebook, LinkedIn, X, Quora and Play Store profiles",
-        "Get Google Business Profile access from Thejas; hide the address, set Open",
+        # Google Business Profile dropped (owner, 19 Oct 2026): no Maps listing of the company address for now.
         "Send each organiser their 'Book on Aorbo Treks' link message"],
     2: ["Daily indexing requests", "Organisers add the link on their website / Instagram (follow up)",
         "List Aorbo Treks on JustDial, Startup India, Crunchbase, LinkedIn company page",
