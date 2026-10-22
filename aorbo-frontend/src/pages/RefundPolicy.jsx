@@ -13,7 +13,7 @@ const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="n
 export default function RefundPolicy() {
   useSeo(staticPageMeta('/refund-policy'));
   return (
-    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="2 October 2026">
+    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="22 October 2026">
       <p>
         This policy explains how to cancel a trek booked on Aorbo Treks and how much of your money is refunded.
         It is part of our <Link to="/terms">Terms and Conditions</Link>.
@@ -171,10 +171,13 @@ export default function RefundPolicy() {
         <li>
           <p>
             <strong>Payment gateway fee.</strong> The payment gateway may charge a fee on your payment, and it does
-            not return that fee when a refund is made. If a fee was charged, it is deducted from your refund. We
-            deduct the actual fee charged on your payment, not an estimate. It depends on how you paid: a UPI
-            payment from a bank account usually has no fee, while a card, net banking or wallet payment, or a
-            credit card used through UPI, may have one.
+            not return that fee when a refund is made, so this fee is non-refundable. When you cancel a booking
+            yourself, this fee is not taken out of your refund — it is covered from the amount kept under the policy
+            above, and your GST is refunded in full. The gateway fee is kept from your refund only when your booking
+            is refunded in full for a reason that is not your fault (see{' '}
+            <a href="#organizer-cancellation">section 6</a>). We always use the actual fee charged on your payment,
+            not an estimate: a UPI payment from a bank account usually has no fee, while a card, net banking or
+            wallet payment, or a credit card used through UPI, may have one.
           </p>
         </li>
         <li>
