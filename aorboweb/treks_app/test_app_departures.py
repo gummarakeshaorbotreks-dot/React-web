@@ -23,19 +23,54 @@ FEED_DEP = {
 }
 
 
+class PagePlaces(unittest.TestCase):
+    def test_package_names_become_places(self):
+        cases = {
+            "Ooty-Coonoor-Isha Foundation": ["ooty", "coonoor", "ishafoundation"],
+            "Coorg 4-Day Trip": ["coorg"],
+            "Kedarkantha Trek": ["kedarkantha"],
+            "Char Dham Yatra": ["chardham"],
+            "Araku-Vizag": ["araku", "visakhapatnam"],
+            "Leh Ladakh": ["lehladakh"],
+        }
+        for name, places in cases.items():
+            with self.subTest(name=name):
+                self.assertEqual(rules.page_places(name), places)
+
+    def test_same_place_across_spellings(self):
+        self.assertTrue(rules.same_place(rules.place_key("Munnar Tea Gardens"), rules.place_key("Munnar")))
+        self.assertTrue(rules.same_place(rules.place_key("Dwaraka"), rules.place_key("Dwarka")))
+        self.assertTrue(rules.same_place(rules.place_key("Kodagu"), rules.place_key("Coorg")))
+        self.assertTrue(rules.same_place(rules.place_key("Leh"), "lehladakh"))
+        self.assertFalse(rules.same_place("goa", "goavelhabeachresort"))  # 3 letters: too short to be a prefix match
+
+
 class PagesFor(unittest.TestCase):
-    DEST = {12: "Gokarna", 40: "Wayanad Munnar Gokarna", 7: "Hampi"}
+    # Real website package names; app destinations as the feed sends them (their places).
+    TREKS = [("gokarna", "Gokarna", ""), ("gokarna-dandeli", "Gokarna-Dandeli", ""), ("dandeli", "Dandeli", ""),
+             ("munnar", "Munnar", ""), ("wayanad", "Wayanad", ""), ("ooty-coonoor", "Ooty-Coonoor", ""),
+             ("coorg-trek", "Coorg Trek", ""), ("coorg-4-day", "Coorg 4-Day Trip", "")]
 
-    def test_exact_name_only(self):
-        treks = [("gokarna", "Gokarna", ""), ("gokarna-dandeli", "Gokarna-Dandeli", ""), ("hampi", "hampi", "")]
-        self.assertEqual(rules.pages_for(treks, self.DEST), {12: ["gokarna"], 7: ["hampi"]})
+    def test_same_places_get_the_package_itself(self):
+        out = rules.pages_for(self.TREKS, {12: ["Gokarna"], 20: ["Gokarna", "Dandeli"], 5: ["Coorg"]})
+        self.assertEqual(out[12], [("gokarna", "")])
+        self.assertEqual(out[20], [("gokarna-dandeli", "")])  # not the one-place Gokarna / Dandeli pages
+        self.assertEqual(out[5], [("coorg-trek", ""), ("coorg-4-day", "")])
 
-    def test_explicit_ids_win_and_can_list_several(self):
-        treks = [("south-loop", "South India Loop", "40, 7"), ("gokarna", "Gokarna", "")]
-        self.assertEqual(rules.pages_for(treks, self.DEST), {40: ["south-loop"], 7: ["south-loop"], 12: ["gokarna"]})
+    def test_a_trip_with_no_same_package_shows_on_its_places_pages_with_its_own_name(self):
+        out = rules.pages_for(self.TREKS, {40: ["Wayanad", "Munnar", "Gokarna"]})
+        self.assertEqual(sorted(out[40]), [("gokarna", "Wayanad · Munnar · Gokarna"), ("munnar", "Wayanad · Munnar · Gokarna"),
+                                           ("wayanad", "Wayanad · Munnar · Gokarna")])
 
-    def test_ids_not_in_the_feed_are_ignored(self):
-        self.assertEqual(rules.pages_for([("x", "X", "999")], self.DEST), {})
+    def test_a_place_with_no_page_of_its_own_uses_the_packages_that_visit_it(self):
+        self.assertEqual(rules.pages_for(self.TREKS, {9: ["Coonoor"]})[9], [("ooty-coonoor", "Coonoor")])
+
+    def test_a_place_the_website_has_no_page_for_is_left_out(self):
+        self.assertEqual(rules.pages_for(self.TREKS, {77: ["Taj Mahal"]}), {})
+
+    def test_explicit_ids_still_override(self):
+        treks = self.TREKS + [("south-loop", "South India Loop", "40")]
+        self.assertEqual(rules.pages_for(treks, {40: ["Wayanad", "Munnar", "Gokarna"]})[40], [("south-loop", "")])
 
 
 class ToRow(unittest.TestCase):

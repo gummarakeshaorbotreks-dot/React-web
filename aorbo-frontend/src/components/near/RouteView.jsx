@@ -35,7 +35,7 @@ export default function RouteView({ page }) {
           <ul className="near-list">
             {page.departures.map((d) => (
               <li key={`${d.trek}-${d.pickup}-${d.time}`}>
-                <strong><Link to={`/treks/${d.trek}`}>{d.name}</Link></strong>
+                <strong>{d.tripName ? d.name : <Link to={`/treks/${d.trek}`}>{d.name}</Link>}</strong>
                 <span>
                   Pickup: {d.pickup} · leaves {d.time}
                   {d.departs ? ` · ${d.departs}` : ''}

@@ -635,6 +635,9 @@ class TrekDeparture(models.Model):
                               help_text="Rows from the Aorbo app update themselves; change them in the vendor's trek.")
     app_key = models.CharField(max_length=64, null=True, blank=True, unique=True, editable=False)
     book_url = models.URLField(max_length=200, blank=True, default="", help_text="Booking link in the Aorbo app.")
+    # The app trip's own name when it is shown on a package with other places
+    # ("Wayanad · Munnar · Gokarna" on the Wayanad page). Empty = the same trip as the package.
+    trip_name = models.CharField(max_length=200, blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
