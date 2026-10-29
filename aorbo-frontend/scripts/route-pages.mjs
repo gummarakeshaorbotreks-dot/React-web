@@ -39,8 +39,10 @@ export function buildRoutePages(destPages, treks, places, nearPages = []) {
         const list = byCity.get(d.city) || [];
         list.push({
           trek: item.id,
-          name: item.name,
-          duration: item.duration,
+          // An app trip shown on a package with other places keeps its own name (aorboweb app_departures.py).
+          name: d.trip_name || item.name,
+          tripName: d.trip_name || null,
+          duration: d.trip_name ? '' : item.duration,
           days: item.days,
           image: item.image,
           pickup: d.pickup_point,

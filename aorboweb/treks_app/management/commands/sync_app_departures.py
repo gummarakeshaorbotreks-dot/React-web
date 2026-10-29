@@ -40,15 +40,17 @@ class Command(BaseCommand):
             raise CommandError("The app feed answered without departures; nothing changed.")
         feed = body["data"]["departures"]
 
-        destinations = {d["destination"]["id"]: d["destination"]["name"] for d in feed if d.get("destination")}
+        # Each app destination's places (a combined one lists several; older feeds: its name).
+        destinations = {d["destination"]["id"]: (d["destination"].get("places") or [d["destination"]["name"]])
+                        for d in feed if d.get("destination")}
         treks = list(TrekList.objects.values_list("id", "name", "app_destination_ids"))
         pages = rules.pages_for(treks, destinations)
 
         seen, created, updated, skipped = set(), 0, 0, []
         with transaction.atomic():
             for dep in feed:
-                trek_ids = pages.get((dep.get("destination") or {}).get("id"), [])
-                if not trek_ids:
+                targets = pages.get((dep.get("destination") or {}).get("id"), [])
+                if not targets:
                     continue
                 try:
                     row = rules.to_row(dep)
@@ -56,10 +58,11 @@ class Command(BaseCommand):
                     skipped.append(f"{dep.get('pickupPoint')}: {e}")
                     continue
                 operator, _ = Operator.objects.get_or_create(name=row.pop("operator_name"))
-                for trek_id in trek_ids:
+                for trek_id, trip_name in targets:
                     key = rules.app_key(dep["key"], trek_id)
                     seen.add(key)
-                    values = {**row, "operator": operator, "is_active": True, "source": "app", "trek_id": trek_id}
+                    values = {**row, "operator": operator, "is_active": True, "source": "app", "trek_id": trek_id,
+                              "trip_name": trip_name}
                     obj = TrekDeparture.objects.filter(app_key=key).first()
                     if obj is None:
                         if not dry_run:
@@ -76,13 +79,12 @@ class Command(BaseCommand):
             if dry_run:
                 transaction.set_rollback(True)
 
-        unmatched = sorted({name for dest_id, name in destinations.items() if dest_id not in pages})
         self.stdout.write(
             f"{'DRY RUN: ' if dry_run else ''}feed {len(feed)} departure(s); "
             f"added {created}, updated {updated}, switched off {switched_off}, skipped {len(skipped)}"
         )
-        if unmatched:
-            self.stdout.write("App destinations with no website page (link them in a trek's 'Aorbo app destination IDs'): "
-                              + ", ".join(f"{n} (#{i})" for i, n in sorted(destinations.items()) if i not in pages))
+        no_page = [f"{' + '.join(n)} (#{i})" for i, n in sorted(destinations.items()) if i not in pages]
+        if no_page:
+            self.stdout.write("App places with no website page yet: " + ", ".join(no_page))
         for s in skipped[:20]:
             self.stdout.write(f"  skipped {s}")

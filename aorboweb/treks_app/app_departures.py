@@ -8,11 +8,19 @@ copies them into TrekDeparture rows with source="app", which feed the
 "<destination> trip from <city>" pages. Staff rows (source="manual") are never
 touched.
 
-Which website trek page shows which app destination:
-  - the page's "Aorbo app destination IDs" (TrekList.app_destination_ids), or
-  - when that is empty, the app destination with exactly the page's name
-    ("Gokarna" -> "Gokarna"; never a partial match: "Gokarna-Dandeli" is a
-    different trip).
+Which website trek page shows which app departure — automatic, by PLACES
+(owner, 30 Oct 2026: no manual steps). The app sends each trip's places
+(a combined destination keeps them: "Wayanad Munnar Gokarna" -> Wayanad,
+Munnar, Gokarna); a website package's places come from its name
+("Ooty-Coonoor-Isha Foundation", "Coorg 4-Day Trip" -> Coorg).
+  1. A package with exactly the trip's places gets the departure.
+  2. No such package: each of the trip's places that has its own one-place
+     package gets it, labelled with the real trip ("Wayanad · Munnar · Gokarna"),
+     so it is never shown as a different package; with no one-place package,
+     the packages that visit one of its places ("Coonoor" -> "Ooty-Coonoor").
+  3. A package's "Aorbo app destination IDs" still override, for rare cases.
+Places match across spellings ("Munnar Tea Gardens" ~ "Munnar", "Dwaraka" ~
+"Dwarka", "Kodagu" ~ "Coorg").
 
 Pure functions only (no Django), so they are tested with plain unittest
 (treks_app/test_app_departures.py). The database part is the command.
@@ -36,21 +44,77 @@ def explicit_ids(text):
     return {int(x) for x in re.findall(r"\d+", text or "")}
 
 
-def pages_for(treks, destinations):
-    """Which website pages show each app destination.
+# Words in package names that are not places.
+GENERIC = {"trek", "treks", "trip", "trips", "tour", "tours", "yatra", "package", "packages",
+           "day", "days", "night", "nights", "the", "and", "to"}
+# Same place, other spelling (normalised).
+ALIASES = {
+    "kodagu": "coorg", "udhagamandalam": "ooty", "ootacamund": "ooty", "chikmagalur": "chikkamagaluru",
+    "chikkamagalur": "chikkamagaluru", "dwaraka": "dwarka", "mysore": "mysuru", "pondicherry": "puducherry",
+    "vizag": "visakhapatnam", "bangalore": "bengaluru", "trivandrum": "thiruvananthapuram", "shirdi": "shiridi",
+    "leh": "lehladakh", "ladakh": "lehladakh",
+}
 
-    treks: [(trek_id, name, app_destination_ids)]; destinations: {dest_id: name}.
-    Returns {dest_id: [trek_id, ...]}.
+
+def place_key(name):
+    k = norm(name)
+    return ALIASES.get(k, k)
+
+
+def page_places(name):
+    """A website package's places: 'Ooty-Coonoor-Isha Foundation' -> ['ooty', 'coonoor', 'ishafoundation'];
+    'Coorg 4-Day Trip' -> ['coorg']; 'Kedarkantha Trek' -> ['kedarkantha']."""
+    out = []
+    for part in re.split(r"\s*(?:-|,|&|/|and|to)\s*", name or "", flags=re.I):
+        words = [w for w in part.split() if w.lower() not in GENERIC and not re.fullmatch(r"\d+", w)]
+        if words:
+            k = place_key(" ".join(words))
+            if k and k not in out:
+                out.append(k)
+    return out
+
+
+def same_place(a, b):
+    """'munnarteagardens' ~ 'munnar' (one starts with the other, 4+ letters); aliases already applied."""
+    if a == b:
+        return True
+    short, long_ = sorted((a, b), key=len)
+    return len(short) >= 4 and long_.startswith(short)
+
+
+def same_places(trip, page):
+    return bool(trip) and bool(page) and all(any(same_place(t, p) for p in page) for t in trip)         and all(any(same_place(p, t) for t in trip) for p in page)
+
+
+def pages_for(treks, destinations):
+    """Which website pages show each app destination's departures.
+
+    treks: [(trek_id, name, app_destination_ids)];
+    destinations: {dest_id: [place names]} (from the feed; one place for a single destination).
+    Returns {dest_id: [(trek_id, trip_label), ...]} — trip_label is "" for a package with the
+    same places, else the real trip ("Wayanad · Munnar · Gokarna") shown on a one-place page.
     """
-    by_name = {}
-    for dest_id, name in destinations.items():
-        by_name.setdefault(norm(name), []).append(dest_id)
+    pages = [(tid, page_places(name), explicit_ids(ids)) for tid, name, ids in treks]
     out = {}
-    for trek_id, name, ids in treks:
-        linked = explicit_ids(ids) or set(by_name.get(norm(name), []))
-        for dest_id in linked:
-            if dest_id in destinations:
-                out.setdefault(dest_id, []).append(trek_id)
+    for dest_id, names in destinations.items():
+        trip = [place_key(n) for n in names if place_key(n)]
+        explicit = [tid for tid, _, ids in pages if dest_id in ids]
+        if explicit:
+            out[dest_id] = [(tid, "") for tid in explicit]
+            continue
+        exact = [tid for tid, places, ids in pages if not ids and same_places(trip, places)]
+        if exact:
+            out[dest_id] = [(tid, "") for tid in exact]
+            continue
+        # No package with the same places: the one-place packages of the trip's places, or
+        # failing that the packages that visit one of them — labelled with the real trip.
+        label = " · ".join(trek_rules.title_case(n) for n in names)[:200]
+        singles = [tid for tid, places, ids in pages
+                   if not ids and len(places) == 1 and any(same_place(t, places[0]) for t in trip)]
+        visiting = [tid for tid, places, ids in pages
+                    if not ids and any(same_place(t, p) for t in trip for p in places)]
+        if singles or visiting:
+            out[dest_id] = [(tid, label) for tid in (singles or visiting)]
     return out
 
 
