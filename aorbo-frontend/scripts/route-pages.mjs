@@ -48,6 +48,8 @@ export function buildRoutePages(destPages, treks, places, nearPages = []) {
           price: Number(d.price_from),
           departs: d.days || item.operating_days || '',
           operator: organisersOf({ operators: [d.operator] })[0] || organisersOf({ operators: item.operators })[0] || null,
+          // A real departure from the Aorbo app carries its booking link (aorboweb sync_app_departures).
+          book: /^https:\/\/aorbotreks\.co\.in\/t\/[A-Za-z0-9]{8}$/.test(d.book_url || '') ? d.book_url : null,
         });
         byCity.set(d.city, list);
       }

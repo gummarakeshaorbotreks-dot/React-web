@@ -387,6 +387,7 @@ def departures_of(trek_item):
         "price_from": d.price_from,
         "days": d.days or trek_item.operating_days or "",
         "operator": d.operator.name if d.operator_id else None,
+        "book_url": d.book_url or None,
     } for d in rows]
 
 

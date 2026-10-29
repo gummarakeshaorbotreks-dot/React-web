@@ -346,6 +346,12 @@ class TrekList(models.Model):
     related_treks = models.ManyToManyField('self', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_ai_generated = models.BooleanField(default=False, help_text="True if this trek was created from an OSM search result and may still need review (photo, price, schedule).")
+    # Which Aorbo-app destinations' real departures show on this page (30 Oct 2026,
+    # treks_app/app_departures.py). Empty = the app destination with exactly this name.
+    app_destination_ids = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text="Aorbo app destination IDs whose real departures show on this page, e.g. 12, 40. "
+                  "Leave empty to use the app destination with exactly this trek's name.")
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -623,6 +629,12 @@ class TrekDeparture(models.Model):
     operator = models.ForeignKey(Operator, null=True, blank=True, on_delete=models.SET_NULL,
                                  help_text="The organiser that runs this departure.")
     is_active = models.BooleanField(default=True, help_text="Untick when it no longer runs (the page updates on the next rebuild).")
+    # Rows from the Aorbo app (30 Oct 2026): a real vendor's approved trek with an upcoming
+    # date, synced hourly by `manage.py sync_app_departures`. Staff rows stay "manual".
+    source = models.CharField(max_length=10, choices=[("manual", "Entered here"), ("app", "From the Aorbo app")], default="manual",
+                              help_text="Rows from the Aorbo app update themselves; change them in the vendor's trek.")
+    app_key = models.CharField(max_length=64, null=True, blank=True, unique=True, editable=False)
+    book_url = models.URLField(max_length=200, blank=True, default="", help_text="Booking link in the Aorbo app.")
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
