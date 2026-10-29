@@ -43,6 +43,7 @@ export default function RouteView({ page }) {
                   {` · from ${formatPrice(d.price)} per person`}
                   {d.operator ? ` · by ${d.operator}` : ''}
                 </span>
+                {d.book && <a href={d.book} rel="nofollow">Book on Aorbo</a>}
               </li>
             ))}
           </ul>

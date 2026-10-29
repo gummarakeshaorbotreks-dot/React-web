@@ -392,7 +392,8 @@ class TrekDepartureForm(forms.ModelForm):
 
     class Meta:
         model = TrekDeparture
-        fields = "__all__"
+        # Where a row came from and its booking link are set by the app sync only.
+        exclude = ("source", "book_url")
 
     @staticmethod
     def _rule(fn, value):
@@ -417,6 +418,15 @@ class TrekDepartureForm(forms.ModelForm):
             raise forms.ValidationError("Enter the price per person in rupees, between 100 and 5,00,000.")
         return price
 
+    def clean(self):
+        # Rows from the Aorbo app are rewritten every hour (manage.py sync_app_departures):
+        # a hand edit would vanish, so it is refused with where to change it instead.
+        data = super().clean()
+        if self.instance.pk and self.instance.source == "app" and self.has_changed():
+            raise forms.ValidationError("This departure comes from the Aorbo app (the vendor's trek). "
+                                        "Change it there, or link a different app destination on the trek.")
+        return data
+
 
 class TrekDepartureInline(admin.TabularInline):
     """Departure cities, edited on the trek's own page. Each one gives the trek a
@@ -424,7 +434,8 @@ class TrekDepartureInline(admin.TabularInline):
     model = TrekDeparture
     form = TrekDepartureForm
     extra = 0
-    fields = ('city', 'pickup_point', 'departure_time', 'price_from', 'days', 'operator', 'is_active')
+    fields = ('city', 'pickup_point', 'departure_time', 'price_from', 'days', 'operator', 'is_active', 'source')
+    readonly_fields = ('source',)
     verbose_name = "Departure city"
     verbose_name_plural = "🚌 Departure cities (city, pickup point, time and price from that city)"
 
@@ -476,6 +487,10 @@ class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
                                              "the first is the latitude, the second the longitude. Leave both empty if unsure: "
                                              "the SEO bot finds a checked position itself."}),
         ("Relationships",    {"fields": ('tags', 'operators', 'trek_points', 'related_treks')}),
+        ("🔗 Aorbo app",     {"fields": ('app_destination_ids',),
+                              "description": "Real departures from vendors on the Aorbo app show on this page by themselves "
+                                             "(hourly). By default the app destination with exactly this trek's name is used; "
+                                             "for a page with a different name, enter the app destination IDs here."}),
         ("🤖 AI Generation Status", {
             "fields": ('is_ai_generated',),
             "description": "Checked = auto-created from an OpenStreetMap search, may still need a real photo, price, and schedule. Uncheck once fully reviewed and finished."
@@ -841,8 +856,9 @@ class TrekDepartureAdmin(RBACAdminMixin, admin.ModelAdmin):
     """All departure cities in one list (they are added on each trek's page)."""
     resource = "treks"
     form = TrekDepartureForm
-    list_display = ('trek', 'city', 'pickup_point', 'departure_time', 'price_from', 'operator', 'is_active', 'updated_at')
-    list_filter = ('city', 'is_active', 'operator')
+    list_display = ('trek', 'city', 'pickup_point', 'departure_time', 'price_from', 'operator', 'is_active', 'source', 'updated_at')
+    list_filter = ('source', 'city', 'is_active', 'operator')
     search_fields = ('trek__name', 'city', 'pickup_point')
     autocomplete_fields = ('trek',)
     list_editable = ('is_active',)
+    readonly_fields = ('source', 'book_url')
