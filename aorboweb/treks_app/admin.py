@@ -470,11 +470,11 @@ class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
         'duration_days', 'price_start', 'currency', 'is_ai_generated', 'created_at'
     )
     list_editable  = ('is_pinned', 'pin_priority')
-    list_filter    = ('state', 'currency', 'is_pinned', 'created_at' , 'is_ai_generated')
+    list_filter    = ('state', 'currency', 'is_pinned', 'created_at' , 'is_ai_generated', 'from_app')
     ordering       = ('pin_priority', '-created_at')
     search_fields  = ('name', 'state', 'short_desc')
     date_hierarchy = 'created_at'
-    readonly_fields = ('id', 'created_at', 'image_preview', 'hero_image_preview')
+    readonly_fields = ('id', 'created_at', 'image_preview', 'hero_image_preview', 'from_app')
     fieldsets = (
         ("Basic Info",       {"fields": ('id', 'name', 'state')}),
         ("📌 Pin Settings",  {"fields": ('is_pinned', 'pin_priority'),
@@ -487,10 +487,10 @@ class TrekListAdmin(RBACAdminMixin, admin.ModelAdmin):
                                              "the first is the latitude, the second the longitude. Leave both empty if unsure: "
                                              "the SEO bot finds a checked position itself."}),
         ("Relationships",    {"fields": ('tags', 'operators', 'trek_points', 'related_treks')}),
-        ("🔗 Aorbo app",     {"fields": ('app_destination_ids',),
+        ("🔗 Aorbo app",     {"fields": ('from_app', 'app_destination_ids'),
                               "description": "Real departures from vendors on the Aorbo app show on this page by themselves "
-                                             "(hourly). By default the app destination with exactly this trek's name is used; "
-                                             "for a page with a different name, enter the app destination IDs here."}),
+                                             "(hourly), matched by place. A place with no page gets one made automatically "
+                                             "(\"From app\" ticked). Nothing to do here; IDs only for rare exceptions."}),
         ("🤖 AI Generation Status", {
             "fields": ('is_ai_generated',),
             "description": "Checked = auto-created from an OpenStreetMap search, may still need a real photo, price, and schedule. Uncheck once fully reviewed and finished."

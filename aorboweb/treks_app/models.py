@@ -350,8 +350,14 @@ class TrekList(models.Model):
     # treks_app/app_departures.py). Empty = the app destination with exactly this name.
     app_destination_ids = models.CharField(
         max_length=200, blank=True, default="",
-        help_text="Aorbo app destination IDs whose real departures show on this page, e.g. 12, 40. "
-                  "Leave empty to use the app destination with exactly this trek's name.")
+        help_text="Only for rare cases: Aorbo app destination IDs whose real departures show on this page, "
+                  "e.g. 12, 40. Leave empty: pages are matched to app trips by place automatically.")
+    # Made by the hourly app sync for a place the website had no page for (30 Oct 2026); the sync
+    # keeps its price, departure days and durations current while the app has departures.
+    from_app = models.BooleanField(
+        default=False,
+        help_text="Made automatically from the Aorbo app's real departures. The hourly sync keeps its "
+                  "price, days and duration up to date.")
 
     def save(self, *args, **kwargs):
         if not self.id:

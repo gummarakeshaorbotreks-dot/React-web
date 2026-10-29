@@ -19,6 +19,10 @@ Munnar, Gokarna); a website package's places come from its name
      so it is never shown as a different package; with no one-place package,
      the packages that visit one of its places ("Coonoor" -> "Ooty-Coonoor").
   3. A package's "Aorbo app destination IDs" still override, for rare cases.
+  4. No page at all for the trip's places: the sync makes one (new_page), from
+     facts only — place, state, trip names, durations, cities, organisers,
+     the trip's own photo — never the vendor's free text (it can carry phone
+     numbers). It passes the same checks as a page made in the admin.
 Places match across spellings ("Munnar Tea Gardens" ~ "Munnar", "Dwaraka" ~
 "Dwarka", "Kodagu" ~ "Coorg").
 
@@ -153,3 +157,66 @@ def to_row(dep):
 def app_key(dep_key, trek_id):
     """Stable id of one app departure on one website page."""
     return f"{dep_key}:{trek_id}"[:64]
+
+
+MAX_NEW_PAGES = 5  # per hourly run, so a burst of new app places can't flood the site
+UNSAFE_TITLE = re.compile(r"\d{6,}|@|https?:|www\.|\.com", re.I)  # phone numbers, e-mails, links
+
+
+def _uniq(items):
+    out = []
+    for x in items:
+        if x and x not in out:
+            out.append(x)
+    return out
+
+
+def _join(names):
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def new_page(deps):
+    """All feed departures of ONE app destination that has no website page -> the new page.
+
+    Returns (fields for TrekList, organiser names). Raises ValueError when the facts are not
+    enough for a real page (no photo yet, unknown state...); the next hourly run tries again.
+    """
+    dest = deps[0]["destination"]
+    places = _uniq([trek_rules.title_case(re.sub(r"\s+", " ", p).strip()) for p in (dest.get("places") or [dest.get("name")]) if p])
+    if not places:
+        raise ValueError("no place name")
+    state = trek_rules.normalize_state(dest.get("state"))
+    trips = [d.get("trip") or {} for d in deps]
+    photo = next((t["photo"] for t in trips if re.fullmatch(r"https://[^\s\"'<>]{8,490}", t.get("photo") or "")), None)
+    if not photo:
+        raise ValueError("no trip photo yet")
+    durations = _uniq([t.get("duration") for t in trips])
+    if not durations:
+        raise ValueError("no trip duration")
+    duration = trek_rules.normalize_duration(", ".join(durations))
+    prices = [int(d.get("priceFrom") or 0) for d in deps if 100 <= int(d.get("priceFrom") or 0) <= 500000]
+    if not prices:
+        raise ValueError("no price")
+    days = trek_rules.normalize_operating_days(", ".join(d["days"] for d in deps if d.get("days")))
+    cities = []
+    for d in deps:
+        try:
+            cities.append(trek_rules.normalize_city((d.get("city") or {}).get("name")))
+        except ValueError:
+            pass
+    cities = _uniq(cities)
+    if not cities:
+        raise ValueError("no departure city")
+    organisers = _uniq([trek_rules.title_case(re.sub(r"\s+", " ", (d.get("organiser") or {}).get("name") or "").strip())[:200]
+                        for d in deps])
+    if not organisers:
+        raise ValueError("no organiser")
+    titles = _uniq([trek_rules.title_case(re.sub(r"\s+", " ", t.get("title") or "").strip())
+                    for t in trips if 3 <= len((t.get("title") or "").strip()) <= 80 and not UNSAFE_TITLE.search(t.get("title") or "")])
+    name = "-".join(places)[:200]
+    desc = (f"{' & '.join(places)}, {state}: {_join(titles[:3]) if titles else 'trips'}. "
+            f"{duration} trips leaving from {_join(cities[:4])}, run by {_join(organisers[:3])} "
+            f"and bookable on the Aorbo app.")
+    fields = {"name": name, "state": state, "image": photo, "duration_days": duration,
+              "price_start": min(prices), "operating_days": days, "short_desc": desc}
+    return fields, organisers

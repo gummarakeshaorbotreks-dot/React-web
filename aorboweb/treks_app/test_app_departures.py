@@ -7,6 +7,7 @@ import unittest
 from datetime import time
 
 from treks_app import app_departures as rules
+from treks_app import trek_rules
 
 FEED_DEP = {
     "key": "a1b2c3d4e5f60718",
@@ -71,6 +72,70 @@ class PagesFor(unittest.TestCase):
     def test_explicit_ids_still_override(self):
         treks = self.TREKS + [("south-loop", "South India Loop", "40")]
         self.assertEqual(rules.pages_for(treks, {40: ["Wayanad", "Munnar", "Gokarna"]})[40], [("south-loop", "")])
+
+
+def dep(**over):
+    d = {**FEED_DEP, "destination": {"id": 77, "name": "Dwaraka", "state": "gujarat", "places": ["Dwaraka"]},
+         "trip": {"title": "dwarka somnath darshan", "duration": "3D/2N", "photo": "https://res.cloudinary.com/x/dwarka.jpg"},
+         "city": {"id": 9, "name": "ahmedabad"}, "days": "Fri"}
+    d.update(over)
+    return d
+
+
+class NewPage(unittest.TestCase):
+    """A page for an app place the website has none for: facts only, the admin's own checks."""
+
+    def test_built_from_facts(self):
+        fields, organisers = rules.new_page([
+            dep(),
+            dep(city={"id": 5, "name": "rajkot"}, days="Sat", priceFrom=3900,
+                trip={"title": "Dwarka Weekend", "duration": "2D/1N", "photo": ""}),
+        ])
+        self.assertEqual(fields["name"], "Dwaraka")
+        self.assertEqual(fields["state"], "Gujarat")
+        self.assertEqual(fields["image"], "https://res.cloudinary.com/x/dwarka.jpg")
+        self.assertEqual(fields["duration_days"], "2D/1N, 3D/2N")
+        self.assertEqual(fields["price_start"], 3900)
+        self.assertEqual(fields["operating_days"], "Fri, Sat")
+        self.assertEqual(organisers, ["Blue Ridge Treks"])
+        self.assertEqual(fields["short_desc"], "Dwaraka, Gujarat: Dwarka Somnath Darshan and Dwarka Weekend. 2D/1N, 3D/2N "
+                                               "trips leaving from Ahmedabad and Rajkot, run by Blue Ridge Treks and "
+                                               "bookable on the Aorbo app.")
+        # The page reads back as the same place, so the departures land on it.
+        self.assertEqual(rules.pages_for([("dwaraka", fields["name"], "")], {77: ["Dwaraka"]}), {77: [("dwaraka", "")]})
+
+    def test_combined_trip_gets_one_page_named_by_its_places(self):
+        fields, _ = rules.new_page([dep(destination={"id": 78, "name": "x", "state": "Gujarat", "places": ["Dwarka", "Somnath"]})])
+        self.assertEqual(fields["name"], "Dwarka-Somnath")
+        self.assertTrue(fields["short_desc"].startswith("Dwarka & Somnath, Gujarat: "))
+        self.assertEqual(rules.pages_for([("dwarka-somnath", fields["name"], "")], {78: ["Dwarka", "Somnath"]}),
+                         {78: [("dwarka-somnath", "")]})
+
+    def test_vendor_text_that_could_carry_contacts_is_left_out(self):
+        for title in ("Dwarka trip call 9876543210", "Dwarka by abc@mail.in", "Book at www.x.in"):
+            with self.subTest(title=title):
+                fields, _ = rules.new_page([dep(trip={"title": title, "duration": "3D/2N",
+                                                      "photo": "https://res.cloudinary.com/x/d.jpg"})])
+                self.assertNotIn(title.split()[-1].lower(), fields["short_desc"].lower())
+                self.assertIn("Dwaraka, Gujarat: trips.", fields["short_desc"])
+
+    def test_not_enough_facts_means_no_page_yet(self):
+        for bad in ({"trip": {"title": "x", "duration": "3D/2N", "photo": ""}},          # no photo
+                    {"trip": {"title": "x", "duration": "3D/2N", "photo": "http://x/a.jpg"}},  # not https
+                    {"trip": {"title": "x", "duration": None, "photo": "https://x.in/a.jpg"}},  # no duration
+                    {"destination": {"id": 1, "name": "Atlantis", "state": "Narnia", "places": ["Atlantis"]}},
+                    {"priceFrom": 0},
+                    {"organiser": {"name": " "}}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                rules.new_page([dep(**bad)])
+
+    def test_two_made_pages_are_not_copies_of_each_other(self):
+        a, _ = rules.new_page([dep()])
+        b, _ = rules.new_page([dep(destination={"id": 79, "name": "Mussoorie", "state": "Uttarakhand", "places": ["Mussoorie"]},
+                                   trip={"title": "Mussoorie Weekend Getaway", "duration": "2D/1N",
+                                         "photo": "https://res.cloudinary.com/x/m.jpg"},
+                                   city={"id": 2, "name": "Delhi"})])
+        self.assertEqual(trek_rules.check_description(b["short_desc"], {"dwaraka": a["short_desc"]}), b["short_desc"])
 
 
 class ToRow(unittest.TestCase):
