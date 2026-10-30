@@ -6,6 +6,8 @@
 // (DESTINATIONS_FILE, see seo-bot/bot/destinations.py); everything shown is
 // computed here from the live trek data. A destination needs at least
 // MIN_PACKAGES packages: with one, the package's own page already is that page.
+// A page already published ("keep" from the bot) stays while it has one package, so a
+// package leaving never turns an indexed page into a 404.
 import { readFile } from 'node:fs/promises';
 import { organisersOf } from '../src/seo/meta.js';
 import { km, minDays, slugify } from './near-pages.mjs';
@@ -35,7 +37,7 @@ export function buildDestinationPages(dests, treks, places, nearPages = []) {
   const taken = new Set();
   for (const d of dests) {
     const found = [...new Set(d.treks)].map((id) => byId.get(id)).filter(Boolean);
-    if (found.length < MIN_PACKAGES || taken.has(d.slug)) continue;
+    if (found.length < (d.keep ? 1 : MIN_PACKAGES) || taken.has(d.slug)) continue;
     taken.add(d.slug);
     const named = (t) => (t.name.toLowerCase().includes(d.name.toLowerCase()) ? 0 : 1);
     const items = found

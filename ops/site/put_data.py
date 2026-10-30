@@ -59,6 +59,7 @@ def destinations(data):
         out.append({"slug": d["slug"], "name": text(d.get("name"), 80), "state": text(d.get("state", ""), 80),
                     "kind": d["kind"], "lat": float(d["lat"]) if has_pos else None,
                     "lon": float(d["lon"]) if has_pos else None, "treks": treks[:200],
+                    "keep": d.get("keep") is True,  # published page: stays with one package
                     "places": [text(p, 150) for p in (d.get("places") or [])[:20]]})
     return out
 

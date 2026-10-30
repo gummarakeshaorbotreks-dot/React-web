@@ -6,6 +6,9 @@ Murudeshwar"), and one place is in many packages. This works out which packages
 visit which destination:
   1. Gemini reads every package (name, state, famous places) in batches and lists the
      destinations it visits, using the name people search ("Coorg", not "Kodagu").
+     A destination the package's own name and places never mention is checked once
+     more and dropped unless confirmed (Gemini once put the Kedarnath yatra under
+     Kedarkantha: similar name, different place).
   2. One more Gemini call merges spellings of the same place into one destination
      ("Ooty" / "Udhagamandalam", "Chikmagalur" / "Chikkamagaluru").
   3. Each destination gets a map position the same way as treks (trek_geo.locate:
@@ -14,7 +17,9 @@ visit which destination:
      replaces Gemini's whole-region destinations ("Kerala", "Kashmir").
 Only package ids that really exist are kept. The result goes to the web server (SSH
 command "destinations") and the build makes a page for every destination with at
-least 2 packages; one package alone is already its own trek page.
+least 2 packages; one package alone is already its own trek page. A page once
+published keeps its address while it has a package left ("keep"), so a package
+leaving never turns an indexed page into a 404.
 
     python destinations.py            rebuild (when packages changed) + send
     python destinations.py --show     print the destinations
@@ -95,6 +100,71 @@ def destinations_per_package(pkgs):
     return found
 
 
+def norm(s):
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def named_in(pkg, spellings):
+    """True when the package's own name, state or places name the destination (any spelling)."""
+    text = norm(" ".join([pkg["name"], pkg["state"]] + pkg["places"]))
+    return any(norm(s) and norm(s) in text for s in spellings)
+
+
+def verdicts(pairs):
+    """{(package id, destination): visits?} for the pairs Gemini answered. Small batches:
+    in batches of 20+ it said "no" to Hadimba Temple -> Manali."""
+    schema = {"type": "object", "properties": {"answers": {"type": "array", "items": {"type": "object", "properties": {
+        "n": {"type": "integer"}, "visits": {"type": "boolean"}}, "required": ["n", "visits"]}}}, "required": ["answers"]}
+    out = {}
+    for i in range(0, len(pairs), 8):
+        batch = pairs[i:i + 8]
+        prompt = (
+            "Each item is a trip package on an Indian travel site (name, state, places it visits) and a destination "
+            "it was said to visit. Judging ONLY from its name and places, does the package really go to that "
+            "destination? Yes when it is named differently but the same place, or a listed place is in or right next "
+            "to it (Tadiandamol -> Coorg, Dal Lake -> Srinagar, Borra Caves -> Araku Valley). No for a different place "
+            "with a similar name (Kedarnath is not Kedarkantha), or a place merely in the same region that none of "
+            "its places are at.\n\n" + json.dumps(
+                [{"n": n, "package": p["name"], "state": p["state"], "places": p["places"], "destination": d}
+                 for n, (p, d) in enumerate(batch)], ensure_ascii=False))
+        for a in generate_json(prompt, schema, temperature=0.1).get("answers", []):
+            if isinstance(a.get("visits"), bool) and 0 <= a.get("n", -1) < len(batch):
+                p, d = batch[a["n"]]
+                out[(p["id"], d)] = a["visits"]
+    return out
+
+
+def confirm(pairs):
+    """pairs: [(package, destination)] the package's text never names. Returns (to drop,
+    unanswered): a pair is dropped only when asked twice, separately, and "no" both times."""
+    first = verdicts(pairs)
+    no = [(p, d) for p, d in pairs if first.get((p["id"], d)) is False]
+    second = verdicts(no) if no else {}
+    drop = {k for k, v in second.items() if v is False}
+    unanswered = {(p["id"], d) for p, d in pairs if (p["id"], d) not in first or (first[(p["id"], d)] is False
+                                                                              and (p["id"], d) not in second)}
+    return drop, unanswered
+
+
+def drop_unconfirmed(cache, by_id, canonical):
+    """Checks, once per package, the destinations its own text never names (see confirm).
+    A package with an unanswered pair keeps it and is checked again next run."""
+    spellings = {}
+    for k, v in canonical.items():
+        spellings.setdefault(v.lower(), {v}).add(k)
+    todo = [pid for pid, v in cache.items() if pid in by_id and not v.get("checked")]
+    pairs = [(by_id[pid], d) for pid in todo for d in cache[pid]["dests"]
+             if not named_in(by_id[pid], spellings.get(canonical.get(d.lower(), d).lower(), set()) | {d})]
+    drops, unanswered = confirm(pairs) if pairs else (set(), set())  # a Gemini failure raises: next run
+    for pid in todo:
+        drop = {d for i, d in drops if i == pid}
+        if drop:
+            print("dropped (not in the package):", by_id[pid]["name"], "->", ", ".join(sorted(drop)))
+        cache[pid] = {**cache[pid], "dests": [d for d in cache[pid]["dests"] if d not in drop],
+                      "checked": not any(i == pid for i, _ in unanswered)}
+    return cache
+
+
 def merge_names(names):
     """{spelling: canonical name} for every name Gemini used."""
     schema = {"type": "object", "properties": {"groups": {"type": "array", "items": {"type": "object", "properties": {
@@ -132,7 +202,13 @@ def build():
             if pid in by_id:
                 cache[pid] = {"name": by_id[pid]["name"], "dests": ds}
         state_set("dest_pkg_cache", cache)
-    per_pkg = {pid: v["dests"] for pid, v in cache.items() if pid in by_id}
+    if any(pid in by_id and not v.get("checked") for pid, v in cache.items()):
+        cache = drop_unconfirmed(cache, by_id, state_get("dest_canonical", {}))
+        state_set("dest_pkg_cache", cache)
+    # Pages already published (also those sent before this list was kept).
+    published = set(state_get("dest_published", [])) | {
+        d["slug"] for d in state_get("destinations", []) if len(d["treks"]) >= (MIN_STATE_PACKAGES if d["kind"] == "state" else 2)}
+    per_pkg ={pid: v["dests"] for pid, v in cache.items() if pid in by_id}
     canonical, info = state_get("dest_canonical", {}), state_get("dest_info", {})
     new_names = {d for ds in per_pkg.values() for d in ds if d.lower() not in canonical}
     if new_names:
@@ -157,7 +233,7 @@ def build():
         state = meta["state"] or (states.pop() if len(states) == 1 else "")
         places = list(dict.fromkeys(pl for i in ids for pl in by_id[i]["places"]))[:20]
         pos = None
-        if meta["kind"] == "place" and len(ids) >= 2:  # positions only for destinations that get a page
+        if meta["kind"] == "place" and (len(ids) >= 2 or slugify(name) in published):  # only destinations with a page
             key = f"{name}|{state}"
             if key not in cached:
                 try:
@@ -179,7 +255,12 @@ def build():
         out.append({"slug": slugify(name), "name": name, "state": state, "kind": meta["kind"],
                     "lat": pos[0] if pos else None, "lon": pos[1] if pos else None,
                     "treks": ids, "places": places})
-    return keep_local_places(with_states(out, pkgs))
+    out = with_states(out, pkgs, published)
+    for d in out:
+        d["keep"] = d["slug"] in published and len(d["treks"]) >= 1
+    published |= {d["slug"] for d in out if len(d["treks"]) >= (MIN_STATE_PACKAGES if d["kind"] == "state" else 2)}
+    state_set("dest_published", sorted(published))
+    return keep_local_places(out)
 
 
 STATES = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana",
@@ -201,9 +282,10 @@ def states_of(text):
     return [s for s in STATES if re.sub(r"[^a-z]", "", s.lower()) in t]
 
 
-def with_states(dests, pkgs):
+def with_states(dests, pkgs, published=frozenset()):
     """Adds a page per state ("Treks & trips in Kerala"); whole-region destinations from Gemini
-    ("Kerala", "Kashmir") are dropped, the state page covers them."""
+    ("Kerala", "Kashmir") are dropped, the state page covers them. A published state page stays
+    while it has a package."""
     per_state = {}
     for p in pkgs:
         for s in states_of(p["state"]):
@@ -212,9 +294,9 @@ def with_states(dests, pkgs):
     out = [d for d in dests if d["kind"] != "region"]
     taken = {d["slug"] for d in out}
     for s, ids in sorted(per_state.items()):
-        if len(ids) < MIN_STATE_PACKAGES:
-            continue
         slug = slugify(s) if slugify(s) not in taken else f"{slugify(s)}-state"
+        if len(ids) < MIN_STATE_PACKAGES and slug not in published:
+            continue
         out.append({"slug": slug, "name": s, "state": s, "kind": "state", "lat": None, "lon": None, "treks": ids,
                     "places": list(dict.fromkeys(pl for i in ids for pl in by_id[i]["places"]))[:20]})
     return out
@@ -227,7 +309,7 @@ def keep_local_places(dests):
     schema = {"type": "object", "properties": {"destinations": {"type": "array", "items": {"type": "object", "properties": {
         "slug": {"type": "string"}, "keep": {"type": "array", "items": {"type": "string"}}},
         "required": ["slug", "keep"]}}}, "required": ["destinations"]}
-    todo = [d for d in dests if len(d["treks"]) >= 2 and d["places"]
+    todo = [d for d in dests if (len(d["treks"]) >= 2 or d.get("keep")) and d["places"]
             and cache.get(d["slug"], {}).get("from") != d["places"]]
     for i in range(0, len(todo), 15):
         batch = todo[i:i + 15]

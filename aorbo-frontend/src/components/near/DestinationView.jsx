@@ -29,7 +29,7 @@ export default function DestinationView({ page }) {
       <PageHeader
         eyebrow="Destinations"
         title={destinationHeading(page)}
-        subtitle={`${f.count} packages on Aorbo Treks ${isState ? 'in' : 'that visit'} ${page.name}${!isState && page.state ? `, ${page.state}` : ''}.`}
+        subtitle={`${f.count} ${f.count === 1 ? 'package' : 'packages'} on Aorbo Treks ${isState ? 'in' : f.count === 1 ? 'that visits' : 'that visit'} ${page.name}${!isState && page.state ? `, ${page.state}` : ''}.`}
         back={{ to: '/destinations', label: 'All destinations' }}
       />
       <div className="container">
