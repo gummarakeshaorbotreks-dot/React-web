@@ -12,6 +12,7 @@ import TrekView from './components/trek/TrekView';
 import AppView from './components/AppView';
 import OrganiserView from './components/near/OrganiserView';
 import OrganiserHubView from './components/near/OrganiserHubView';
+import WinterView from './components/near/WinterView';
 
 export async function render(path) {
   const handler = createStaticHandler(routes);
@@ -47,6 +48,11 @@ export function renderOrganiser(page) {
 
 export function renderOrganiserHub(hub) {
   return renderToString(<StaticRouter location={hub.path}><OrganiserHubView hub={hub} /></StaticRouter>);
+}
+
+// Winter treks & snow trips (scripts/season-pages.mjs).
+export function renderWinter(page) {
+  return renderToString(<StaticRouter location={page.path}><WinterView page={page} /></StaticRouter>);
 }
 
 // "<destination> trips & treks" pages and their index.

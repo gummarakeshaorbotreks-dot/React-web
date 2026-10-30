@@ -58,6 +58,7 @@ export const routes = [
           { path: 'destinations/:slug/:from', lazy: page(() => import('./pages/DestinationRoute')) },
           { path: 'organisers', lazy: page(() => import('./pages/Organisers').then((m) => ({ default: m.OrganisersHub }))) },
           { path: 'organisers/:slug', lazy: page(() => import('./pages/Organisers')) },
+          { path: 'winter-treks', lazy: page(() => import('./pages/WinterTreks')) },
           { path: '*', lazy: page(() => import('./pages/NotFound')) },
         ],
       },
