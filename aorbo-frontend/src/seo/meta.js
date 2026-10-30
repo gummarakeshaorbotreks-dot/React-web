@@ -563,7 +563,7 @@ export function destinationMeta(page) {
   const f = destinationFacts(page);
   const name = page.kind === 'state' ? `Treks & Trips in ${page.name}` : `${page.name} Trips & Treks`;
   const description = snippet(
-    `${f.count} ${page.kind === 'state' ? `trek and trip packages in ${page.name}` : `${page.name} trip and trek packages`} on Aorbo Treks`
+    `${f.count} ${page.kind === 'state' ? `trek and trip ${f.count === 1 ? 'package' : 'packages'} in ${page.name}` : `${page.name} trip and trek ${f.count === 1 ? 'package' : 'packages'}`} on Aorbo Treks`
     + (f.minDays != null ? `, ${fewDurations(page.treks.map((t) => t.duration))}` : '')
     + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
     + '.'
@@ -572,7 +572,7 @@ export function destinationMeta(page) {
   );
   const url = absoluteUrl(page.path);
   return {
-    title: `${name}: ${f.count} Packages${f.minPrice != null ? ` from ${rupees(f.minPrice)}` : ''} | Aorbo Treks`,
+    title: `${name}: ${f.count} ${f.count === 1 ? 'Package' : 'Packages'}${f.minPrice != null ? ` from ${rupees(f.minPrice)}` : ''} | Aorbo Treks`,
     description,
     path: page.path,
     image: page.treks?.find((t) => t.image)?.image || DEFAULT_IMAGE,
