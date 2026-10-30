@@ -16,11 +16,12 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
-  notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, ABOUT_AORBO, ALTERNATE_NAMES,
+  notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, winterMeta, ABOUT_AORBO, ALTERNATE_NAMES,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildOrganiserPages } from './organiser-pages.mjs';
+import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
 import { buildRoutePages } from './route-pages.mjs';
 
@@ -177,6 +178,7 @@ try {
 let near = { pages: [], hub: null, candidates: 0 };
 let destinations = { pages: [], hub: null };
 let organisers = { pages: [], hub: null };
+let winter = { pages: [], hub: null };
 let routes = { pages: [] };
 let ssr = null;
 if (treks.length) {
@@ -184,6 +186,8 @@ if (treks.length) {
   near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
   destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
   organisers = buildOrganiserPages(treks, destinations.pages);
+  // Winter treks & snow trips: rebuilt every build, the season label moves on each July.
+  winter = buildWinterPage(treks, destinations.pages);
   // "<destination> trip from <city>": only where the admin has real departures (scripts/route-pages.mjs).
   routes = buildRoutePages(destinations.pages, treks, places, near.pages);
   ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
@@ -269,6 +273,7 @@ if (ssr) {
   await writeDataPages('near', near, nearMeta, ssr.renderNear, nearHubMeta, ssr.renderNearHub);
   await writeDataPages('destinations', destinations, destinationMeta, ssr.renderDestination, destinationHubMeta, ssr.renderDestinationHub);
   await writeDataPages('organisers', organisers, organiserMeta, ssr.renderOrganiser, organiserHubMeta, ssr.renderOrganiserHub);
+  await writeDataPages('seasons', winter, winterMeta, ssr.renderWinter, null, null);
   await writeDataPages('routes', { pages: routes.pages, hub: null }, routeMeta, ssr.renderRoute, null, null);
 }
 

@@ -19,6 +19,7 @@ const COLUMNS = [
       { to: '/treks-near', label: 'Treks near you' },
       { to: '/destinations', label: 'Destinations' },
       { to: '/organisers', label: 'Trek organisers' },
+      { to: '/winter-treks', label: 'Winter treks' },
       { to: '/app', label: 'Aorbo Treks app' },
       { to: '/user-agreement', label: 'User Agreement' },
       { to: '/refund-policy', label: 'Refund Policy' },

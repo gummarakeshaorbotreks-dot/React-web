@@ -814,6 +814,69 @@ export function organiserHubMeta(hub) {
   };
 }
 
+// ── Winter treks & snow trips (/winter-treks, scripts/season-pages.mjs, 30 Oct 2026) ──────────
+/** Same facts as an organiser page: count, price range, days, departure weekdays. */
+export const winterFacts = (page) => organiserFacts(page);
+
+/** Questions and answers shown on the winter page; the same text goes into its FAQPage data. */
+export function winterFaqs(page) {
+  const f = winterFacts(page);
+  const faqs = [{
+    q: 'Which winter treks and snow trips can I book on Aorbo Treks?',
+    a: `${f.count} for the ${page.season} season, including ${joinNames(page.treks.slice(0, 6).map((t) => capital(t.name)))}.`,
+  }, {
+    q: 'When is the season for winter treks in India?',
+    a: 'Most winter treks and snow trips run from November to March. Snow usually settles from December, and late December and January see the most.',
+  }];
+  if (page.states.length) faqs.push({ q: 'Where are these winter treks?', a: `In ${joinNames(page.states)}.` });
+  if (f.minPrice != null) {
+    faqs.push({
+      q: 'How much does a winter trek cost?',
+      a: f.minPrice === f.maxPrice
+        ? `From ${rupees(f.minPrice)} per person on Aorbo Treks.`
+        : `Starting prices range from ${rupees(f.minPrice)} to ${rupees(f.maxPrice)} per person on Aorbo Treks.`,
+    });
+  }
+  faqs.push({
+    q: 'What should I carry for a snow trek?',
+    a: 'Warm layers (thermals, a fleece and a padded or down jacket), waterproof gloves, a woollen cap, trekking shoes with a good grip, and sunglasses for the glare off the snow.',
+  });
+  return faqs;
+}
+
+/** Tags for the winter page. */
+export function winterMeta(page) {
+  const f = winterFacts(page);
+  const description = snippet(
+    `${f.count} winter treks and snow trips for ${page.season}`
+    + (page.states.length ? ` in ${joinNames(page.states.slice(0, 4))}` : '')
+    + (f.minPrice != null ? `, from ${rupees(f.minPrice)} per person` : '')
+    + `: ${joinNames(page.treks.slice(0, 4).map((t) => capital(t.name)))} and more. Compare organisers and book.`,
+  );
+  const url = absoluteUrl(page.path);
+  return {
+    title: `Winter Treks & Snow Trips ${page.season} | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.treks.find((t) => t.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'CollectionPage',
+        name: `Winter treks & snow trips ${page.season}`,
+        description,
+        url,
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: page.treks.length,
+          itemListElement: page.treks.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${t.id}`), name: t.name })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Winter treks', page.path]]),
+      faqPage(winterFaqs(page)),
+    ),
+  };
+}
+
 /** Pages that must stay out of search results. */
 export const notFoundMeta = (path = '/404') => ({
   title: 'Page not found | Aorbo Treks',
