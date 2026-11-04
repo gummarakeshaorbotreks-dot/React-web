@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 REQUIRED = ["index.html", "404.html", "robots.txt", "sitemap.xml", "sw.js",
-            "googleafa76c4f2a0c2db4.html", "511c352aab48724bc430f6a5eb06073f.txt"]
+            "googleafa76c4f2a0c2db4.html", "511c352aab48724bc430f6a5eb06073f.txt", "app-ads.txt"]
 SITE = "https://aorbotreks.com"
 
 
