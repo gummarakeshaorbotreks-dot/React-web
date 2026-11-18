@@ -38,7 +38,7 @@ export default function CookieBanner() {
   return (
     <div id="cookie-banner" className="cookie-banner" role="region" aria-label="Cookie consent">
       <p className="cookie-banner__text">
-        We use cookies to personalize your experience.{' '}
+        We use no tracking or advertising cookies; your browser only remembers this choice.{' '}
         <Link to="/privacy-policy">Learn more about cookies</Link>
       </p>
       <div className="cookie-banner__actions">

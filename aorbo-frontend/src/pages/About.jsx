@@ -10,7 +10,7 @@ import useSeo from '../seo/useSeo';
 import { staticPageMeta } from '../seo/meta';
 
 const REASONS = [
-  { icon: BadgeCheck, title: 'Trusted Organizers', text: 'We partner with experienced and verified trekking experts to ensure your safety and satisfaction.' },
+  { icon: BadgeCheck, title: 'Checked Organizers', text: 'Every organizer completes KYC checks and every trek listing is reviewed before it goes live.' },
   { icon: Search, title: 'Transparency', text: 'No hidden costs, no unpleasant surprises—just honest and straightforward service.' },
   { icon: Users, title: 'Community', text: 'Join a thriving community of trekkers and adventurers who share your passion for the outdoors.' },
   { icon: Compass, title: 'Tailored Experiences', text: "Whether you're looking for a solo trek or a group adventure, we have options to suit every need." },
@@ -52,8 +52,8 @@ export default function About() {
           <InfoCard icon={Target} title="Our Goal">
             <p>
               Our vision is clear—to become your ultimate go-to platform for treks and adventure trips. We
-              connect passionate adventurers like you with verified, experienced organizers, ensuring a
-              seamless and worry-free experience. Think of us as the Tinder of trekking - only better! With
+              connect passionate adventurers like you with KYC-checked organizers and make finding and booking a
+              trek simple. Think of us as the Tinder of trekking - only better! With
               Aorbo Treks, you won't have to worry about getting ghosted. Instead, you'll find the perfect
               match for your adventure needs.
             </p>
@@ -87,7 +87,7 @@ export default function About() {
               Our goal is to transform trekking from a bucket-list activity into an integral part of your
               lifestyle. Because life's too short to stay indoors! We encourage you to step outside, connect
               with nature, meet like-minded adventurers, and create memories that last a lifetime. And while
-              you focus on the thrill, we handle the logistics to ensure a hassle-free experience.
+              you focus on the thrill, we handle the search, booking and payment; your organizer runs the trek.
             </p>
           </InfoCard>
         </div>

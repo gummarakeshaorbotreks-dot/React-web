@@ -27,7 +27,7 @@ const ON_PLATFORM = [
   { icon: Users, title: 'Access to Multiple Organizers', text: 'Users can browse trusted trekking organizers on Aorbo, making it easy to compare options.' },
   { icon: SlidersHorizontal, title: 'Tailored Trek Options', text: 'Users can filter treks by preferences, ensuring a personalized experience.' },
   { icon: ShieldCheck, title: 'Verified Organizers', text: 'Every organizer completes KYC verification, and every trek listing is reviewed before it goes live on Aorbo.' },
-  { icon: BadgePercent, title: 'Cost-Effective Packages', text: 'Aorbo offers group discounts, special deals, and customizable packages to help users save.' },
+  { icon: BadgePercent, title: 'Cost-Effective Packages', text: 'Aorbo offers coupons, group discounts and special deals to help users save.' },
   { icon: Headset, title: 'Customer Support', text: 'Reach our team by call, WhatsApp or e-mail, Monday to Saturday, 10 AM to 6 PM.' },
   { icon: CalendarCheck, title: 'Streamlined Booking Process', text: 'With Aorbo, users can easily book, pay, and manage their trips in one place.' },
 ];
@@ -75,7 +75,7 @@ export default function Safety() {
       <PageHeader
         eyebrow="Safety"
         title="Explore the Wild with Confidence"
-        subtitle="At Aorbo Treks, the safety of our users is our top priority. We ensure a secure and structured trekking experience by partnering with Verified Organizers - you are in safe hands!"
+        subtitle="Every organizer on Aorbo Treks completes KYC checks and every listing is reviewed before it goes live. Your organizer runs the trek and its safety arrangements, so here is what to check before you go."
       />
 
       <div className="container">
