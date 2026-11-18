@@ -6,7 +6,7 @@ import { staticPageMeta } from '../seo/meta';
 export default function UserAgreement() {
   useSeo(staticPageMeta('/user-agreement'));
   return (
-    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="2 October 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
+    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="18 November 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
       
       {/* 1. DEFINITIONS AND INTERPRETATION */}
       <h3>1. DEFINITIONS AND INTERPRETATION</h3>
@@ -41,20 +41,20 @@ export default function UserAgreement() {
         terms and conditions herein, they must refrain from using the Website or services.
       </p>
       <p>
-        2.2 Aorbo Treks reserves the right to modify or update the User Agreement at its discretion. Any changes made
-        will be reflected on the Website, and continued use of the Website after such modifications will be deemed
-        as acceptance of those changes.
+        2.2 Aorbo Treks may change this Agreement. The date at the top shows the latest version. When we make an
+        important change, we will ask you to accept the new version in the app before you continue to use it.
       </p>
 
       {/* 3. ELIGIBILITY AND ACCOUNT REGISTRATION */}
       <h3>3. ELIGIBILITY AND ACCOUNT REGISTRATION</h3>
       <p>
         3.1 To use the services provided by Aorbo Treks, the User must be at least 18 years of age and have the legal
-        capacity to enter into and comply with this Agreement. <strong>If the User is under the age of 18,</strong>{' '}
-        they may not use the Website or services without supervision from a parent or legal guardian.
+        capacity to enter into this Agreement. Every traveller booked must also be 18 or older
+        (<Link to="/terms">Terms and Conditions</Link>, section 7).
       </p>
       <p>
-        3.2 The User agrees to provide accurate and truthful information during registration...
+        3.2 The User agrees to provide accurate and truthful information during registration and booking, and to keep
+        it up to date.
       </p>
       <p>
         3.3 In case of any unauthorized use or breach of security related to their account, the User must immediately
@@ -64,23 +64,25 @@ export default function UserAgreement() {
       {/* 4. SERVICES AND USE OF THE WEBSITE */}
       <h3>4. SERVICES AND USE OF THE WEBSITE</h3>
       <p>
-        4.1 <strong>Aorbo Treks</strong> offers a platform where Users can browse and book trekking and travel
-        services provided by third-party Service Providers. Aorbo Treks is not a direct service provider, 
-        <strong> but an intermediary that connects Users with these Service Providers</strong>.
+        4.1 <strong>Aorbo Treks</strong> offers a platform where Users can browse and book treks run by independent
+        Service Providers (organisers). Aorbo Treks is not the service provider: it takes the booking and payment in the
+        app, passes the organiser&rsquo;s share to the organiser, makes refunds under
+        the <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>, passes complaints to the organiser and gives
+        customer support. It does not run or supervise any trek.
       </p>
       <p>
         4.2 Users acknowledge that Aorbo Treks is not responsible for the quality, availability, or performance of
-        the services provided by the Service Providers, and any issues or disputes must be resolved directly with
-        the Service Providers.
+        the services provided by the Service Providers, and any issues or disputes about them must be resolved directly
+        with the Service Providers, except cancellations and refunds of amounts paid in the app, which Aorbo Treks
+        handles under the Refund &amp; Cancellation Policy.
       </p>
       <p>
-        4.3 Users may book services such as treks, tours, and other travel-related products via the Website. By
-        confirming a booking, the User agrees to the terms and conditions of the Service Provider.
+        4.3 Users may book treks via the Website and app. By confirming a booking, the User agrees to the trek details
+        shown in the listing. Cancellations and refunds follow the Refund &amp; Cancellation Policy, which prevails over
+        any different term of the Service Provider.
       </p>
       <p>
-        4.4 <strong>Aorbo Treks</strong> may charge service fees, booking fees, or other charges in addition to the
-        price of the services provided by the Service Providers. These fees will be disclosed during the booking
-        process.
+        4.4 <strong>Aorbo Treks</strong> charges a platform fee of ₹10 per booking (inclusive of GST), shown before you pay.
       </p>
       <p>
         4.5 <strong>Aorbo Treks</strong> reserves the right to modify, suspend, or discontinue its Website or
@@ -94,9 +96,8 @@ export default function UserAgreement() {
         applicable laws, regulations, and guidelines.
       </p>
       <p>
-        5.2 The User is responsible for reviewing the details of the services or products before making a booking. By
-        making a booking, the User confirms that they have read and understood the terms and conditions of the
-        Service Provider, as well as any additional terms associated with the booking.
+        5.2 The User is responsible for reviewing the trek details in the listing, including what is and is not
+        included, before making a booking.
       </p>
       <p>
         5.3 Users are prohibited from uploading, posting, transmitting, or distributing any content on the Website
@@ -114,39 +115,32 @@ export default function UserAgreement() {
       <h3>6. PAYMENT TERMS AND FEES</h3>
       <p>
         6.1 <strong>Booking Process:</strong>{' '}
-        Users may search, select, and book trips through the Aorbo Treks platform based on availability and the
-        terms set by individual Vendors. The booking process is subject to the specific terms and conditions of the
-        Vendor offering the trek or service.
+        Users may search, select and book treks on the Aorbo Treks platform, subject to availability and the trek
+        details shown in the listing.
       </p>
       <p>
         6.2 <strong>Payment Modes:</strong>{' '}
-        Aorbo Treks facilitates multiple payment options, which are subject to the arrangement with the Vendor.
-        These payment options include:
+        Every trek follows one of two policies, shown before you book:
       </p>
       <ul>
         <li>
-          <p><strong>Full Payment:</strong> The total trip amount is paid upfront via the platform at the time of booking.</p>
+          <p><strong>Standard Policy:</strong> the full amount is paid in the app at the time of booking.</p>
         </li>
         <li>
-          <p><strong>Partial Payment:</strong> Users may pay a booking fee via the platform, with the remaining balance due directly to the Vendor according to the agreed booking terms.</p>
-        </li>
-        <li>
-          <p><strong>Pay at Site:</strong> A portion of the payment is collected via the platform, and the remaining balance is settled in person—by cash or UPI—at the designated trek commencement point.</p>
+          <p><strong>Flexible Policy:</strong> you pay an advance of ₹999 per traveller, together with the GST and the platform fee, in the app, and pay the rest of the trek fare directly to the organiser as shown in your booking; or you pay the full amount in the app.</p>
         </li>
       </ul>
       <p>
-        <strong>Balance paid to the organizer:</strong> a balance paid under Partial Payment or Pay at Site goes directly
-        to the Vendor (your trek organizer), not to Aorbo Treks. Please pay only as shown in your booking and keep the
-        receipt. The Vendor is responsible for this amount, including any refund of it that becomes due. If you face any
-        problem with it, contact Aorbo Treks customer care: we will take it up with the Vendor and help you get it
-        resolved.
+        <strong>Balance paid to the organizer:</strong> a balance paid under the Flexible Policy goes directly to the
+        Vendor (your trek organizer), not to Aorbo Treks. Please pay only as shown in your booking and keep the receipt.
+        The Vendor is responsible for this amount, including any refund of it that becomes due. If you face any problem
+        with it, contact Aorbo Treks customer care: we will take it up with the Vendor and help you get it resolved.
       </p>
       <p>
-        6.3 <strong>Additional Charges:</strong>{' '}
-        The User acknowledges that they are solely responsible for any additional charges that are not included in
-        the base booking price. These charges may include, but are not limited to, toll fees, permits, parking, gear
-        rentals, porter fees, or applicable government levies. These additional costs shall be paid directly to the
-        Vendor or authorized personnel and may be disclosed either during or after the booking process.
+        6.3 <strong>What the Fare Includes:</strong>{' '}
+        The amount shown before you pay is the trek fare, GST and the ₹10 platform fee. Anything the listing shows as
+        &ldquo;Not included&rdquo; is not in the fare and, if you need or choose it, is paid directly to the organiser or
+        the seller (<Link to="/terms">Terms and Conditions</Link>, section 4).
       </p>
       <p>
         6.4 <strong>Refunds:</strong>{' '}
@@ -160,10 +154,9 @@ export default function UserAgreement() {
         securely in accordance with industry standards.
       </p>
       <p>
-        6.6 <strong>Service Charges:</strong>{' '}
-        Aorbo Treks may impose a facilitation fee for processing bookings, which will be clearly disclosed to the
-        User during the booking process. This fee is separate from the charges for services provided by the Vendor,
-        and the User is solely responsible for selecting their preferred Vendor.
+        6.6 <strong>Platform Fee:</strong>{' '}
+        The only fee Aorbo Treks charges you is the ₹10 platform fee per booking (inclusive of GST), shown before you
+        pay. The User is solely responsible for selecting their preferred organiser.
       </p>
       <p>
         6.7 <strong>Taxes:</strong>{' '}
@@ -181,14 +174,15 @@ export default function UserAgreement() {
       <p>
         7.2 In summary, the cancellation charge depends on whether the trek follows the Standard Policy or the
         Flexible Policy (shown before booking) and on how close to departure the booking is cancelled. Under the
-        Flexible Policy, the ₹999 advance per traveller is non-refundable. The ₹10 platform fee is never refunded,
-        any fee the payment gateway actually charged on the payment is deducted from refunds (a UPI payment from a
-        bank account usually has none), and GST is refunded in full when the booking is cancelled before the trek starts.
+        Flexible Policy, the ₹999 advance per traveller is non-refundable. The ₹10 platform fee is never refunded.
+        When you cancel, the payment gateway fee is not taken from your refund, and GST is refunded in full when you
+        cancel before the trek starts. Nothing is refunded if you cancel after departure.
       </p>
       <p>
-        7.3 If the organizer cancels, the User is refunded the amount paid, less the ₹10 platform fee and any payment
-        gateway fee. Rescheduling is not offered. Refunds start immediately and usually reach the User in 5–7
-        business days.
+        7.3 If the departure is cancelled, the organiser refuses you, or we find the organiser at fault, you get back
+        everything you paid in the app except the ₹10 platform fee. A trek stopped part-way may get a part refund under
+        the Refund &amp; Cancellation Policy. Aorbo Treks gives no refund or compensation after a trek has ended.
+        Rescheduling is not offered. Refunds start immediately and usually reach the User in 5–7 business days.
       </p>
 
       {/* 8. PRIVACY AND CONFIDENTIALITY */}
@@ -212,7 +206,7 @@ export default function UserAgreement() {
       <h3>9. INTELLECTUAL PROPERTY RIGHTS</h3>
       <p>
         9.1 The Website and all its content, including but not limited to logos, text, images, videos, and software,
-        are owned by Aorbo Treks or its licensors and are protected by intellectual property laws.
+        are owned by AORBO INFOCOM or its licensors and are protected by intellectual property laws.
       </p>
       <p>
         9.2 The User is granted a limited, non-exclusive, non-transferable license to access and use the Website for
@@ -226,17 +220,8 @@ export default function UserAgreement() {
       {/* 10. LIMITATION OF LIABILITY */}
       <h3>10. LIMITATION OF LIABILITY</h3>
       <p>
-        10.1 Aorbo Treks will not be liable for any direct, indirect, incidental, special, or consequential damages
-        arising from the use or inability to use the Website, services, or products offered.
-      </p>
-      <p>
-        10.2 Aorbo Treks does not warrant the accuracy, completeness, or reliability of any information or content
-        provided on the Website. All content is provided on an "as-is" basis, and Aorbo Treks disclaims all
-        warranties, express or implied, including but not limited to merchantability and fitness for a particular purpose.
-      </p>
-      <p>
-        10.3 The User agrees that Aorbo Treks’s liability, if any, shall not exceed the total amount paid by the User
-        for the service or product in question.
+        10.1 Aorbo Treks&rsquo; liability is limited as set out in section 11 of the{' '}
+        <Link to="/terms">Terms and Conditions</Link>, which applies to this Agreement.
       </p>
 
       {/* 11. SEVERABILITY */}
@@ -253,9 +238,9 @@ export default function UserAgreement() {
         12.1 This Agreement shall be governed by and construed in accordance with the laws of India.
       </p>
       <p>
-        12.2 Any disputes arising out of or relating to this Agreement shall be resolved through arbitration, and the
-        arbitration proceedings shall take place in Hyderabad, India. The decision of the arbitrator shall be final
-        and binding.
+        12.2 Subject to the next sentence, the courts at Hyderabad, Telangana have exclusive jurisdiction over any
+        dispute arising out of or relating to this Agreement. Nothing in this Agreement affects the User&rsquo;s right to
+        file a complaint before a Consumer Commission under the Consumer Protection Act, 2019.
       </p>
       <p>
         12.3 Notwithstanding the above, Aorbo Treks may seek injunctive or other equitable relief in any court of
@@ -265,9 +250,9 @@ export default function UserAgreement() {
       {/* 13. AMENDMENTS */}
       <h3>13. AMENDMENTS</h3>
       <p>
-        13.1 Aorbo Treks reserves the right to modify, update, or amend this Agreement at any time. Any changes to
-        the Agreement will be posted on the Website, and the User’s continued use of the Website constitutes
-        acceptance of the modified terms.
+        13.1 Changes to this Agreement are made as set out in clause 2.2. Aorbo Treks may transfer this Agreement to
+        any entity that takes over the Aorbo Treks business, including the company being formed by the owners of
+        AORBO INFOCOM.
       </p>
 
       {/* 14. CONTACT INFORMATION */}
@@ -277,7 +262,9 @@ export default function UserAgreement() {
         Platform: Aorbo Treks (www.aorbotreks.com)<br />
         Support Email: care@aorbotreks.com<br />
         Phone and WhatsApp: +91 79892 51063<br />
-        Registered Office: Aorbo Treks, Sri Krupa Market, Malakpet, Hyderabad, Telangana
+        Address: Sri Krupa Market, Malakpet, Hyderabad, Telangana 500036, India<br />
+        Grievance Officer: Abhishek Sakunam (care@aorbotreks.com, +91 79892 51063). We acknowledge a grievance within
+        24 hours and resolve it within 15 days.
       </p>
 
       <p>

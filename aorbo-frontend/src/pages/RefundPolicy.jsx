@@ -13,7 +13,7 @@ const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="n
 export default function RefundPolicy() {
   useSeo(staticPageMeta('/refund-policy'));
   return (
-    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="22 October 2026">
+    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="18 November 2026">
       <p>
         This policy explains how to cancel a trek booked on Aorbo Treks and how much of your money is refunded.
         It is part of our <Link to="/terms">Terms and Conditions</Link>.
@@ -43,6 +43,12 @@ export default function RefundPolicy() {
         <li>
           <p>
             <strong>Organizer</strong> means the independent trek operator who runs your trek.
+          </p>
+        </li>
+        <li>
+          <p>
+            A <strong>referral reward</strong> is paid by Aorbo Treks and lowers what you pay, but it is not part of the trek
+            fare. It is not returned when a booking is cancelled.
           </p>
         </li>
       </ul>
@@ -170,40 +176,53 @@ export default function RefundPolicy() {
         </li>
         <li>
           <p>
-            <strong>Payment gateway fee.</strong> The payment gateway may charge a fee on your payment, and it does
-            not return that fee when a refund is made, so this fee is non-refundable. When you cancel a booking
-            yourself, this fee is not taken out of your refund — it is covered from the amount kept under the policy
-            above, and your GST is refunded in full. The gateway fee is kept from your refund only when your booking
-            is refunded in full for a reason that is not your fault (see{' '}
-            <a href="#organizer-cancellation">section 6</a>). We always use the actual fee charged on your payment,
-            not an estimate: a UPI payment from a bank account usually has no fee, while a card, net banking or
-            wallet payment, or a credit card used through UPI, may have one.
+            <strong>Payment gateway fee.</strong> The payment gateway may charge a fee on your payment and does not return
+            it when a refund is made. When you cancel a booking yourself, this fee is not taken out of your refund: it is
+            covered from the amount kept under the policy above. It is also refunded to you when the organiser is at fault
+            (see <a href="#organizer-cancellation">section 6</a>). It is kept from your refund only when Aorbo Treks
+            cancels your booking alone for a reason that is neither your fault nor the organiser&rsquo;s. We always use the
+            actual fee charged on your payment: a UPI payment from a bank account usually has no fee, while a card, net
+            banking or wallet payment, or a credit card used through UPI, may have one.
           </p>
         </li>
         <li>
           <p>
             <strong>GST.</strong> If you cancel before the trek starts, the GST you paid is refunded in full:
-            cancellation charges apply only to the trek fare, never to the GST. GST is not refunded only when the
-            trek has already started, because nothing is refunded then.
+            cancellation charges apply only to the trek fare, never to the GST. If you cancel after departure, nothing
+            is refunded, including GST. After departure, a refund is made only under{' '}
+            <a href="#organizer-cancellation">section 6</a>.
           </p>
         </li>
       </ul>
 
-      {/* 6. Cancellation by the organizer */}
-      <h3 id="organizer-cancellation">6. If the organizer cancels your trek</h3>
+      {/* 6. Cancellation, refusal or a stopped trek */}
+      <h3 id="organizer-cancellation">6. If your trek is cancelled, you are refused, or the trek is stopped</h3>
+      <h4>Cancelled departure, refusal, or organiser at fault</h4>
       <p>
-        If your booking is cancelled for a reason that is not your fault (for example, the organizer or Aorbo Treks
-        cancels the trek, or it cannot start because of bad weather, permits or safety), no cancellation charge
-        applies. You get back everything you paid in the app, including the ₹999 advance under the Flexible Policy,
-        except:
+        If your departure is cancelled (by the organizer, or by Aorbo Treks for the whole departure, including for bad
+        weather, permits or safety), or the organizer refuses to take you on a confirmed booking without a reason allowed
+        in our <Link to="/terms">Terms and Conditions</Link>, or we find that the organizer is otherwise at fault, no
+        cancellation charge applies. You get back everything you paid in the app, including the ₹999 advance under the
+        Flexible Policy and any payment gateway fee, except the ₹10 platform fee. If an organizer refuses you, tell us at
+        once at {careLink} or {carePhone}.
       </p>
-      <ul>
-        <li><p>the ₹10 platform fee; and</p></li>
-        <li><p>the payment gateway fee, if one was charged on your payment (see <a href="#not-refunded">section 5</a>).</p></li>
-      </ul>
+      <p>
+        If Aorbo Treks cancels only your booking for a reason that is neither your fault nor the organizer&rsquo;s, you
+        get back everything you paid in the app except the ₹10 platform fee and any payment gateway fee.
+      </p>
       <p>
         Any balance you paid directly to the organizer is refunded by the organizer. Write to {careLink} if you need
         our help with it.
+      </p>
+      <h4>Trek stopped part-way</h4>
+      <p>
+        If a trek that has started is stopped before its scheduled end for a reason that is not your fault (for example a
+        vehicle breakdown, weather or safety), Aorbo Treks may refund part of your booking. The refund is up to the
+        organizer&rsquo;s share of your trek fare, multiplied by the share of the scheduled trek time (from departure to
+        the scheduled end) that is still left when we issue the refund, and it is paid only from the organizer&rsquo;s
+        share. GST and the ₹10 platform fee are not refunded under this rule. It applies only to bookings paid in full in
+        the app, and only once per booking. Because the amount depends on the time left, nothing is payable once the
+        scheduled end has passed, so tell us as soon as the trek is stopped.
       </p>
 
       {/* 7. Rescheduling */}
@@ -216,7 +235,7 @@ export default function RefundPolicy() {
       {/* 8. Payment taken but booking not confirmed */}
       <h3 id="unconfirmed-payment">8. If you paid but your booking was not confirmed</h3>
       <p>
-        If money was taken from your account but your booking was not confirmed (for example, the last seats were
+        If money was taken from your account but your booking was not confirmed (for example, the last slots were
         taken while you were paying, or bookings closed during your payment), the full amount, including the
         platform fee, is refunded automatically to your original payment method.
       </p>
@@ -245,9 +264,15 @@ export default function RefundPolicy() {
         IST), with your Booking ID. The same contacts handle all complaints and grievances.
       </p>
       <p>
-        If the trek itself was not as described (for example, something included in the listing was not provided),
-        tell us at {careLink}, ideally within 15 days of the trek ending, with any photos or other details. We will
-        take it up with the organizer and let you know our decision.
+        If you have a complaint about a trek you have finished (for example, something included in the listing was not
+        provided), write to {careLink}, ideally within 15 days of the trek ending, with your Booking ID and any photos or
+        other proof. We will pass it to the organizer and tell you their reply. How a trek was run is between you and the
+        organizer: Aorbo Treks does not give refunds or compensation after a trek has ended. This does not affect any right
+        you have under the law, including under the Consumer Protection Act, 2019.
+      </p>
+      <p>
+        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM, {careLink}, {carePhone}, Sri Krupa Market,
+        Malakpet, Hyderabad, Telangana 500036, India. We acknowledge a grievance within 24 hours and resolve it within 15 days.
       </p>
     </LegalPage>
   );

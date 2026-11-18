@@ -3,367 +3,131 @@ import LegalPage from '../components/legal/LegalPage';
 import useSeo from '../seo/useSeo';
 import { staticPageMeta } from '../seo/meta';
 
+const CARE_EMAIL = 'care@aorbotreks.com';
+const careLink = <a href={`mailto:${CARE_EMAIL}`}>{CARE_EMAIL}</a>;
+const carePhone = <a href="tel:+917989251063">+91 79892 51063</a>;
+
 // Admin-added sections continue the lettering after section N.
 const letterAfterN = (i) => String.fromCharCode('N'.charCodeAt(0) + i + 1);
 
 export default function PrivacyPolicy() {
   useSeo(staticPageMeta('/privacy-policy'));
   return (
-    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="2 October 2026" contentKind="privacy" numberSection={letterAfterN}>
-      {/* A. INTRODUCTION */}
-      <div>
-        <h3>A. INTRODUCTION</h3>
-        <p>
-          Aorbo Treks (hereinafter <strong>"Aorbo Treks"</strong>) acknowledges the significance of user privacy
-          and the importance of safeguarding the information provided by our users. As a responsible data controller 
-          and processor, we are committed to maintaining the confidentiality of your personal data.
-        </p>
-        <p>
-          This Privacy Policy outlines the practices for handling and securing your Personal Information (defined
-          below) by Aorbo and its subsidiaries and affiliates.
-        </p>
-        <p>
-          This Privacy Policy applies to any individual ("User") who purchases, intends to purchase, or inquires
-          about any product(s) or service(s) offered by Aorbo through any of our customer interface channels,
-          including our website, mobile site, mobile app, and offline channels such as call centers and offices
-          (collectively referred to herein as "Sales Channels").
-        </p>
-        <p>
-          For the purposes of this Privacy Policy, wherever the context requires, <strong>"you"</strong> or
-          <strong>"your"</strong> refers to the User, and the terms <strong>"we", "us", "our"</strong> refer to{' '}
-          <strong>Aorbo Treks</strong>. "Website" refers to our website(s), mobile site(s), and mobile app(s).
-        </p>
-        <p>
-          By using or accessing our Website or other Sales Channels, you consent to the terms of this Privacy
-          Policy and its contents. If you disagree with this Privacy Policy, please refrain from using or
-          accessing our Website or other Sales Channels.
-        </p>
-        <p>
-          This Privacy Policy does not apply to any third-party websites, mobile sites, or mobile apps, even if
-          their products or services are linked to our Website. Please note that the information and privacy
-          practices of Aorbo's business partners, advertisers, sponsors, or other sites to which we provide
-          hyperlinks may differ materially from our Privacy Policy. We encourage you to review the privacy
-          statements and policies of any third parties you interact with.
-        </p>
-        <p>
-          This Privacy Policy is an integral part of your User Agreement with Aorbo, and all capitalized terms used
-          herein, unless otherwise defined, shall have the respective meanings ascribed to them in the User
-          Agreement.
-        </p>
+    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="18 November 2026" contentKind="privacy" numberSection={letterAfterN}>
+      <h3>A. WHO WE ARE AND WHAT THIS POLICY COVERS</h3>
+      <p>
+        Aorbo Treks is run by AORBO INFOCOM, Sri Krupa Market, Malakpet, Hyderabad, Telangana 500036, India
+        (&ldquo;Aorbo Treks&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;). We are the Data Fiduciary for the personal data
+        described here under the Digital Personal Data Protection Act, 2023. This policy covers customers of the Aorbo Treks
+        app and visitors to aorbotreks.com. Organisers are covered by our Partner Privacy Policy. This policy is part of
+        our <Link to="/terms">Terms and Conditions</Link>.
+      </p>
+
+      <h3>B. WHAT WE COLLECT</h3>
+      <h5>You give us</h5>
+      <ul>
+        <li><p><strong>Account:</strong> your mobile number, name and e-mail address, and, if you add them, your age, gender, date of birth and state.</p></li>
+        <li><p><strong>Travellers you book:</strong> each traveller&rsquo;s name, age and gender. You confirm each traveller has agreed to you sharing these details.</p></li>
+        <li><p><strong>Trusted contacts you save:</strong> their name, phone number and relationship to you. Only our staff can see them; they are not shared with organisers. You confirm they have agreed.</p></li>
+        <li><p><strong>Ratings, reviews, complaints and messages</strong> you send us, and details you give on the contact form on our website.</p></li>
+      </ul>
+      <h5>From your bookings and payments</h5>
+      <ul>
+        <li><p>Your bookings, cancellations, refunds, coupons and referrals.</p></li>
+        <li><p>From our payment gateway, Razorpay: the payment reference, method, amount and gateway fee. You pay on Razorpay&rsquo;s checkout; we do not receive or store your card number, UPI PIN or bank password.</p></li>
+      </ul>
+      <h5>We collect automatically</h5>
+      <ul>
+        <li><p>Your IP address and approximate country, device model, operating system, app version, a device identifier, a short code made from basic device or browser settings, your time zone, your sign-ins, and a fraud risk score worked out from these, to keep accounts secure and prevent fraud.</p></li>
+        <li><p>A record of each time you accept our terms: the version, time, IP address, device and app version.</p></li>
+        <li><p>What you do in the app (for example treks viewed, searches and bookings started), linked to your account when you are signed in, to improve the app.</p></li>
+        <li><p>Crash reports with device details; a notification token; Google Play&rsquo;s check of whether the app and device are genuine; the Google Play install referrer, to credit referral links; and, where the app shows ads, your device&rsquo;s advertising ID.</p></li>
+        <li><p>On our website: which treks, tags and searches are clicked, not linked to your name.</p></li>
+      </ul>
+      <p>We do not collect your precise location, contacts, photos, SMS, call logs or calendar, and we do not collect health information. What you tell an organiser about your fitness is between you and the organiser.</p>
+
+      <h3>C. WHY WE USE IT</h3>
+      <ul>
+        <li><p>To create your account, take your booking and payment, pass your booking to the organiser, and process cancellations and refunds.</p></li>
+        <li><p>To send one-time passwords (by SMS), booking, cancellation and refund notices (in the app and by e-mail), and important updates.</p></li>
+        <li><p>To give customer support, pass complaints to organisers and handle disputes and chargebacks.</p></li>
+        <li><p>To show your reviews publicly with your name (<Link to="/terms">Terms</Link>, section 10).</p></li>
+        <li><p>To keep the platform secure, prevent fraud and misuse of coupons and referrals, enforce our terms and report offences (<Link to="/terms">Terms</Link>, section 4).</p></li>
+        <li><p>To send offers and trek suggestions as app notifications, and to show ads in the app.</p></li>
+        <li><p>To improve the app and website, and to meet our legal, tax and accounting duties.</p></li>
+      </ul>
+      <p>We use your data with your consent, which you give by using Aorbo Treks, and for the uses the law allows without consent, such as meeting legal duties.</p>
+
+      <h3>D. WHO WE SHARE IT WITH</h3>
+      <p>We do not sell personal data or aggregated data. We share data only as needed to run Aorbo Treks, protect our rights and meet the law:</p>
+      <div className="legal-table">
+        <table>
+          <thead><tr><th scope="col">Who</th><th scope="col">What</th><th scope="col">Why</th></tr></thead>
+          <tbody>
+            <tr><td>The organiser of your trek</td><td>Your name, mobile number and e-mail, your travellers&rsquo; names, ages and genders, and the booking details</td><td>Running your trek</td></tr>
+            <tr><td>Razorpay</td><td>Your name, mobile number, e-mail and payment</td><td>Payments and refunds</td></tr>
+            <tr><td>Message Central</td><td>Your mobile number</td><td>One-time passwords</td></tr>
+            <tr><td>Zoho</td><td>Your e-mail address and the message</td><td>E-mails</td></tr>
+            <tr><td>Google Firebase</td><td>Notification token, crash reports and device details</td><td>Notifications and fixing crashes</td></tr>
+            <tr><td>Google AdMob</td><td>Advertising ID, device details and IP address</td><td>Showing ads in the app (with consent where Google requires it)</td></tr>
+            <tr><td>Google Play</td><td>App and device check; install referrer</td><td>Security; crediting referral links</td></tr>
+            <tr><td>Cloudflare, and image and font hosts (such as Cloudinary, Supabase and Google Fonts)</td><td>Network traffic, IP address and device or browser details</td><td>Security, and loading pages and photos</td></tr>
+            <tr><td>Banks and payment providers</td><td>What is needed</td><td>Refunds, fraud and chargebacks</td></tr>
+            <tr><td>Our professional advisers and auditors, and a successor or buyer (section N)</td><td>What they need</td><td>Running and protecting our business</td></tr>
+            <tr><td>The police, courts, tax authorities and regulators</td><td>What the law requires or allows</td><td>Legal duties, lawful requests, and reporting offences</td></tr>
+          </tbody>
+        </table>
       </div>
+      <p>Each organiser is an independent business and is responsible for how it uses your data. Service providers process data for us under their agreements with us.</p>
 
-      {/* B. USERS OUTSIDE INDIA */}
-      <div>
-        <h3>B. USERS OUTSIDE THE GEOGRAPHICAL LIMITS OF INDIA</h3>
-        <p>
-          Please be aware that the data shared with Aorbo will primarily be processed in India and other
-          jurisdictions where third parties engaged by Aorbo may process the data on our behalf. By agreeing to
-          this policy, you are providing Aorbo with your explicit consent to process your personal information for
-          the purposes outlined in this policy. The data protection regulations in India or such other
-          jurisdictions mentioned above may differ from those of your country of residence.
-        </p>
-        <p>
-          If you have any concerns regarding the processing of your data and wish to withdraw your consent, you may
-          do so by writing to the following email address:{' '}
-          <a href="mailto:care@aorbotreks.com">care@aorbotreks.com</a>. However, please note that if
-          such processing of data is essential for us to provide services to you, we may not be able to serve you
-          or confirm your bookings after the withdrawal of consent. For example, if you wish to book a trek,
-          certain personal information such as contact details, gender, and location may need to be shared with
-          our trek organizers, who may further process this information to make the necessary arrangements for
-          your journey.
-        </p>
-        <p>Withdrawing your consent for us to process your personal information may:</p>
-        <ul className="legal-plain-list">
-          <li>
-            <p>Severely hinder our ability to serve you properly, and in such cases, we may have to refuse your booking altogether; or</p>
-          </li>
-          <li>
-            <p>Unreasonably restrict us from servicing your booking (if a booking has already been made), which may further affect your trip or compel us to cancel your booking.</p>
-          </li>
-        </ul>
-      </div>
+      <h3>E. WHERE IT IS STORED</h3>
+      <p>The servers for the app, your account and your bookings are located in India. Our website, including its contact form, is hosted in France. Some service providers (such as Google, Firebase, Razorpay, Cloudinary and Cloudflare) may store or process data outside India, as the law allows unless the Government restricts a country.</p>
 
-      {/* C. TYPE OF INFORMATION WE COLLECT */}
-      <div>
-        <h3>C. TYPE OF INFORMATION WE COLLECT AND ITS LEGAL BASIS</h3>
-        <p>
-          The information detailed below is collected to enable us to provide the services you select, as well as
-          to fulfill our legal obligations and our commitments towards third parties as outlined in our User
-          Agreement.
-        </p>
-        <p>"Personal Information" of the User shall include the information shared by the User and collected by us for the following purposes:</p>
-        <p>
-          1.<strong> Registration on the Website:</strong> Information you provide while subscribing to or
-          registering on the Website, including but not limited to your personal identity details such as name,
-          gender, age, etc., and contact information such as email address, postal address, telephone (mobile or
-          otherwise), and/or fax numbers. This may also include banking details (including credit/debit card
-          information) and any other data related to your income and/or lifestyle; billing information, payment
-          history, etc. (as shared by you).
-        </p>
-        <p>2. <strong>Other Information:</strong> We may also collect additional information and documents, including but not limited to:</p>
-        <ul>
-          <li>
-            <p>Transactional history (excluding banking details) about your activities related to e-commerce, purchasing behavior, and preferences.</p>
-          </li>
-          <li>
-            <p>You are solely responsible for maintaining the confidentiality and security of your login credentials, including usernames, passwords, email addresses, and any other authentication-related information used to access our Services.</p>
-          </li>
-          <li>
-            <p>In addition, if any Vendor associated with Aorbo Treks reasonably suspects a concern regarding your physical fitness or health condition for participating in a trek or activity, they may request relevant medical information, including but not limited to your age and medical history. Such information shall be collected solely for ensuring your safety and suitability for the trek and will be handled in accordance with applicable data protection laws in India.</p>
-          </li>
-          <li>
-            <p>Data either created by you or a third party that you wish to store on our servers, such as image files, documents, etc.</p>
-          </li>
-          <li>
-            <p>Data available in the public domain or received from third parties, including social media platforms, such as personal or non-personal information from your linked social media accounts (e.g., name, email address, friend list, profile pictures, or other information permitted by your account settings) as part of your account information.</p>
-          </li>
-          <li>
-            <p>Information about other travelers for whom you make a booking through your registered Aorbo account. In such cases, you must confirm and represent that each of the other travelers has agreed to have their information shared with us and further shared with the relevant service providers.</p>
-          </li>
-        </ul>
-      </div>
+      <h3>F. HOW LONG WE KEEP IT</h3>
+      <ul>
+        <li><p><strong>Booking, payment, refund and tax records:</strong> as long as tax, GST and company law require (usually up to 8 years after the financial year), or longer while a dispute is open.</p></li>
+        <li><p><strong>Security and audit records:</strong> as long as needed to prevent fraud, defend claims and meet the law. <strong>Server logs:</strong> at least the period the law requires (currently 180 days).</p></li>
+        <li><p><strong>After you delete your account:</strong> as set out in section M.</p></li>
+        <li><p><strong>Backups:</strong> deleted in rotation within 30 to 90 days; a daily encrypted emergency copy may be kept longer.</p></li>
+      </ul>
 
-      {/* D. HOW WE USE YOUR PERSONAL INFORMATION */}
-      <div>
-        <h3>D. HOW WE USE YOUR PERSONAL INFORMATION</h3>
-        <p>The Personal Information collected may be used in the following ways:</p>
-        <h5>1. While Making a Booking:</h5>
-        <p>
-          While making a booking, we may use Personal Information, including payment details (such as cardholder
-          name, credit/debit card number [in encrypted form], expiration date, banking details, wallet details,
-          etc.), as shared and permitted to be stored by you. We may also use the information about travelers
-          associated with your account. This information is presented to you at the time of making a booking to
-          help complete the booking process efficiently.
-        </p>
-        <h5>Other Uses of Your Personal Information:</h5>
-        <p>We may use your Personal Information for various purposes, including but not limited to:</p>
-        <ul className="legal-plain-list">
-          <li><p>Keeping you informed about the status of your transactions.</p></li>
-          <li><p>Sending booking confirmations via SMS, WhatsApp, or other messaging services.</p></li>
-          <li><p>Updating you about any changes to your bookings.</p></li>
-          <li><p>Allowing our customer service to contact you when necessary.</p></li>
-          <li><p>Customizing the content on our website, mobile site, and mobile app.</p></li>
-          <li><p>Requesting reviews for products or services and seeking feedback for improvements.</p></li>
-          <li><p>Sending verification messages or emails.</p></li>
-          <li><p>Validating/authenticating your account to prevent misuse or abuse.</p></li>
-        </ul>
-        <h5>3. Surveys:</h5>
-        <p>
-          We value your feedback and conduct surveys, both online and offline. Participation in these surveys is
-          entirely voluntary. The information collected is typically aggregated and used to improve the Website,
-          our Sales Channels, services, and to develop engaging content, features, and promotions based on the
-          results. Participants' identities are kept anonymous unless otherwise stated.
-        </p>
-        <h5>4. User-Generated Content (UGC):</h5>
-        <p>
-          Aorbo allows users to share experiences by posting reviews, ratings, and poll responses. Users can also
-          ask questions about our services or answer others' questions. While participation in this feedback
-          process is optional, you may still receive emails, notifications (SMS, WhatsApp, or other messaging
-          services) requesting your feedback. Reviews may be in written or video format and may be visible on
-          other travel-related platforms.
-        </p>
-        <h5>Marketing Promotions, Research, and Programs:</h5>
-        <p>
-          We use personal information collected for promotions, research, and programs to understand your
-          preferences, improve user experiences, and create appealing offers. Aorbo may sponsor promotions
-          offering travel-related prizes. We use the information to notify contest winners and develop new
-          promotions. As a registered User, you may receive updates on fare sales, special offers, new services,
-          and exclusive deals. Additionally, marketing emails, newsletters, and promotions may be sent
-          periodically.
-        </p>
-        <p>
-          We may also launch reward programs, where users may win travel-related rewards. We may use your Personal
-          Information to enroll you in such programs, and the status of these rewards will be visible upon logging
-          into the Website. If you win a reward, we may share your information with a third party responsible for
-          fulfilling the reward. You can opt out of such programs by contacting us.
-        </p>
-      </div>
+      <h3>G. COOKIES ON OUR WEBSITE</h3>
+      <p>Our website uses no advertising or analytics cookies. It stores your cookie choice in your browser, and our servers record the IP address and browser details of each visit for security.</p>
 
-      {/* E. DATA RETENTION */}
-      <div>
-        <h3>E. HOW LONG DO WE KEEP YOUR PERSONAL INFORMATION?</h3>
-        <p>
-          At Aorbo Treks, we retain your Personal Information only for as long as is reasonably necessary to
-          fulfill the purposes outlined in this Privacy Policy. This duration includes any necessary time for
-          legal, regulatory, tax, or accounting requirements that may require us to retain your data for longer
-          periods.
-        </p>
-        <p>
-          In some cases, we may retain your Personal Information for longer durations if required by applicable
-          laws or regulations, or to meet contractual obligations, such as resolving disputes or enforcing
-          agreements.
-        </p>
-      </div>
+      <h3>H. APP PERMISSIONS AND MESSAGES</h3>
+      <p>The app uses internet and network access, notifications (which you can switch off in your phone&rsquo;s settings), vibration, and the advertising ID for ads. It does not ask for location, contacts, camera, photos, SMS, phone or calendar access.</p>
+      <p>One-time passwords and booking, cancellation and refund notices are part of the service and are sent even if you have opted out of promotional messages. To stop offers, switch off notifications for the app or write to {careLink}.</p>
 
-      {/* F. COOKIES AND SESSION DATA */}
-      <div>
-        <h3>F. COOKIES AND SESSION DATA</h3>
-        <h5>Cookies</h5>
-        <p>
-          Aorbo Treks uses cookies to enhance your experience on our Website and to personalize advertisements
-          displayed to you. The use of cookies by Aorbo Treks is in line with the practices followed by reputable
-          online companies.
-        </p>
-        <p>
-          Cookies are small pieces of information stored by your browser on your device’s hard drive. They enable
-          us to offer you a more efficient and tailored experience, allowing you to access our services with ease,
-          such as logging in without needing to enter your username repeatedly (only your password is required).
-          Cookies also help us display relevant advertisements to you or send offers via email based on your
-          preferences and interests, provided you haven’t opted out of receiving such communications.
-        </p>
-        <p>
-          Additionally, cookies may be placed by our advertising partners or third-party advertising companies to
-          help track the effectiveness of ads served on the Website. These cookies gather aggregated statistics to
-          assist us in providing targeted advertisements for services that might interest you. The data collected
-          through these cookies is anonymous and does not contain any Personal Information.
-        </p>
-        <p>
-          Most web browsers are set to accept cookies by default. However, you can modify your browser settings or
-          use software tools to manage cookie preferences. We support your right to block cookies, especially from
-          untrusted sites. Please note that blocking cookies from Aorbo Treks may affect certain features on the
-          Website, potentially limiting your ability to use specific services smoothly.
-        </p>
-        <h5>Automatic Logging of Session Data</h5>
-        <p>
-          Each time you access the Website, your session data is logged. This session data may include details
-          such as your IP address, the operating system you’re using, the browser type, and actions performed on
-          the Website. This data helps us analyze user behavior, such as browsing patterns, frequency of visits,
-          and duration of your stay on the site. Additionally, it aids in diagnosing issues with our servers and
-          optimizing our systems.
-        </p>
-        <p>
-          Although this session data cannot personally identify you, it may help us determine the general location
-          of your internet connection based on the IP address and identify your Internet Service Provider (ISP).
-          This information is collected for analytical and technical purposes and does not link to your personal
-          identity.
-        </p>
-      </div>
+      <h3>I. HOW WE PROTECT IT</h3>
+      <p>Data is sent over encrypted connections (TLS). Access is limited to authorised staff, changes to sensitive details are logged, and backups are encrypted. You are responsible for your phone, SIM and one-time passwords. No system is completely secure; if a personal data breach affects you, we will inform you and the authorities as the law requires.</p>
 
-      {/* G. INFORMATION SHARING */}
-      <div>
-        <h3>G. WITH WHOM YOUR PERSONAL INFORMATION IS SHARED</h3>
-        <h5>1. Service Providers and Suppliers:</h5>
-        <p>
-          Aorbo Treks may share your personal information with third-party service providers, such as hotels,
-          transportation services, trekking guides, and other vendors responsible for fulfilling your booking. By
-          making a booking with Aorbo Treks, you authorize us to share your personal information with these
-          service providers and suppliers to complete your booking. It is important to note that while we share
-          your data with these entities, we do not authorize them to use your information for any other purpose
-          beyond fulfilling their part of the service. However, how these service providers or suppliers use your
-          information is beyond our control, as they are independent data controllers. Therefore, we recommend
-          reviewing the privacy policies of the respective service providers whose services you opt to use.
-        </p>
-        <p>
-          Aorbo Treks does not sell or rent your personal information to third parties. We only share information
-          with our business or alliance partners or vendors who assist us in providing referral services,
-          promotional benefits, and other customer benefits based on your booking history with us.
-        </p>
-        <h5>2. Companies in the Same Group:</h5>
-        <p>To enhance personalization and improve service efficiency, we may, under secure conditions, share your personal information with our affiliate or associate entities.</p>
-        <p>If Aorbo Treks’ assets are acquired, customer information may be transferred to the acquirer as part of the acquisition process. Additionally, in the event of business restructuring, expansion, or transfer, your personal information may be transferred to the new business entity or subsidiaries involved.</p>
-        <h5>3. Business Partners and Third-Party Vendors:</h5>
-        <p>We may share filtered personal information with our corporate affiliates or business partners, who may contact you to offer products or services that could enhance your travel experience. These services may include co-branded credit cards, travel insurance, wallet loss coverage, or other related offerings. If you choose to avail yourself of these services, the terms of the service will be governed by the privacy policies of the respective service provider. Aorbo Treks may also share your personal information with third-party vendors who perform services on our behalf, such as payment processing, data hosting, or data analysis.</p>
-        <p>We use non-identifiable personal information in an aggregated or anonymized form to improve our services. This data helps us perform statistical analyses on customer behaviors, measure demographics, and assess interests regarding specific areas of the Website. This anonymized data may be shared with suppliers, advertisers, affiliates, and potential business partners. We may also provide aggregated data to inform these third parties about the effectiveness of their advertisements or services. This data is owned by Aorbo Treks, and we may use it for legitimate purposes, including commercial sales to third parties.</p>
-        <p>Occasionally, Aorbo Treks may collaborate with third-party vendors for market research, surveys, or other projects. Information shared with these partners is protected by confidentiality agreements and is used solely for the specific purpose of the project, in compliance with applicable laws.</p>
-        <h5>4. Disclosure of Information:</h5>
-        <p>In addition to the circumstances described above, Aorbo Treks may disclose your personal information if required to do so:</p>
-        <ul>
-          <li><p>By law, as required by any law enforcement authority for investigation, court order, or legal process.</p></li>
-          <li><p>To conduct business operations or for regulatory, compliance, and audit purposes.</p></li>
-          <li><p>To secure our systems and protect against unauthorized access or fraud.</p></li>
-          <li><p>To report to the police or other competent authorities an offence committed through the Platform &mdash; such as cheating, the misuse of another person&rsquo;s identity, account or payment instrument, unauthorised access, or the resale of bookings by an unauthorised agent in breach of our <Link to="/terms">Terms and Conditions</Link> &mdash; and to assist its investigation and prosecution.</p></li>
-          <li><p>To enforce or protect Aorbo Treks' rights, properties, or those of its affiliates, associates, employees, directors, or officers. This may also include situations where disclosing your personal information is necessary to identify, contact, or take legal action against individuals causing interference with Aorbo Treks' operations or when harm could come to others.</p></li>
-        </ul>
-        <p>Such disclosures may occur without prior notice, and Aorbo Treks will not be liable for any damages resulting from such disclosure or storage of information.</p>
-      </div>
+      <h3>J. CONSENT AND WITHDRAWING IT</h3>
+      <p>You can withdraw consent at any time by writing to {careLink}. Withdrawal does not affect what we did before it. We cannot take bookings or run your account without the data needed for them, and we keep the records described in section F.</p>
 
-      {/* H. OPT OUT & APP PERMISSIONS */}
-      <div>
-        <h3>H. HOW CAN YOU OPT-OUT OF RECEIVING PROMOTIONAL COMMUNICATIONS FROM AORBO TREKS?</h3>
-        <p>We may send you occasional emails or notifications about trek offers, new services, seasonal deals, or updates related to Aorbo Treks that we believe will be relevant and valuable to you. If you do not wish to receive such communications, you can opt out at any time by clicking on the “unsubscribe” link provided in the email or by following the opt-out instructions included in each communication.</p>
-        <h5>1. PERMISSIONS REQUIRED FOR USING OUR MOBILE APPLICATION</h5>
-        <p>To deliver a smooth and personalized trekking experience, the Aorbo Treks mobile app requires access to certain device-level permissions. These permissions enable us to offer features that improve usability, security, and overall booking convenience. Below is an explanation of the permissions we request and how we use the corresponding data:</p>
-        
-        <h5>Android Permissions:</h5>
-        <ul>
-          <li><strong>Device and App History:</strong><p>We use this permission to understand technical details about your device such as the operating system, device model, mobile network, and language preferences. This helps us optimize app performance across devices.</p></li>
-          <li><strong>Identity:</strong><p>This allows us to autofill your email address for a seamless experience. It also supports login via social platforms (e.g., Google, Facebook) and enables personalized promotions, loyalty offers, or wallet benefits.</p></li>
-          <li><strong>Location:</strong><p>With your consent, we auto-detect your location to recommend the nearest treks, enable real-time tracking (if applicable), and provide region-specific offers or updates. This enhances your experience by offering locally relevant content.</p></li>
-          <li><strong>SMS:</strong><p>We may request SMS access solely to autofill OTPs (One-Time Passwords) during booking or verification processes. This ensures a secure and hassle-free user journey without switching apps.</p></li>
-          <li><strong>Phone:</strong><p>This lets you make direct calls to trek organizers or Aorbo Treks support within the app interface.</p></li>
-          <li><strong>Contacts:</strong><p>If granted, we use your contacts to enable features such as sharing your itinerary or location with friends or co-travelers. We may also allow contact-based inputs for certain services like referrals or gift offers.</p></li>
-          <li><strong>Photos / Media / Files:</strong><p>This permission supports uploading multimedia such as trek reviews or photos to enhance community engagement and feedback features.</p></li>
-          <li><strong>Wi-Fi Connection Information:</strong><p>This is used to detect your current connection type and optimize uploads (like images or videos) for performance and data savings.</p></li>
-          <li><strong>Device ID and Call Information:</strong><p>Helps us uniquely identify your device for security, fraud detection, and personalized service delivery.</p></li>
-          <li><strong>Camera:</strong><p>Enables you to capture and upload images (e.g., boarding points, trip highlights, etc.) within the app for use in reviews or sharing.</p></li>
-          <li><strong>Calendar:</strong><p>With your approval, we may add your upcoming trek details to your device calendar for timely reminders and better travel planning.</p></li>
-        </ul>
+      <h3>K. YOUR RIGHTS</h3>
+      <p>You can see and update most of your details in the app. You can also ask us for a summary of your data and who we shared it with, to correct or complete it, or to erase data we no longer need, and you can nominate someone to use these rights for you if you die or cannot act. E-mail {careLink} from the e-mail address on your account, or write from your registered mobile number; we may first confirm it is you. These rights are subject to the exceptions in the law.</p>
 
-        <h5>iOS Permissions:</h5>
-        <ul>
-          <li><strong>Notifications:</strong><p>If enabled, we may send you personalized offers, booking updates, or important alerts. Even if notifications are disabled, we’ll continue to send essential booking details via SMS or email.</p></li>
-          <li><strong>Contacts:</strong><p>Used for auto-filling forms and enhancing features like social sharing, referrals, and easier login.</p></li>
-          <li><strong>Location:</strong><p>Required for personalizing trek suggestions, finding nearby treks, and offering real-time updates or location-based offers.</p></li>
-          <li><strong>Photos / Media / Files / Camera:</strong><p>Used to allow upload of media content like trek reviews or trip memories. Allows you to take and upload photos of your trekking journey or boarding points directly in the app.</p></li>
-          <li><strong>Calendar:</strong><p>Lets us sync your trek schedule with your device calendar upon your consent for reminders and easier planning.</p></li>
-        </ul>
-      </div>
+      <h3>L. CHILDREN</h3>
+      <p>Aorbo Treks is only for adults. Accounts and travellers must be 18 or older, and we do not knowingly collect personal data of anyone under 18. If you believe we hold such data, write to {careLink}.</p>
 
-      {/* I. DATA PROTECTION */}
-      <div>
-        <h3>I. HOW AORBO TREKS PROTECTS YOUR PERSONAL INFORMATION</h3>
-        <p>All transactions on the Aorbo Treks platform are secured. Personal Information you submit during payment or account activities is encrypted using industry-standard TLS (Transport Layer Security) protocols. This encryption ensures that your data is securely transmitted and scrambled to prevent unauthorized access. Our systems incorporate stringent security measures to protect your information from loss, misuse, or unauthorized alteration. Whenever you log in or make changes to your account information, we ensure you're using a secure server connection. Once in our systems, your data is protected through strict internal security policies and access controls.</p>
-      </div>
+      <h3>M. DELETING YOUR ACCOUNT</h3>
+      <p>
+        You can delete your account in the app. Deletion is scheduled 30 days later; signing in again before then cancels it.
+        It cannot be requested while you have an upcoming or ongoing trek, a refund in progress or an open complaint. On
+        deletion we clear your profile, replace your number, and delete your saved travellers, trusted contacts and sign-in
+        history. Booking, payment and tax records are kept as the law requires (section F). We keep your registration
+        details for 180 days, and a one-way code of your mobile number for 12 months; a new account on the same number
+        cannot use platform-wide coupons or referral benefits during those 12 months.
+      </p>
 
-      {/* J. WITHDRAWAL OF CONSENT */}
-      <div>
-        <h3>J. WITHDRAWAL OF CONSENT AND PERMISSIONS</h3>
-        <p>
-          You have the right to withdraw your consent at any time regarding the collection, processing, or storage
-          of your Personal Information or to decline permissions previously granted to the Aorbo Treks platform.
-          However, such withdrawal may restrict your access to certain features or functionalities, and in some
-          cases, we may be unable to provide our services to you. To withdraw consent, please contact us at{' '}
-          <strong>care@aorbotreks.com</strong> with your request.
-        </p>
-      </div>
-
-      {/* K. USER RIGHTS */}
-      <div>
-        <h3>K. YOUR RIGHTS REGARDING YOUR PERSONAL INFORMATION</h3>
-        <p>
-          As a registered user of Aorbo Treks, you have the ability to access and update your personal information
-          directly through your account dashboard. You may also correct or delete optional information stored in
-          your account. If you are not a registered user or if you are unable to make such changes, you may write
-          to us at <strong>care@aorbotreks.com</strong> and we will address your request in accordance with
-          applicable laws and our internal policies.
-        </p>
-      </div>
-
-      {/* L. ELIGIBILITY */}
-      <div>
-        <h3>L. ELIGIBILITY TO USE AORBO TREKS SERVICES</h3>
-        <p>
-          You must be at least <strong>18 years of age</strong> to use Aorbo Treks services and to legally provide
-          consent for the collection and processing of your personal data. If you are under 18, you may use our
-          services only under the supervision of a parent or legal guardian.
-        </p>
-      </div>
-
-      {/* M. POLICY CHANGES */}
-      <div>
-        <h3>M. CHANGES TO THIS PRIVACY POLICY</h3>
-        <p>Aorbo Treks reserves the right to revise or update this Privacy Policy periodically to reflect legal, operational, or service-based requirements. We encourage you to review the policy regularly. Where necessary, we will notify you of significant changes through the platform or via email, in accordance with applicable laws.</p>
-      </div>
-
-      {/* N. DELETION REQUESTS */}
-      <div>
-        <h3>N. ACCOUNT OR PERSONAL DATA DELETION REQUESTS</h3>
-        <p>If you wish to delete your Aorbo Treks account or request the removal of your personal data in accordance with applicable Indian data protection laws, you may do so by <strong>contacting us at care@aorbotreks.com or reaching out to our Customer Care Support team.</strong></p>
-        <p>For security purposes and to prevent unauthorized requests, Aorbo Treks may require proper identity verification before processing such requests. Any documents submitted for identity verification will be securely retained for a period of <strong>30 days</strong> following the account deletion, after which they will be permanently deleted.</p>
-        <p>If, during the verification process, there is reasonable suspicion of <strong>fraudulent activity, misrepresentation, or breach of our platform policies</strong>, Aorbo Treks reserves the right to <strong>withhold or delay</strong> the deletion or deactivation of the account. In such cases, the User must cooperate with our <strong>Customer Care Support team</strong> to facilitate further review. Final action will be taken only after due diligence and resolution of the concerns raised.</p>
-        <p>Please note that while your account will be deleted, Aorbo Treks may retain certain transactional or legal data as required by applicable laws. Additionally, your email ID or phone number used to register the deleted account may not be eligible for reuse in a new account for a period of <strong>12 months</strong> following the deletion.</p>
-      </div>
-
+      <h3>N. CHANGES, TRANSFER AND GRIEVANCES</h3>
+      <p>We may update this policy; the date at the top shows the latest version, and we will ask you to accept important changes in the app. If the Aorbo Treks business is moved, merged or sold, including to the company being formed by the owners of AORBO INFOCOM, your data may pass to the new owner, which will be bound by this policy.</p>
+      <p>
+        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM, {careLink}, {carePhone}, Sri Krupa Market,
+        Malakpet, Hyderabad, Telangana 500036, India. We acknowledge a grievance within 24 hours and resolve it within 15
+        days. You must first use this process (Digital Personal Data Protection Act, 2023, section 13(3)); if you are not
+        satisfied, you may complain to the Data Protection Board of India.
+      </p>
     </LegalPage>
   );
 }
