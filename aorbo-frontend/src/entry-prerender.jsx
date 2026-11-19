@@ -10,6 +10,7 @@ import DestinationHubView from './components/near/DestinationHubView';
 import RouteView from './components/near/RouteView';
 import TrekView from './components/trek/TrekView';
 import AppView from './components/AppView';
+import About from './pages/About';
 import OrganiserView from './components/near/OrganiserView';
 import OrganiserHubView from './components/near/OrganiserHubView';
 import WinterView from './components/near/WinterView';
@@ -39,6 +40,11 @@ export function renderTrek({ trek, links }, path) {
 // The /app page (no data).
 export function renderApp() {
   return renderToString(<StaticRouter location="/app"><AppView /></StaticRouter>);
+}
+
+// The About page (static text; SEO plan 19 Nov 2026: its file used to carry the home page's body).
+export function renderAbout() {
+  return renderToString(<StaticRouter location="/about"><About /></StaticRouter>);
 }
 
 // Organiser profile pages and their index.

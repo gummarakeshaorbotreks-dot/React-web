@@ -7,6 +7,7 @@ verification files, when a sitemap URL has no file (it would answer 404), when
 pages lose their title or canonical, or when the sitemap shrank by more than 10%
 compared with the live one (usually the API was down during the build).
 """
+import os
 import re
 import sys
 from pathlib import Path
@@ -37,7 +38,14 @@ def main():
     if len(urls) < 50:
         problems.append(f"sitemap has only {len(urls)} URLs")
     if live_urls and len(urls) < 0.9 * len(live_urls):
-        problems.append(f"sitemap shrank from {len(live_urls)} to {len(urls)} URLs (API down during the build?)")
+        # A planned cut (SEO plan, 19 Nov 2026: tours left "treks near" pages, thin pages left the
+        # sitemap) passes only when the person deploying sets AORBO_ALLOW_SITEMAP_SHRINK=<new count>,
+        # the exact number they expect; any other count still fails.
+        allowed = os.environ.get("AORBO_ALLOW_SITEMAP_SHRINK", "")
+        if allowed.isdigit() and int(allowed) == len(urls):
+            print(f"gate: planned sitemap cut {len(live_urls)} -> {len(urls)} URLs (AORBO_ALLOW_SITEMAP_SHRINK)")
+        else:
+            problems.append(f"sitemap shrank from {len(live_urls)} to {len(urls)} URLs (API down during the build?)")
 
     for u in urls:
         f = page_file(dist, u)

@@ -40,9 +40,11 @@ export default function Home() {
         <HeroCarousel />
         <div className="hero-overlay-content">
           <p className="hero-badge">Aorbo Treks</p>
-          <h1 className="hero-heading">Discover Your Adventure</h1>
+          {/* SEO plan, 19 Nov 2026: the headline says what the site does (it was "Discover Your
+              Adventure"), and no "verified" claim: organisers pass KYC, which is not a trek check. */}
+          <h1 className="hero-heading">Compare &amp; Book Treks Across India</h1>
           <p className="hero-subtitle">
-            India&apos;s online trek booking platform: compare treks from verified organisers and book in one place.
+            Treks and weekend trips from many organisers: dates, prices and pickup cities in one place.
           </p>
           <HeroSearch />
         </div>

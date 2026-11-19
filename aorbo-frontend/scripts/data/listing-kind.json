@@ -1,0 +1,666 @@
+{
+ "_about": "Trek or trip/tour for each website listing (SEO plan 19 Nov 2026). Treks appear on Treks near <town> and trek pages; trips and tours never do. Built by rules + a manual check; review=true means the team should confirm. Correct a line here and rebuild.",
+ "listings": {
+  "aadrai-forest-kalu-harishchandragad": {
+   "name": "Aadrai-Forest-Kalu-Harishchandragad",
+   "kind": "trek"
+  },
+  "adiyogi-and-lepakshi-temple": {
+   "name": "Adiyogi and Lepakshi Temple",
+   "kind": "trip"
+  },
+  "alleppey-varkal": {
+   "name": "Alleppey-Varkala",
+   "kind": "trip"
+  },
+  "ananthagiri-hills": {
+   "name": "Ananthagiri Hills",
+   "kind": "trip"
+  },
+  "andharban-devkund": {
+   "name": "Andharban-Devkund",
+   "kind": "trek"
+  },
+  "anthar-gange": {
+   "name": "Anthar Gange",
+   "kind": "trek"
+  },
+  "araku-vanjangi": {
+   "name": "Araku Vanjangi",
+   "kind": "trip",
+   "review": true
+  },
+  "araku-vizag": {
+   "name": "Araku-Vizag",
+   "kind": "trip"
+  },
+  "arunachal-road-trip": {
+   "name": "Arunachal Road Trip",
+   "kind": "trip"
+  },
+  "auli-trek": {
+   "name": "Auli Trek",
+   "kind": "trek"
+  },
+  "avala-betta": {
+   "name": "Avala Betta",
+   "kind": "trek"
+  },
+  "avathi-hills": {
+   "name": "Avathi Hills",
+   "kind": "trek"
+  },
+  "ayodhya-varanasi-mathura": {
+   "name": "Ayodhya-Varanasi-Mathura",
+   "kind": "trip"
+  },
+  "bananthimari-betta": {
+   "name": "Bananthimari Betta",
+   "kind": "trek"
+  },
+  "bhairavakona": {
+   "name": "Bhairavakona",
+   "kind": "trip"
+  },
+  "bhandardara-camping": {
+   "name": "Bhandardara Camping",
+   "kind": "trip"
+  },
+  "bheemeshwari": {
+   "name": "Bheemeshwari",
+   "kind": "trip"
+  },
+  "bhimashankar-jivdhan-reverse-waterfall": {
+   "name": "Bhimashankar-Jivdhan-Reverse Waterfall",
+   "kind": "trek"
+  },
+  "bilikal-rangaswamy-betta": {
+   "name": "Bilikal Rangaswamy Betta",
+   "kind": "trek"
+  },
+  "brahmhagiri-hills": {
+   "name": "Bramhagiri Hills",
+   "kind": "trek"
+  },
+  "channagiri-hills": {
+   "name": "Channagiri Hills",
+   "kind": "trek"
+  },
+  "channarayana-durga-day": {
+   "name": "Channarayana Durga",
+   "kind": "trek"
+  },
+  "char-dham-yatra": {
+   "name": "Char Dham Yatra",
+   "kind": "trip"
+  },
+  "chardham-dhodham-ekdham-yatra": {
+   "name": "Char Dham, Do Dham & Ek Dham Yatra",
+   "kind": "trip"
+  },
+  "chikkamagaluru": {
+   "name": "Chikkamagaluru",
+   "kind": "trip"
+  },
+  "chitrakoot-falls": {
+   "name": "Chitrakoot Falls",
+   "kind": "trip"
+  },
+  "chopta-trek": {
+   "name": "Chopta Trek",
+   "kind": "trek"
+  },
+  "coastal-karnataka-tour": {
+   "name": "Coastal Karnataka Tour",
+   "kind": "trip"
+  },
+  "coorg": {
+   "name": "Coorg",
+   "kind": "trip"
+  },
+  "Coorg": {
+   "name": "Coorg 4-Day Trip",
+   "kind": "trip"
+  },
+  "coorg-trek": {
+   "name": "Coorg Trek",
+   "kind": "trek"
+  },
+  "coorg-chikkamagaluru": {
+   "name": "Coorg-Chikkamagaluru",
+   "kind": "trip"
+  },
+  "coorg-chikkamagaluru-mysore": {
+   "name": "Coorg-Chikkamagaluru-Mysuru",
+   "kind": "trip"
+  },
+  "coorg-wayanad": {
+   "name": "Coorg-Wayanad",
+   "kind": "trip"
+  },
+  "dandeli": {
+   "name": "Dandeli",
+   "kind": "trip"
+  },
+  "dandeli-dudhsagar": {
+   "name": "Dandeli-Dudhsagar",
+   "kind": "trip"
+  },
+  "darjelling": {
+   "name": "Darjeeling",
+   "kind": "trip"
+  },
+  "dayara-bugyal-trek": {
+   "name": "Dayara Bugyal Trek",
+   "kind": "trek"
+  },
+  "devkund-waterfalls": {
+   "name": "Devkund Waterfalls",
+   "kind": "trek",
+   "review": true
+  },
+  "dharamshala": {
+   "name": "Dharamshala",
+   "kind": "trip"
+  },
+  "do-dam-yatra": {
+   "name": "Do Dham Yatra",
+   "kind": "trip"
+  },
+  "dudhsagar-waterfalls": {
+   "name": "Dudhsagar",
+   "kind": "trip",
+   "review": true
+  },
+  "dudhsagar-tambdi-surla-waterfalls": {
+   "name": "Dudhsagar-Tambdi Surla Waterfalls",
+   "kind": "trek",
+   "review": true
+  },
+  "ek-dham-yatra": {
+   "name": "Ek-Dham-Yatra",
+   "kind": "trip"
+  },
+  "gangtok": {
+   "name": "Gangtok",
+   "kind": "trip"
+  },
+  "gavi-forest-trip": {
+   "name": "Gavi Forest Trip",
+   "kind": "trip"
+  },
+  "goa": {
+   "name": "Goa",
+   "kind": "trip"
+  },
+  "gokarna-1": {
+   "name": "Gokarna",
+   "kind": "trip"
+  },
+  "gokarna-dandeli": {
+   "name": "Gokarna-Dandeli",
+   "kind": "trip"
+  },
+  "gokarna-dandeli-murudeshwar": {
+   "name": "Gokarna-Dandeli-Murudeshwar",
+   "kind": "trip"
+  },
+  "gokarna-honnavar": {
+   "name": "Gokarna-Honnavar",
+   "kind": "trip"
+  },
+  "gokarna-murudeshwar": {
+   "name": "Gokarna-Murudeshwar",
+   "kind": "trip"
+  },
+  "gokarna-murudeshwar-vibhuthi-falls": {
+   "name": "Gokarna-Murudeshwar-Vibhuthi Falls",
+   "kind": "trip"
+  },
+  "gokarna-udupi": {
+   "name": "Gokarna-Udupi",
+   "kind": "trip"
+  },
+  "hampi": {
+   "name": "Hampi",
+   "kind": "trip"
+  },
+  "haridwar": {
+   "name": "Haridwar",
+   "kind": "trip"
+  },
+  "harihar-fort": {
+   "name": "Harihar Fort",
+   "kind": "trek"
+  },
+  "himachal-pradesh-1": {
+   "name": "Himachal Pradesh",
+   "kind": "trip"
+  },
+  "himachal-road-trip": {
+   "name": "Himachal Road Trip",
+   "kind": "trip"
+  },
+  "himalayas": {
+   "name": "Himalayas",
+   "kind": "trip"
+  },
+  "hogenakkal-falls": {
+   "name": "Hogenakkal Falls",
+   "kind": "trip"
+  },
+  "hyderabad": {
+   "name": "Hyderabad",
+   "kind": "trip"
+  },
+  "isha-foundation": {
+   "name": "Isha Foundation",
+   "kind": "trip"
+  },
+  "jala-siddeshwara": {
+   "name": "Jala Siddeshwara",
+   "kind": "trek"
+  },
+  "jammu-kashmir": {
+   "name": "Jammu-Kashmir",
+   "kind": "trip"
+  },
+  "jannat-e-kashmir": {
+   "name": "Jannat-E-Kashmir",
+   "kind": "trip"
+  },
+  "jibhi-tirthan-valley": {
+   "name": "Jibhi Tirthan Valley",
+   "kind": "trip"
+  },
+  "jodhpur-jaisalmer-backpacking": {
+   "name": "Jodhpur Jaisalmer",
+   "kind": "trip"
+  },
+  "jog-falls-trip-with-bheemeshwara-falls": {
+   "name": "Jog Falls Trip with Bheemeshwara Falls",
+   "kind": "trip"
+  },
+  "jog-waterfall-and-murudeshwara": {
+   "name": "Jog Waterfall and Murudeshwara",
+   "kind": "trip"
+  },
+  "kabbala-durga": {
+   "name": "Kabbala Durga",
+   "kind": "trek"
+  },
+  "kaiwara": {
+   "name": "Kaiwara",
+   "kind": "trek"
+  },
+  "kalsubai-trek": {
+   "name": "Kalsubai Trek",
+   "kind": "trek"
+  },
+  "kareri-lake-trek": {
+   "name": "Kareri Lake Trek",
+   "kind": "trek"
+  },
+  "kashmir": {
+   "name": "Kashmir",
+   "kind": "trip"
+  },
+  "kashmir-jammu-ambritsar": {
+   "name": "Kashmir-Jammu-Amritsar",
+   "kind": "trip"
+  },
+  "kasol": {
+   "name": "Kasol",
+   "kind": "trip"
+  },
+  "kaurava-kunda": {
+   "name": "Kaurava Kunda",
+   "kind": "trek"
+  },
+  "kedarkantha-trek": {
+   "name": "Kedarkantha Trek",
+   "kind": "trek"
+  },
+  "kedarnath-yatra": {
+   "name": "Kedarnath",
+   "kind": "trek",
+   "review": true
+  },
+  "kedarnath-badrinath-tungnath": {
+   "name": "Kedarnath-Badrinath-Tungnath",
+   "kind": "trip"
+  },
+  "kemmanagudi": {
+   "name": "Kemmanagudi",
+   "kind": "trip",
+   "review": true
+  },
+  "kerala": {
+   "name": "Kerala",
+   "kind": "trip"
+  },
+  "kerala-backwater-trek": {
+   "name": "Kerala Backwater Trek",
+   "kind": "trip"
+  },
+  "kerala-kaniyakumari": {
+   "name": "Kerala-Kanyakumari",
+   "kind": "trip"
+  },
+  "kheerganga-trek": {
+   "name": "Kheerganga Trek",
+   "kind": "trek"
+  },
+  "kodachadri-trek": {
+   "name": "Kodachadri Trek",
+   "kind": "trek"
+  },
+  "kodaikanal": {
+   "name": "Kodaikanal",
+   "kind": "trip"
+  },
+  "kotilingeshwara": {
+   "name": "Kotilingeshwara",
+   "kind": "trek",
+   "review": true
+  },
+  "kudremukh-trek": {
+   "name": "Kudremukh",
+   "kind": "trek"
+  },
+  "kullu": {
+   "name": "Kullu",
+   "kind": "trip"
+  },
+  "kumara-parvatha-trek": {
+   "name": "Kumara Parvatha Trek",
+   "kind": "trek"
+  },
+  "kumbehe-nanemechi-lingya-ghatt-waterfalls": {
+   "name": "Kumbhe-Nanemachi-Lingyaghat Waterfalls",
+   "kind": "trek",
+   "review": true
+  },
+  "kunti-betta": {
+   "name": "Kunti Betta",
+   "kind": "trek"
+  },
+  "kurinjal-peak": {
+   "name": "Kurinjal Peak",
+   "kind": "trek"
+  },
+  "lakshadweep": {
+   "name": "Lakshadweep",
+   "kind": "trip"
+  },
+  "lambasingi": {
+   "name": "Lambasingi",
+   "kind": "trip"
+  },
+  "leh-ladakh": {
+   "name": "Leh Ladakh",
+   "kind": "trip"
+  },
+  "lonavala": {
+   "name": "Lonavala",
+   "kind": "trip"
+  },
+  "lonavala-visapur-fort": {
+   "name": "Lonavala -Visapur Fort",
+   "kind": "trek"
+  },
+  "lonavala-andharban-devkund-waterfalls": {
+   "name": "Lonavala- Andharban -Devkund Waterfalls",
+   "kind": "trek"
+  },
+  "madhugiri-fort-trek": {
+   "name": "Madhugiri Fort",
+   "kind": "trek"
+  },
+  "mahabaleshwar-panchangi-pratapgad": {
+   "name": "Mahabaleshwar-Panchagni-Pratapgad Fort",
+   "kind": "trip"
+  },
+  "makalidurga": {
+   "name": "Makali Durga",
+   "kind": "trek"
+  },
+  "malvan-tarkarli-escape": {
+   "name": "Malvan Tarkarli Escape",
+   "kind": "trip"
+  },
+  "manali": {
+   "name": "Manali",
+   "kind": "trip"
+  },
+  "manali-kasol": {
+   "name": "Manali-Kasol",
+   "kind": "trip"
+  },
+  "manali-kasol-kheerganga": {
+   "name": "Manali-Kasol-Kheerganga",
+   "kind": "trek"
+  },
+  "mandaragiri-trip-dd-hills": {
+   "name": "Mandaragiri Trip & DD Hills",
+   "kind": "trek",
+   "review": true
+  },
+  "matheran-one-tree-hill-trek": {
+   "name": "Matheran",
+   "kind": "trip"
+  },
+  "matheran-lonovala": {
+   "name": "Matheran-Lonavala",
+   "kind": "trip"
+  },
+  "mathura-agra-ayodhya-nepa": {
+   "name": "Mathura-Agra-Ayodhya-Nepal",
+   "kind": "trip"
+  },
+  "meghalaya": {
+   "name": "Meghalaya",
+   "kind": "trip"
+  },
+  "mullyanagiri-peak": {
+   "name": "Mullayanagiri Peak",
+   "kind": "trek"
+  },
+  "munnar": {
+   "name": "Munnar",
+   "kind": "trip"
+  },
+  "munnar-kolukkumalai": {
+   "name": "Munnar-Kolukkumalai",
+   "kind": "trip"
+  },
+  "mysuru-1": {
+   "name": "Mysuru",
+   "kind": "trip"
+  },
+  "nandhi-hills": {
+   "name": "Nandhi Hills",
+   "kind": "trip"
+  },
+  "narayanagiri": {
+   "name": "Narayanagiri",
+   "kind": "trip",
+   "review": true
+  },
+  "netravathi": {
+   "name": "Netravathi",
+   "kind": "trek"
+  },
+  "ooty": {
+   "name": "Ooty",
+   "kind": "trip"
+  },
+  "ooty-coonoor": {
+   "name": "Ooty-Coonoor",
+   "kind": "trip"
+  },
+  "ooty-coonoor-isha": {
+   "name": "Ooty-Coonoor-Isha Foundation",
+   "kind": "trip"
+  },
+  "ooty-isha-foundation": {
+   "name": "Ooty-Isha Foundation",
+   "kind": "trip"
+  },
+  "pondicherry": {
+   "name": "Pondicherry",
+   "kind": "trip"
+  },
+  "pondicherry-mahabalipuram": {
+   "name": "Pondicherry-Mahabalipuram",
+   "kind": "trip"
+  },
+  "pondicherry-pichavaram": {
+   "name": "Pondicherry-Pichavaram",
+   "kind": "trip"
+  },
+  "pushpagiri-trek": {
+   "name": "Pushpagiri",
+   "kind": "trek"
+  },
+  "rajasthan": {
+   "name": "Rajasthan",
+   "kind": "trip"
+  },
+  "rajgad-to-torna-fort-trek": {
+   "name": "Rajgad to Torna Fort",
+   "kind": "trek"
+  },
+  "rajghad-fort-trek": {
+   "name": "Rajghad Fort",
+   "kind": "trek"
+  },
+  "rajmachi-trek": {
+   "name": "Rajmachi Trek",
+   "kind": "trek"
+  },
+  "rajmachi-vaijapur": {
+   "name": "Rajmachi-Visapur",
+   "kind": "trek"
+  },
+  "ramanagara": {
+   "name": "Ramanagara",
+   "kind": "trek",
+   "review": true
+  },
+  "rangeelo-rajasthan": {
+   "name": "Rangeelo Rajasthan",
+   "kind": "trip"
+  },
+  "ravugodlu-sunrise-trek-1": {
+   "name": "Ravugodlu",
+   "kind": "trek"
+  },
+  "sandakphu-trek": {
+   "name": "Sandakphu Trek",
+   "kind": "trek"
+  },
+  "shimla": {
+   "name": "Shimla",
+   "kind": "trip"
+  },
+  "shimla-manali": {
+   "name": "Shimla-Manali",
+   "kind": "trip"
+  },
+  "shivagange-1": {
+   "name": "Shiva Gange",
+   "kind": "trek"
+  },
+  "siddara-betta": {
+   "name": "Siddara Betta",
+   "kind": "trek"
+  },
+  "sikkim-gangtok": {
+   "name": "Sikkim-Gangtok",
+   "kind": "trip"
+  },
+  "skandagiri-hills": {
+   "name": "Skandagiri Hills",
+   "kind": "trek"
+  },
+  "spiti-valley-road-trip": {
+   "name": "Spiti Valley",
+   "kind": "trip"
+  },
+  "srikalahasti": {
+   "name": "Srikalahasti",
+   "kind": "trip"
+  },
+  "suvanadurga-hills": {
+   "name": "Suvanadurga Hills",
+   "kind": "trek"
+  },
+  "tadiandamol": {
+   "name": "Tadiandamol",
+   "kind": "trek"
+  },
+  "talakona-waterfalls": {
+   "name": "Talakona Waterfalls",
+   "kind": "trip",
+   "review": true
+  },
+  "triambakeshwar-grishneswar-shiridi": {
+   "name": "Trimbakeshwar-Grishneshwar-Shiridi",
+   "kind": "trip"
+  },
+  "triund-mcleodganj": {
+   "name": "Triund Mcleodganj",
+   "kind": "trek"
+  },
+  "triund-trek": {
+   "name": "Triund Trek",
+   "kind": "trek"
+  },
+  "turahalli-forest-trek": {
+   "name": "Turahalli Forest",
+   "kind": "trek"
+  },
+  "udaipur-chittorgrah": {
+   "name": "Udaipur Chittorgarh",
+   "kind": "trip"
+  },
+  "udaipur-mount-abu": {
+   "name": "Udaipur Mount Abu",
+   "kind": "trip"
+  },
+  "udupi-murudheshwara-gokarna-jogfalls": {
+   "name": "Udupi-Murudheshwara-Gokarna-JogFalls",
+   "kind": "trip"
+  },
+  "ujjain-omkaraeshwar": {
+   "name": "Ujjain-Omkareshwar",
+   "kind": "trip"
+  },
+  "uttari-betta": {
+   "name": "Uttara Betta",
+   "kind": "trek"
+  },
+  "visapur-lohagad": {
+   "name": "Visapur-Lohagad",
+   "kind": "trek"
+  },
+  "warangal": {
+   "name": "Warangal",
+   "kind": "trip"
+  },
+  "wayanad": {
+   "name": "Wayanad",
+   "kind": "trip"
+  },
+  "wayanad-ooty": {
+   "name": "Wayanad-Ooty",
+   "kind": "trip"
+  },
+  "yana-caves": {
+   "name": "Yana Caves",
+   "kind": "trek",
+   "review": true
+  }
+ }
+}
