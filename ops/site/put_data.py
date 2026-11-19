@@ -3,6 +3,9 @@
 
     put_data.py geo            trek map positions        -> data/trek-geo.json      (TREK_GEO_FILE)
     put_data.py destinations   destinations and packages -> data/destinations.json  (DESTINATIONS_FILE)
+    put_data.py facts          the vendor agent's trek facts + trek/trip kinds -> data/trek-facts-auto.json
+                               (TREK_FACTS_AUTO_FILE; the team's scripts/data/*.json always win over it)
+    put_data.py facts-get      prints what the team's files already cover + the agent's current file
 
 Read by the build for the "Treks near <city>" and "<destination> trips" pages. Only
 the expected shape is accepted (positions inside India, short plain strings); anything
@@ -64,8 +67,101 @@ def destinations(data):
     return out
 
 
-KINDS = {"geo": ("trek-geo.json", geo), "destinations": ("destinations.json", destinations)}
+DIFFICULTY = {"easy", "easy-moderate", "moderate", "moderate-difficult", "difficult"}
+THEMES = {"snow", "waterfall", "fort", "night", "sunrise", "cave", "temple", "lake", "meadow", "forest", "summit"}
+KEY = re.compile(r"[a-z0-9-]{1,80}")
 
+
+def trek_facts(f):
+    """One trek's facts, same rules as aorbo-frontend/scripts/trek-facts.mjs checkFacts."""
+    if not isinstance(f, dict):
+        raise ValueError("facts must be an object")
+    out = {"name": text(f.get("name"), 80)}
+    if not out["name"]:
+        raise ValueError("facts need a name")
+    for k, limit in (("top", 120), ("start", 120), ("district", 80), ("rail", 120), ("airport", 120), ("trail_note", 120)):
+        if f.get(k) is not None:
+            out[k] = text(f[k], limit)
+    a = f.get("altitude_m")
+    if a is not None:
+        if not (isinstance(a, int) and 100 <= a <= 8000):
+            raise ValueError(f"altitude_m {a!r}")
+        out["altitude_m"] = a
+    t = f.get("trail_km")
+    if t is not None:
+        if not (isinstance(t, (int, float)) and 0 < t <= 200):
+            raise ValueError(f"trail_km {t!r}")
+        out["trail_km"] = t
+    if f.get("difficulty") is not None:
+        if f["difficulty"] not in DIFFICULTY:
+            raise ValueError(f"difficulty {f['difficulty']!r}")
+        out["difficulty"] = f["difficulty"]
+    m = f.get("months")
+    if m is not None:
+        if not (isinstance(m, list) and all(isinstance(x, int) and 1 <= x <= 12 for x in m) and len(set(m)) == len(m)):
+            raise ValueError("months")
+        out["months"] = m
+    th = f.get("themes")
+    if th is not None:
+        if not (isinstance(th, list) and all(x in THEMES for x in th)):
+            raise ValueError("themes")
+        out["themes"] = th
+    if f.get("pos") is not None:
+        p = f["pos"]
+        if not (isinstance(p, list) and len(p) == 2 and in_india(p[0], p[1])):
+            raise ValueError("pos")
+        out["pos"] = [float(p[0]), float(p[1])]
+    return out
+
+
+def facts(data):
+    if not isinstance(data, dict):
+        raise ValueError("expected an object")
+    treks = {}
+    for key, f in (data.get("treks") or {}).items():
+        if not (isinstance(key, str) and KEY.fullmatch(key)):
+            raise ValueError(f"bad trek key {key!r}")
+        treks[key] = trek_facts(f)
+    listings = {}
+    for tid, key in (data.get("listings") or {}).items():
+        if not (isinstance(tid, str) and ID.fullmatch(tid) and key in treks):
+            raise ValueError(f"bad listing {tid!r}")
+        listings[tid] = key
+    kinds = {}
+    for tid, kind in (data.get("kinds") or {}).items():
+        if not (isinstance(tid, str) and ID.fullmatch(tid) and kind in ("trek", "trip")):
+            raise ValueError(f"bad kind for {tid!r}")
+        kinds[tid] = kind
+    return {"treks": treks, "listings": listings, "kinds": kinds}
+
+
+def facts_get():
+    """What the team's own files already decide, and the agent's file (for the vendor agent)."""
+    src = "/opt/aorbo-site/src/scripts/data"
+    def load(path, default):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            return default
+    static = load(os.path.join(src, "trek-facts.json"), {})
+    kinds = load(os.path.join(src, "listing-kind.json"), {}).get("listings", {})
+    print(json.dumps({
+        "static": {
+            "listings": static.get("listings", {}),
+            "names": {k: v.get("name") for k, v in static.get("treks", {}).items()},
+            "kinds": {k: v.get("kind") for k, v in kinds.items()},
+        },
+        "auto": load(os.path.join(DIR, "trek-facts-auto.json"), {"treks": {}, "listings": {}, "kinds": {}}),
+    }, ensure_ascii=False))
+
+
+KINDS = {"geo": ("trek-geo.json", geo), "destinations": ("destinations.json", destinations),
+         "facts": ("trek-facts-auto.json", facts)}
+
+if len(sys.argv) == 2 and sys.argv[1] == "facts-get":
+    facts_get()
+    sys.exit(0)
 if len(sys.argv) != 2 or sys.argv[1] not in KINDS:
     sys.exit(f"usage: put_data.py {'|'.join(KINDS)}")
 name, check = KINDS[sys.argv[1]]

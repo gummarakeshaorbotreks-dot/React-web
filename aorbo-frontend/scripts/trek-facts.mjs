@@ -3,6 +3,7 @@
 // must never put a wrong height on a page).
 import { readFileSync } from 'node:fs';
 import { DIFFICULTY } from '../src/seo/trekFacts.js';
+import { AUTO } from './auto-facts.mjs';
 
 export const THEMES = ['snow', 'waterfall', 'fort', 'night', 'sunrise', 'cave', 'temple', 'lake', 'meadow', 'forest', 'summit'];
 const FIELDS = new Set(['name', 'peak', 'top', 'altitude_m', 'trail_km', 'trail_note', 'difficulty', 'months', 'start', 'district', 'rail', 'airport', 'themes', 'pos']);
@@ -26,10 +27,28 @@ export function checkFacts(data) {
   return errors;
 }
 
+/**
+ * The team's facts plus the vendor agent's (scripts/auto-facts.mjs): the team's entries always win;
+ * an agent entry that breaks the rules is left out with a warning.
+ */
+export function mergeFacts(team, auto) {
+  const treks = { ...team.treks };
+  for (const [key, f] of Object.entries(auto?.treks || {})) {
+    if (treks[key]) continue;
+    const bad = checkFacts({ treks: { [key]: f }, listings: {} });
+    if (bad.length) console.warn(`trek-facts (agent) ${key} left out: ${bad.join('; ')}`);
+    else treks[key] = f;
+  }
+  const listings = { ...team.listings };
+  for (const [id, key] of Object.entries(auto?.listings || {})) if (!listings[id] && treks[key]) listings[id] = key;
+  return { treks, listings };
+}
+
 const FILE = new URL('./data/trek-facts.json', import.meta.url);
-const DATA = JSON.parse(readFileSync(FILE, 'utf8'));
-const problems = checkFacts(DATA);
+const TEAM = JSON.parse(readFileSync(FILE, 'utf8'));
+const problems = checkFacts(TEAM);
 if (problems.length) throw new Error(`scripts/data/trek-facts.json:\n  ${problems.join('\n  ')}`);
+const DATA = mergeFacts(TEAM, AUTO);
 
 /** Positions the facts file corrects: { listingId: { lat, lon } } (applied over the map positions). */
 export function positionFixes() {

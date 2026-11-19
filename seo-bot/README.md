@@ -15,9 +15,21 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Website reachable? | every 5 min | `bot/uptime.py` | 🔴 down after 2 failed checks (says whether our server or AIC's entry point is at fault), 🟢 back + how long |
 | Trek data check | Monday 08:00 | `bot/data_quality.py` | 🧹 treks with wrong state (vs map position), lowercase names, collisions, missing data |
 | Competitor radar | Sunday 07:00 | `bot/radar.py` | 📡 our Google positions, 📉 drops with the cause + fix or team to-do, 🛡 top-3 defence, 🔥 #1 streaks, 👑 who rules |
+| Vendor agent | every 10 min | `bot/vendor_agent.py` check → sync → geo → facts → deploy → report | 🧭 what organisers added/removed, pages made, trek facts found or left out (only when the feed changed) |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
 
 The scripts send their own alerts; n8n schedules them and catches crashes.
+
+## Vendor agent (organisers' data -> website, 19 Nov 2026)
+
+n8n chain every 10 minutes; nothing runs past step 1 unless the app's feed of bookable departures
+(`/api/v1/website/departures`) changed. Then: website copies the departures at once (web server `sync`,
+new places get a page), positions + destinations, trek or tour for new listings (their own words), trek
+facts for new trek pages from open data only (height = OpenStreetMap peak + Wikidata agreeing; nearest
+station + IATA airport from OpenStreetMap; district from its address; difficulty = organiser's own), one
+rebuild, Telegram report. Facts go to the web server's `data/trek-facts-auto.json` (SSH `facts`); the
+team's `scripts/data/trek-facts.json` / `listing-kind.json` always win. Unconfirmed facts are left out
+and retried every 3 days. Manual run: `vendor_agent.py all --force`. Tests: `python -m unittest test_vendor_agent`.
 
 ## How the optimizer decides (playbook: Desktop\AORBO_SEO_PLAYBOOK.md)
 
