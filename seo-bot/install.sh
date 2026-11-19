@@ -13,7 +13,7 @@ TAR=${1:?usage: install.sh /path/to/bot.tar}
 HOME_DIR=/opt/aorbo-bot
 NEW=$(mktemp -d /tmp/aorbo-bot-new.XXXXXX)
 trap 'rm -rf "$NEW"' EXIT
-tar -xf "$TAR" -C "$NEW"
+tar --no-same-owner -xf "$TAR" -C "$NEW"   # made on Windows: its owner ids mean nothing here
 find "$NEW" -type f \( -name '*.py' -o -name '*.sh' \) -exec sed -i 's/\r$//' {} +
 
 echo "== tests (on this server's Python)"
