@@ -14,6 +14,9 @@ import About from './pages/About';
 import OrganiserView from './components/near/OrganiserView';
 import OrganiserHubView from './components/near/OrganiserHubView';
 import WinterView from './components/near/WinterView';
+import CompareView from './components/near/CompareView';
+import CollectionView from './components/near/CollectionView';
+import CollectionHubView from './components/near/CollectionHubView';
 
 export async function render(path) {
   const handler = createStaticHandler(routes);
@@ -33,8 +36,21 @@ export function renderNearHub(hub) {
 }
 
 // Trek pages (data: the API's trek object + destination / city links).
-export function renderTrek({ trek, links }, path) {
-  return renderToString(<StaticRouter location={path}><TrekView trek={trek} links={links} /></StaticRouter>);
+export function renderTrek({ trek, links, facts = null }, path) {
+  return renderToString(<StaticRouter location={path}><TrekView trek={trek} links={links} facts={facts} /></StaticRouter>);
+}
+
+// Compare pages, collections and their index (scripts/fact-pages.mjs).
+export function renderCompare(page) {
+  return renderToString(<StaticRouter location={page.path}><CompareView page={page} /></StaticRouter>);
+}
+
+export function renderCollection(page) {
+  return renderToString(<StaticRouter location={page.path}><CollectionView page={page} /></StaticRouter>);
+}
+
+export function renderCollectionHub(hub) {
+  return renderToString(<StaticRouter location={hub.path}><CollectionHubView hub={hub} /></StaticRouter>);
 }
 
 // The /app page (no data).

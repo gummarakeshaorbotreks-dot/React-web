@@ -397,6 +397,9 @@ a.chip.is-active,
   text-transform: capitalize;
 }
 
+.fact-list--plain .fact-row dd { text-transform: none; }
+.fact-list--plain + .muted-note { margin-top: 0.75rem; }
+
 /* ---------- Pagination ---------- */
 
 .pager {

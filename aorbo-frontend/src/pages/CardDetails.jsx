@@ -17,8 +17,9 @@ export default function CardDetails() {
   const live = useApi(built.error ? `/api/treks/${encodeURIComponent(id)}/` : null);
   const trek = built.data?.trek || live.data;
   const links = built.data?.links || null;
+  const facts = built.data?.facts || null;
   const error = built.error && live.error;
-  useSeo(trek ? trekMeta(trek, links) : error ? notFoundMeta(`/treks/${id}`) : null);
+  useSeo(trek ? trekMeta(trek, links, facts) : error ? notFoundMeta(`/treks/${id}`) : null);
 
   if (!trek && !error) return <Loader label="Loading trek details…" />;
 
@@ -35,5 +36,5 @@ export default function CardDetails() {
     );
   }
 
-  return <TrekView trek={trek} links={links} />;
+  return <TrekView trek={trek} links={links} facts={facts} />;
 }

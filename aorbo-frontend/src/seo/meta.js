@@ -7,6 +7,8 @@
 // very first HTML of every address already carries the right tags).
 
 import { allDurations, durationOptions, formatDuration } from '../utils/format.js';
+import { factFaqs, factLine, MONTHS } from './trekFacts.js';
+import { collectionFaqs, collectionSummary, compareFaqs, compareSummary } from './factPages.js';
 
 export const SITE_URL = 'https://aorbotreks.com';
 export const SITE_NAME = 'Aorbo Treks';
@@ -223,9 +225,12 @@ export function daysOf(duration) {
  * Questions and answers shown on a trek page; the same text goes into its FAQPage data.
  * links (built by scripts/seo-pages.mjs): { destinations: [{slug, name, count}], near: [{slug, name, km}] }.
  */
-export function trekFaqs(trek, links = null) {
+export function trekFaqs(trek, links = null, facts = null) {
   const name = trek.name;
   const faqs = [];
+  // Height, difficulty, season, how to reach (scripts/data/trek-facts.json), named as people search
+  // ("Kedarkantha", not the package title).
+  faqs.push(...factFaqs(facts?.name || name, facts));
   const days = [...new Set(daysOf(trek.duration_days))].sort((a, b) => a - b);
   if (days.length) {
     faqs.push({
@@ -260,7 +265,7 @@ export function trekFaqs(trek, links = null) {
 }
 
 /** Tags for a trek page, from the website API's trek object (links: see trekFaqs). */
-export function trekMeta(trek, links = null) {
+export function trekMeta(trek, links = null, facts = null) {
   const path = `/treks/${trek.id || trek.slug}`;
   const where = trek.state ? ` in ${trek.state}` : '';
   const price = trek.price_start != null ? ` from ₹${Number(trek.price_start).toLocaleString('en-IN')}` : '';
@@ -269,9 +274,10 @@ export function trekMeta(trek, links = null) {
     const page = links?.organisers?.find((o) => o.name.toLowerCase() === name.toLowerCase());
     return { '@type': 'TravelAgency', name, ...(page ? { url: absoluteUrl(`/organisers/${page.slug}`) } : {}) };
   });
+  const line = factLine(facts);
   const description = snippet(
     trek.description
-      ? `${trek.name}${where}${price}. ${trek.description}`
+      ? `${trek.name}${where}${price}.${line ? ` ${line}.` : ''} ${trek.description}`
       : `Book the ${trek.name}${where}${price} with verified trek organisers on Aorbo Treks. Compare dates, prices and itineraries.`,
   );
   const trip = {
@@ -302,7 +308,7 @@ export function trekMeta(trek, links = null) {
     description,
     path,
     image,
-    jsonLd: graph(trip, breadcrumb(crumbs), faqPage(trekFaqs(trek, links))),
+    jsonLd: graph(trip, breadcrumb(crumbs), faqPage(trekFaqs(trek, links, facts))),
   };
 }
 
@@ -874,6 +880,67 @@ export function winterMeta(page) {
       breadcrumb([['Home', '/'], ['Winter treks', page.path]]),
       faqPage(winterFaqs(page)),
     ),
+  };
+}
+
+// Compare and collection pages (scripts/fact-pages.mjs, SEO plan phase 2).
+const nextYear = (month, now = new Date()) => (month - 1 >= now.getMonth() ? now.getFullYear() : now.getFullYear() + 1);
+
+/** Tags for a "<trek> vs <trek>" or "<trek>: compare organisers" page. */
+export function compareMeta(page) {
+  const description = snippet(compareSummary(page).join(' '));
+  const url = absoluteUrl(page.path);
+  return {
+    title: page.kind === 'organisers' ? `${page.a.name}: Compare Organisers & Prices | Aorbo Treks` : `${page.title}: Which Trek to Choose? | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.a.image || page.b?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      { '@type': 'WebPage', name: page.title, description, url },
+      breadcrumb([['Home', '/'], ['Collections', '/collections'], [page.title, page.path]]),
+      faqPage(compareFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for a month or theme collection. */
+export function collectionMeta(page, now = new Date()) {
+  const description = snippet(collectionSummary(page).join(' '));
+  const url = absoluteUrl(page.path);
+  const title = page.kind === 'month'
+    ? `Treks in ${MONTHS[page.month - 1]} ${nextYear(page.month, now)}: ${page.treks.length} Treks in Season | Aorbo Treks`
+    : `${page.title}: ${page.treks.length} Treks Compared | Aorbo Treks`;
+  return {
+    title,
+    description,
+    path: page.path,
+    image: page.treks.find((t) => t.image)?.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      {
+        '@type': 'CollectionPage',
+        name: page.title,
+        description,
+        url,
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: page.treks.length,
+          itemListElement: page.treks.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: absoluteUrl(`/treks/${t.link}`), name: t.name })),
+        },
+      },
+      breadcrumb([['Home', '/'], ['Collections', '/collections'], [page.title, page.path]]),
+      faqPage(collectionFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for /collections. */
+export function collectionHubMeta(hub) {
+  const description = snippet(`Treks by month (${hub.months.length} months), by theme (fort, snow, monsoon, night, sunrise, easy) and ${hub.compare.length} side-by-side trek comparisons: height, difficulty, season and price.`);
+  return {
+    title: 'Trek Collections & Comparisons | Aorbo Treks',
+    description,
+    path: hub.path,
+    jsonLd: graph({ '@type': 'CollectionPage', name: 'Trek collections and comparisons', description, url: absoluteUrl(hub.path) }, breadcrumb([['Home', '/'], ['Collections', hub.path]])),
   };
 }
 
