@@ -116,9 +116,11 @@ def kind_of(listing):
     return "trek" if TREK_WORDS.search(listing.get("name") or "") else "trip"
 
 
-def best_station(stations):
-    """[(name, km)] -> the nearest junction / main station, else the nearest station within 60 km."""
-    main = sorted((s for s in stations if MAIN_STATION.search(s[0])), key=lambda s: s[1])
+def best_station(stations, district=None):
+    """[(name, km)] -> the nearest junction / main station (or the district town's own station),
+    else the nearest station within 60 km."""
+    town = norm(district) if district else None
+    main = sorted((s for s in stations if MAIN_STATION.search(s[0]) or (town and town in norm(s[0]))), key=lambda s: s[1])
     if main:
         return main[0][0]
     near = sorted((s for s in stations if s[1] <= 60), key=lambda s: s[1])
@@ -214,9 +216,6 @@ def research(name, lat, lon, difficulty=None):
     else:
         notes.append("no height in open data")
 
-    station = best_station([(e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("railway") == "station"])
-    if station:
-        facts["rail"] = station
     airports = sorted((e for e in elements if e.get("tags", {}).get("aeroway")), key=dist)
     if airports:
         facts["airport"] = airports[0]["tags"].get("name:en") or airports[0]["tags"]["name"]
@@ -226,6 +225,10 @@ def research(name, lat, lon, difficulty=None):
             facts["district"] = district
     except Exception as e:  # noqa: BLE001 - district is optional
         notes.append(f"district not found ({e.__class__.__name__})")
+    station = best_station([(e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("railway") == "station"],
+                           facts.get("district"))
+    if station:
+        facts["rail"] = station
     if DIFFICULTY.get(difficulty):
         facts["difficulty"] = DIFFICULTY[difficulty]
     else:

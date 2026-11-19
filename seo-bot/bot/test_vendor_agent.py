@@ -44,6 +44,7 @@ class VendorAgentTest(unittest.TestCase):
         self.assertEqual(va.best_station([("Shrivagilu", 20), ("Mysuru Junction", 105), ("Hunsur", 70)]), "Mysuru Junction")
         self.assertEqual(va.best_station([("Kasara", 25), ("Igatpuri", 30)]), "Kasara")
         self.assertIsNone(va.best_station([("Far Halt", 90)]))
+        self.assertEqual(va.best_station([("Hirehalli", 8), ("Tumakuru", 20), ("Yelahanka Junction", 60)], "Tumakuru"), "Tumakuru")
 
     def test_osm_height_parsing(self):
         self.assertEqual(va.peak_ele({"ele": "1646"}), 1646.0)
