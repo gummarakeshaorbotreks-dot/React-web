@@ -108,6 +108,12 @@ WORKFLOWS = {
                ("4. Trek or tour + trek facts", "5. Rebuild the site"), ("5. Rebuild the site", "6. Telegram report")),
         "Only when it changed": {"main": [[{"node": "2. Copy departures to the website", "type": "main", "index": 0}], []]}}),
 
+    # Weekly scorecard (19 Nov 2026): the SEO plan's day-90 targets + Google per page family + site clicks.
+    "scorecard": workflow("aorboScorecard01", "SEO bot: weekly scorecard (Monday)", [
+        cron("Monday 08:30 IST", "30 8 * * 1", [0, 0]),
+        run("Measure + Telegram", "scorecard.py", [260, 0]),
+    ], link(("Monday 08:30 IST", "Measure + Telegram"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),

@@ -1,0 +1,60 @@
+{
+ "id": "aorboScorecard01",
+ "name": "SEO bot: weekly scorecard (Monday)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "af2f0d51-2b7a-5e9e-b1be-9f68025ade17",
+   "name": "Monday 08:30 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python scorecard.py"
+   },
+   "id": "a69ff6c6-143f-5944-8c23-ce1b0edd2a63",
+   "name": "Measure + Telegram",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Monday 08:30 IST": {
+   "main": [
+    [
+     {
+      "node": "Measure + Telegram",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}
