@@ -39,7 +39,7 @@ Map server busy -> the height is re-checked 6 h later; nothing confirmed -> retr
 `/wrong <page>` or `/wrong <page> height|months|trail|difficulty|station|airport|district` (owner's chat
 only) takes the agent's fact off and never puts it back. Facts go to the web server's
 `data/trek-facts-auto.json` (SSH `facts`); the team's `scripts/data/trek-facts.json` / `listing-kind.json`
-always win. Manual run: `vendor_agent.py all --force`. Tests: `python -m unittest discover -p 'test_*.py'`
+always win. Reviews: every check also reads the backend's `/api/v1/website/reviews` (approved reviews per organiser, the app's own rating); a change is pushed (SSH `reviews` -> web `data/reviews.json`, REVIEWS_FILE) and the site rebuilt: stars + reviews on organiser pages (TravelAgency AggregateRating/Review markup), ratings on trek pages and the organiser list; the Google rating is only fetched live in the browser (never in the pages). Manual run: `vendor_agent.py all --force`. Tests: `python -m unittest discover -p 'test_*.py'`
 (run by `install.sh` on the server before anything is installed).
 
 ## How the optimizer decides (playbook: Desktop\AORBO_SEO_PLAYBOOK.md)

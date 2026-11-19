@@ -8,6 +8,8 @@
     put_data.py facts-get      prints what the team's files already cover + the agent's current file
     put_data.py roads          road distance + driving time per city -> trek pair (seo-bot/bot/roads.py, OSRM)
                                -> data/road-routes.json (ROAD_ROUTES_FILE: the route guides /routes/...)
+    put_data.py reviews        customers' reviews per organiser (backend /api/v1/website/reviews, via the vendor
+                               agent) -> data/reviews.json (REVIEWS_FILE: ratings on organiser + trek pages)
     put_data.py heartbeat      the bot server's watchdog says it is alive -> data/bot-heartbeat.json
                                (read by bot_watch.py, which alerts when it stops coming)
 
@@ -180,6 +182,42 @@ def roads(data):
     return {"pairs": out}
 
 
+DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def said(v, limit):
+    """A customer's own words: kept, never refused ("<3" is fine), shown as text (no markup), cut to limit."""
+    return str(v or "").replace("<", "‹").replace(">", "›").strip()[:limit]
+
+
+def reviews(data):
+    """{organisers: [{name, rating, count, google: {trekId}|null, reviews: [{name, rating, text, date, place}]}]}"""
+    if not isinstance(data, dict) or not isinstance(data.get("organisers"), list) or len(data["organisers"]) > 500:
+        raise ValueError("expected {organisers}")
+    out = []
+    for o in data["organisers"]:
+        if not isinstance(o, dict):
+            raise ValueError("organiser")
+        rating, count = o.get("rating"), o.get("count")
+        if not (isinstance(rating, (int, float)) and 0 <= rating <= 5 and isinstance(count, int) and 0 <= count <= 100000):
+            raise ValueError(f"rating/count for {str(o.get('name'))[:40]!r}")
+        g = o.get("google")
+        if g is not None and not (isinstance(g, dict) and isinstance(g.get("trekId"), int) and g["trekId"] > 0):
+            raise ValueError("google")
+        items = []
+        for r in (o.get("reviews") or [])[:10]:
+            if not (isinstance(r, dict) and isinstance(r.get("rating"), int) and 1 <= r["rating"] <= 5):
+                raise ValueError("review rating")
+            d = r.get("date")
+            if d is not None and not (isinstance(d, str) and DATE.fullmatch(d)):
+                raise ValueError("review date")
+            items.append({"name": said(r.get("name"), 40), "rating": r["rating"], "text": said(r.get("text"), 600),
+                          "date": d, "place": said(r["place"], 120) if r.get("place") else None})
+        out.append({"name": said(o.get("name"), 120), "rating": round(float(rating), 1), "count": count,
+                    "google": {"trekId": g["trekId"]} if g else None, "reviews": items})
+    return {"organisers": out}
+
+
 def heartbeat(data):
     """{at, ok, problems[]} from the bot's watchdog; stamped with OUR clock on arrival."""
     if not isinstance(data, dict) or not isinstance(data.get("ok"), bool):
@@ -194,7 +232,7 @@ def heartbeat(data):
 
 KINDS = {"geo": ("trek-geo.json", geo), "destinations": ("destinations.json", destinations),
          "facts": ("trek-facts-auto.json", facts), "heartbeat": ("bot-heartbeat.json", heartbeat),
-         "roads": ("road-routes.json", roads)}
+         "roads": ("road-routes.json", roads), "reviews": ("reviews.json", reviews)}
 
 if len(sys.argv) == 2 and sys.argv[1] == "facts-get":
     facts_get()

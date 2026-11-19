@@ -17,11 +17,12 @@ import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
   notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, winterMeta, ABOUT_AORBO, ALTERNATE_NAMES,
-  compareMeta, collectionMeta, collectionHubMeta, roadMeta, roadHubMeta,
+  compareMeta, collectionMeta, collectionHubMeta, roadMeta, roadHubMeta, organisersOf,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildOrganiserPages } from './organiser-pages.mjs';
+import { attachReviews, loadReviews, reviewIndex, trekRatings } from './reviews.mjs';
 import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
 import { isTrekListing, isThinListing, needsReview } from './listing-kind.mjs';
@@ -193,6 +194,7 @@ let collections = { pages: [], hub: null };
 let roads = { pages: [], hub: null };
 let roadCandidateList = [];
 let roadLinksById = new Map();
+let reviewsIdx = new Map();
 let factLinksById = new Map();
 let ssr = null;
 if (treks.length) {
@@ -206,6 +208,9 @@ if (treks.length) {
   near = buildNearPages(treks.filter(isTrekListing), geo, places);
   destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
   organisers = buildOrganiserPages(treks, destinations.pages);
+  // Customers' reviews (backend feed via the vendor agent; scripts/reviews.mjs): organiser pages + trek pages.
+  reviewsIdx = reviewIndex(await loadReviews(process.env.REVIEWS_FILE));
+  attachReviews(organisers, reviewsIdx);
   // Winter treks & snow trips: rebuilt every build, the season label moves on each July.
   winter = buildWinterPage(treks, destinations.pages);
   // "<destination> trip from <city>": only where the admin has real departures (scripts/route-pages.mjs).
@@ -272,7 +277,7 @@ if (ssr) await mkdir(path.join(DIST, 'data', 'treks'), { recursive: true });
 for (const t of treks) {
   const id = t.id || t.slug;
   const facts = factsOf(t);
-  const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }), roads: roadLinksById.get(id) || [] };
+  const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }), roads: roadLinksById.get(id) || [], ratings: trekRatings(organisersOf(t), organisers.pages, reviewsIdx) };
   const thin = isThinListing(t, factCount(facts));
   const meta = thin ? { ...trekMeta(t, links, facts), noindex: true } : trekMeta(t, links, facts);
   if (seen.has(meta.path)) continue;

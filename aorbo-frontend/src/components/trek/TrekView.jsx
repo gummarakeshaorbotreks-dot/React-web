@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, Layers, MapPin, Mountain, Route, Zap } from 'lucide-react';
+import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, Layers, MapPin, Mountain, Route, Star, Zap } from 'lucide-react';
 import { mediaUrl } from '../../api/client';
 import { durationOptions, formatDepartureDays, formatPrice } from '../../utils/format';
 import { destinationHeading, isPlaceholderOperator, trekFaqs } from '../../seo/meta';
@@ -7,6 +7,8 @@ import { factRows } from '../../seo/trekFacts';
 import DetailHero from './DetailHero';
 import InfoCard from '../ui/InfoCard';
 import FactList from '../ui/FactList';
+import Stars from '../reviews/Stars';
+import LiveGoogleRating from '../reviews/LiveGoogleRating';
 import '../../styles/Details.css';
 
 const initials = (name) => name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
@@ -31,6 +33,7 @@ export default function TrekView({ trek, links = null, facts = null }) {
   const compare = links?.compare || [];
   const collections = links?.collections || [];
   const roads = links?.roads || [];
+  const ratings = links?.ratings || [];
 
   return (
     <div className="page detail-page">
@@ -94,6 +97,24 @@ export default function TrekView({ trek, links = null, facts = null }) {
                         <span>Treks near {c.name}</span>
                         <small>{trek.name} is about {c.km} km away</small>
                       </Link>
+                    </li>
+                  ))}
+                </ul>
+              </InfoCard>
+            )}
+
+            {ratings.length > 0 && (
+              <InfoCard icon={Star} title="Organiser ratings">
+                <ul className="link-list">
+                  {ratings.map((r) => (
+                    <li key={r.name}>
+                      {r.slug ? <Link to={`/organisers/${r.slug}`}><span>{r.name}</span></Link> : <span>{r.name}</span>}
+                      {r.count > 0 && (
+                        <small className="rating-line rating-line--compact">
+                          <Stars value={r.rating} size={13} /> {r.rating.toFixed(1)} · {r.count} {r.count === 1 ? 'review' : 'reviews'} on Aorbo Treks
+                        </small>
+                      )}
+                      {r.google && <small><LiveGoogleRating trekId={r.google.trekId} compact /></small>}
                     </li>
                   ))}
                 </ul>

@@ -105,6 +105,12 @@ class VendorAgentTest(unittest.TestCase):
         self.assertFalse(va.busy({"started": "2026-11-19T20:50:00", "finished": "2026-11-19T20:55:00"}, now))
         self.assertFalse(va.busy({"started": (now - timedelta(minutes=45)).isoformat()}, now))  # a crashed run frees up
 
+    def test_reviews_digest_ignores_the_timestamp(self):
+        a = {"generatedAt": "2026-11-19T10:00:00Z", "organisers": [{"name": "Cute Voyages", "rating": 4.6, "count": 3}]}
+        b = {**a, "generatedAt": "2026-11-19T10:02:00Z"}
+        self.assertEqual(va.reviews_digest(a), va.reviews_digest(b))
+        self.assertNotEqual(va.reviews_digest(a), va.reviews_digest({"organisers": [{"name": "Cute Voyages", "rating": 4.6, "count": 4}]}))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import TrekCard from '../trek/TrekCard';
 import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
+import OrganiserReviews from '../reviews/OrganiserReviews';
 import { organiserFacts, organiserFaqs } from '../../seo/meta';
 import { allDurations, formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
@@ -41,6 +42,8 @@ export default function OrganiserView({ page }) {
         <div className="grid grid-cards">
           {page.treks.map((t) => <TrekCard key={t.id} trek={asCard(t)} tag={`organiser:${page.slug}`} />)}
         </div>
+
+        <OrganiserReviews name={page.name} reviews={page.reviews} />
 
         {page.destinations.length > 0 && (
           <section className="section near-section">

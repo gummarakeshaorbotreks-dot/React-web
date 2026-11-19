@@ -741,6 +741,27 @@ export function organiserFacts(page) {
 }
 
 /** Questions and answers shown on an organiser's page; the same text goes into its FAQPage data. */
+/**
+ * Review markup for an organiser (scripts/reviews.mjs): the rating customers gave on Aorbo Treks - the
+ * same number the page and the app show - and the reviews on the page. Only real reviews, only when
+ * there is at least one; the live Google rating is never marked up (it is not ours and not in the page).
+ */
+export function organiserRatingLd(reviews) {
+  if (!reviews?.count) return {};
+  return {
+    aggregateRating: { '@type': 'AggregateRating', ratingValue: reviews.rating, reviewCount: reviews.count, bestRating: 5, worstRating: 1 },
+    ...(reviews.reviews?.length ? {
+      review: reviews.reviews.map((r) => ({
+        '@type': 'Review',
+        author: { '@type': 'Person', name: r.name },
+        reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+        reviewBody: r.text,
+        ...(r.date ? { datePublished: r.date } : {}),
+      })),
+    } : {}),
+  };
+}
+
 export function organiserFaqs(page) {
   const f = organiserFacts(page);
   const faqs = [{
@@ -760,6 +781,12 @@ export function organiserFaqs(page) {
   }
   if (f.departures.length) {
     faqs.push({ q: `On which days do ${page.name}'s treks start?`, a: `Departures are on ${joinNames(f.departures)}, depending on the trek.` });
+  }
+  if (page.reviews?.count > 0) {
+    faqs.push({
+      q: `What do travellers say about ${page.name}?`,
+      a: `${page.name} is rated ${page.reviews.rating.toFixed(1)} out of 5 from ${page.reviews.count} ${page.reviews.count === 1 ? 'review' : 'reviews'} by customers who booked on Aorbo Treks.`,
+    });
   }
   faqs.push({
     q: `How do I book a trek with ${page.name}?`,
@@ -800,6 +827,7 @@ export function organiserMeta(page) {
             itemOffered: { '@type': 'TouristTrip', name: t.name },
             ...(t.price != null ? { price: Number(t.price), priceCurrency: 'INR' } : {}),
           })),
+          ...organiserRatingLd(page.reviews),
         },
       },
       breadcrumb([['Home', '/'], ['Trek organisers', '/organisers'], [page.name, page.path]]),

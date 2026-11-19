@@ -1,0 +1,14 @@
+/* Traveller ratings (organiser + trek pages): theme tokens only (theme.css). */
+.stars { display: inline-flex; gap: 2px; vertical-align: -2px; }
+.stars__on { color: var(--brand-hover); fill: var(--brand); }
+.stars__off { color: var(--border-strong); fill: none; }
+.rating-line { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rating-line--big strong { font-size: 1.25rem; }
+.rating-line--compact { gap: 4px; font-size: 0.875rem; }
+.review-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 12px; }
+@media (min-width: 720px) { .review-list { grid-template-columns: 1fr 1fr; } }
+.review-card { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; background: var(--surface); }
+.review-card__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.review-card__who { font-weight: 600; }
+.review-card__text { margin: 0 0 4px; line-height: 1.55; overflow-wrap: anywhere; }
+.review-muted { color: var(--muted); font-size: 0.9rem; margin: 0; }

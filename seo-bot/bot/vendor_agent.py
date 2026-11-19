@@ -45,6 +45,8 @@ from common import DATA, USER_AGENT, esc, secret, state_get, state_set, telegram
 from sitedeploy import SSH, deploy, run
 
 FEED = "https://api.aorbotreks.co.in/api/v1/website/departures"
+# Customers' reviews per organiser (backend services/websiteReviews.js): pushed to the web server when they change.
+REVIEWS_FEED = "https://api.aorbotreks.co.in/api/v1/website/reviews"
 SITE_API = "https://aorbotreks.com"
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://overpass.private.coffee/api/interpreter"]
@@ -509,6 +511,10 @@ def step_check(force=False):
         print("UNCHANGED (the last run is still working)")
         return False
     corrections = inbox()
+    reviews = read_reviews()
+    reviews_moved = reviews is not None and reviews_digest(reviews) != state_get("vendor_reviews_digest")
+    if reviews is not None:
+        state_set("vendor_reviews_new", reviews)
     last = state_get("vendor_feed_digest")
     if last is None and not force:
         state_set("vendor_feed_digest", digest)
@@ -517,16 +523,32 @@ def step_check(force=False):
         return False
     pending = state_get("vendor_facts_pending", {})
     due = [k for k, v in pending.items() if v.get("next", "") <= datetime.now().isoformat()]
-    if digest == last and not due and not corrections and not force:
+    if digest == last and not due and not corrections and not reviews_moved and not force:
         print(f"UNCHANGED ({feed.get('count', 0)} departures)")
         return False
     state_set("vendor_feed_new", feed)
     state_set("vendor_run", {"started": datetime.now().isoformat(timespec="seconds"), "sync": "", "facts": [], "deployed": None,
                              "corrections": corrections})
     why = [f"{feed.get('count', 0)} departures"] + ([f"facts to re-check: {len(due)}"] if due else []) + \
-          ([f"owner corrections: {len(corrections)}"] if corrections else [])
+          ([f"owner corrections: {len(corrections)}"] if corrections else []) + (["reviews changed"] if reviews_moved else [])
     print(f"CHANGED ({', '.join(why)})")
     return True
+
+
+def reviews_digest(data):
+    """What matters in the reviews feed (not its timestamp)."""
+    return hashlib.sha256(json.dumps((data or {}).get("organisers", []), sort_keys=True).encode()).hexdigest()
+
+
+def read_reviews():
+    """The reviews feed, or None when the backend is busy (the next run tries again)."""
+    try:
+        body = get_json(REVIEWS_FEED)
+        data = body.get("data", body) if isinstance(body, dict) else None
+        return data if isinstance(data, dict) and isinstance(data.get("organisers"), list) else None
+    except Exception as e:  # noqa: BLE001
+        print("reviews feed not read:", e.__class__.__name__)
+        return None
 
 
 def busy(run_state, now=None):
@@ -590,7 +612,22 @@ def _shown(facts, keys):
     return ", ".join(f"{FACT_NAMES.get(k, k)} {fact_value(k, facts[k])}" for k in keys)
 
 
+def push_reviews():
+    """Customers' reviews to the web server (data/reviews.json) when they changed: one line for the report."""
+    data = state_get("vendor_reviews_new")
+    if data is None or reviews_digest(data) == state_get("vendor_reviews_digest"):
+        return None
+    out = ssh_json("reviews", {"organisers": data.get("organisers", [])}, timeout=120).strip()
+    state_set("vendor_reviews_digest", reviews_digest(data))
+    orgs = data.get("organisers", [])
+    n = sum(o.get("count", 0) for o in orgs)
+    print("reviews:", out)
+    return f"⭐ reviews on the website: {n} from {sum(1 for o in orgs if o.get('count'))} organiser(s)" + (
+        f", Google rating live for {sum(1 for o in orgs if o.get('google'))}" if any(o.get("google") for o in orgs) else "")
+
+
 def step_facts():
+    reviews_line = push_reviews()
     info = json.loads(ssh_json("facts-get", timeout=120))
     static, auto = info["static"], info["auto"]
     auto.setdefault("treks", {}), auto.setdefault("listings", {}), auto.setdefault("kinds", {})
@@ -727,7 +764,9 @@ def step_facts():
     if changed:
         print(ssh_json("facts", auto, timeout=120).strip())
     r = _run_state()
-    r["facts"], r["facts_changed"] = report, changed
+    if reviews_line:
+        report.append(reviews_line)
+    r["facts"], r["facts_changed"], r["reviews_changed"] = report, changed, bool(reviews_line)
     state_set("vendor_run", r)
     print("\n".join(report) or "no new treks to classify or research")
 
@@ -736,7 +775,7 @@ def step_deploy():
     r = _run_state()
     sync_changed = bool(re.search(r"New pages|updated|created|switched off|added", r.get("sync", ""), re.I))
     feed_moved = feed_digest(state_get("vendor_feed_new")) != state_get("vendor_feed_digest")
-    if not (sync_changed or r.get("facts_changed") or feed_moved):
+    if not (sync_changed or r.get("facts_changed") or r.get("reviews_changed") or feed_moved):
         print("nothing to rebuild")
         return
     code, out = deploy("organisers' new data (vendor agent)", notify=False)
