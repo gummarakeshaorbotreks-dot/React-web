@@ -1,0 +1,213 @@
+{
+ "id": "aorboVendorAgnt1",
+ "name": "SEO bot: vendor agent (organisers' new treks and dates -> website)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "*/10 * * * *"
+      }
+     ]
+    }
+   },
+   "id": "759282f0-14f8-5d35-b7df-0d79bdcd77f5",
+   "name": "Every 10 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py check"
+   },
+   "id": "cc7f7624-b2ec-5c77-8f36-08c89b7a1e82",
+   "name": "1. Organisers' feed changed?",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    240,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "string": [
+      {
+       "value1": "={{ $json.stdout }}",
+       "operation": "startsWith",
+       "value2": "CHANGED"
+      }
+     ]
+    }
+   },
+   "id": "69d05a79-bb8f-56e0-90c2-fa2d6ec1e84a",
+   "name": "Only when it changed",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 1,
+   "position": [
+    480,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py sync"
+   },
+   "id": "1481d721-4c6e-5f57-9567-8dde75a50f12",
+   "name": "2. Copy departures to the website",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    720,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py geo"
+   },
+   "id": "8ebf9ba0-b267-543f-b91f-d4f0185699d6",
+   "name": "3. Map positions + destinations",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    960,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py facts"
+   },
+   "id": "5dd91dc7-1139-55c7-89fc-fb6a5548bf0d",
+   "name": "4. Trek or tour + trek facts",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    1200,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py deploy"
+   },
+   "id": "72785f2b-290c-5656-9d78-d2e0edc8a4fd",
+   "name": "5. Rebuild the site",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    1440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python vendor_agent.py report"
+   },
+   "id": "74c33fff-7d0c-5271-9719-9d5658060987",
+   "name": "6. Telegram report",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    1680,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every 10 minutes": {
+   "main": [
+    [
+     {
+      "node": "1. Organisers' feed changed?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "1. Organisers' feed changed?": {
+   "main": [
+    [
+     {
+      "node": "Only when it changed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "2. Copy departures to the website": {
+   "main": [
+    [
+     {
+      "node": "3. Map positions + destinations",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "3. Map positions + destinations": {
+   "main": [
+    [
+     {
+      "node": "4. Trek or tour + trek facts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "4. Trek or tour + trek facts": {
+   "main": [
+    [
+     {
+      "node": "5. Rebuild the site",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "5. Rebuild the site": {
+   "main": [
+    [
+     {
+      "node": "6. Telegram report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Only when it changed": {
+   "main": [
+    [
+     {
+      "node": "2. Copy departures to the website",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    []
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

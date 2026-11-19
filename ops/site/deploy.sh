@@ -35,6 +35,9 @@ fi
 # destinations for the "<destination> trips" pages.
 export TREK_GEO_FILE=$HERE/data/trek-geo.json
 export DESTINATIONS_FILE=$HERE/data/destinations.json
+# The vendor agent's trek facts and trek/trip kinds for new organiser treks (put_data.py facts);
+# the team's own scripts/data/*.json files win over it.
+export TREK_FACTS_AUTO_FILE=$HERE/data/trek-facts-auto.json
 if ! nice -n 10 npm run build > "$HERE/logs/build-$ts.log" 2>&1; then
   tail -20 "$HERE/logs/build-$ts.log"; echo "BUILD FAILED - site unchanged"; exit 10
 fi

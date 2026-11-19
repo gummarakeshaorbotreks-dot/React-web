@@ -139,3 +139,19 @@ test('position fixes: the facts file corrects a wrong map position', async () =>
   assert.ok(fix && fix.lat > 13.3 && fix.lat < 13.5 && fix.lon > 77.6 && fix.lon < 77.7, 'Channagiri Betta is next to Nandi Hills');
   assert.match(checkFacts({ treks: { x: { name: 'X', pos: [51.5, -0.1] } }, listings: {} })[0], /pos/);
 });
+
+test("vendor agent's facts: the team's file wins, bad entries are left out", async () => {
+  const { mergeFacts } = await import('./trek-facts.mjs');
+  const team = { treks: { kalsubai: { name: 'Kalsubai', altitude_m: 1646 } }, listings: { 'kalsubai-trek': 'kalsubai' } };
+  const auto = {
+    treks: { kalsubai: { name: 'Wrong', altitude_m: 9999 }, 'new-peak': { name: 'New Peak', altitude_m: 1500, rail: 'X' }, bad: { name: 'Bad', difficulty: 'hard' } },
+    listings: { 'kalsubai-trek': 'new-peak', 'new-peak-trek': 'new-peak', 'bad-trek': 'bad', 'other-kalsubai': 'kalsubai' },
+  };
+  const m = mergeFacts(team, auto);
+  assert.equal(m.treks.kalsubai.altitude_m, 1646);
+  assert.equal(m.listings['kalsubai-trek'], 'kalsubai');
+  assert.equal(m.listings['new-peak-trek'], 'new-peak');
+  assert.equal(m.listings['other-kalsubai'], 'kalsubai', 'agent may map a new listing to a team trek');
+  assert.equal(m.treks.bad, undefined);
+  assert.equal(m.listings['bad-trek'], undefined);
+});

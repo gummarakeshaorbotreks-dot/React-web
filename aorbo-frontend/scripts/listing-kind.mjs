@@ -4,6 +4,7 @@
 // built by rules, checked by hand, `review: true` = the team should confirm. A listing not in
 // the file yet is a trek only when its own activities say trekking or hiking.
 import { readFileSync } from 'node:fs';
+import { AUTO } from './auto-facts.mjs';
 
 const FILE = new URL('./data/listing-kind.json', import.meta.url);
 let LISTINGS = {};
@@ -17,6 +18,9 @@ export function listingKind(t) {
   const id = t?.id || t?.slug;
   const known = id && LISTINGS[id];
   if (known && (known.kind === 'trek' || known.kind === 'trip')) return known.kind;
+  // An organiser's new listing the vendor agent classified (scripts/auto-facts.mjs); the team's file wins.
+  const auto = id && AUTO.kinds[id];
+  if (auto === 'trek' || auto === 'trip') return auto;
   return (t?.activities || []).some((a) => /trek|hik/i.test(String(a))) ? 'trek' : 'trip';
 }
 
