@@ -4,6 +4,7 @@ import PageHeader from '../ui/PageHeader';
 import SectionHeading from '../ui/SectionHeading';
 import { collectionFaqs, collectionSummary } from '../../seo/factPages';
 import { DIFFICULTY, MONTHS, monthRange } from '../../seo/trekFacts';
+import { monthNotes } from '../../seo/monthNotes';
 import { formatPrice } from '../../utils/format';
 import '../../styles/TreksNear.css';
 import '../../styles/FactPages.css';
@@ -31,6 +32,17 @@ export default function CollectionView({ page }) {
       />
       <div className="container">
         <p className="near-lead">{collectionSummary(page).join(' ')}</p>
+
+        {month && (
+          <section className="month-notes" aria-labelledby="month-notes-title">
+            <h2 id="month-notes-title" className="section-title">What {MONTHS[page.month - 1]} is like for trekking</h2>
+            <dl>
+              {monthNotes(page.month, page.states).map((n) => (
+                <div key={n.region}><dt>{n.name}</dt><dd>{n.note}</dd></div>
+              ))}
+            </dl>
+          </section>
+        )}
 
         <div className="fact-table-wrap">
           <table className="fact-table fact-table--wide">

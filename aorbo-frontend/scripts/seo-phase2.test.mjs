@@ -117,3 +117,18 @@ test('visit source: search engine and page kind, no personal data', () => {
   );
   assert.equal(playStoreWithSource('https://example.org/', { src: 'google', land: 'trek' }), 'https://example.org/');
 });
+
+test('month pages: each month says what it is like, per region on the page', async () => {
+  const { monthNotes, regionOf } = await import('../src/seo/monthNotes.js');
+  assert.equal(regionOf('Uttarakhand'), 'himalaya');
+  assert.equal(regionOf('Goa'), 'sahyadri');
+  assert.equal(regionOf('Karnataka'), 'south');
+  const notes = new Set();
+  for (let m = 1; m <= 12; m++) {
+    const n = monthNotes(m, ['Uttarakhand', 'Maharashtra', 'Karnataka']);
+    assert.equal(n.length, 3);
+    for (const x of n) { assert.ok(x.note.length > 40); notes.add(x.note); }
+  }
+  assert.equal(notes.size, 36, 'no two months say the same');
+  assert.deepEqual(monthNotes(7, ['Maharashtra']).map((x) => x.region), ['sahyadri']);
+});

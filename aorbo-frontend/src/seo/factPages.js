@@ -2,6 +2,7 @@
 // data: the page, its FAQPage data and its meta description say the same thing, and nothing is
 // stated that the facts do not hold. Plain JavaScript (app + build).
 import { DIFFICULTY, DIFFICULTY_RANK, MONTHS, monthRange } from './trekFacts.js';
+import { monthNotes } from './monthNotes.js';
 
 const num = (n) => Number(n).toLocaleString('en-IN');
 const rupees = (n) => `₹${num(n)}`;
@@ -150,6 +151,8 @@ export function collectionFaqs(page) {
   if (page.kind === 'month') {
     const month = MONTHS[page.month - 1];
     faqs.push({ q: `Which treks can I do in ${month}?`, a: `On Aorbo Treks, ${t.length} treks are in season: ${joinNames(t.slice(0, 8).map((x) => x.name))}${t.length > 8 ? ' and more' : ''}.` });
+    const notes = monthNotes(page.month, page.states);
+    if (notes.length) faqs.push({ q: `What is ${month} like for trekking?`, a: notes.map((n) => `${n.name}: ${n.note}`).join(' ') });
     if (easy.length) faqs.push({ q: `Which easy treks can I do in ${month}?`, a: `${joinNames(easy.slice(0, 6))}.` });
     if (high) faqs.push({ q: `Which is the highest trek in season in ${month}?`, a: `${high.name}, at about ${num(high.altitude_m)} m.` });
   } else {
