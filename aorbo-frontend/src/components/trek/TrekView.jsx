@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, MapPin, Route, Zap } from 'lucide-react';
+import { BadgeCheck, BookOpen, CalendarDays, Clock, Compass, Info, Layers, MapPin, Mountain, Route, Zap } from 'lucide-react';
 import { mediaUrl } from '../../api/client';
 import { durationOptions, formatDepartureDays, formatPrice } from '../../utils/format';
 import { destinationHeading, isPlaceholderOperator, trekFaqs } from '../../seo/meta';
+import { factRows } from '../../seo/trekFacts';
 import DetailHero from './DetailHero';
 import InfoCard from '../ui/InfoCard';
 import FactList from '../ui/FactList';
@@ -11,10 +12,11 @@ import '../../styles/Details.css';
 const initials = (name) => name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const list = (v) => (Array.isArray(v) ? v : []);
 
-// A trek page. Pure: `trek` is the website API's trek object and `links` (built
-// by scripts/seo-pages.mjs) the destination and city pages it belongs to, so the
-// build can render it to HTML ahead of time.
-export default function TrekView({ trek, links = null }) {
+// A trek page. Pure: `trek` is the website API's trek object, `links` (built
+// by scripts/seo-pages.mjs) the destination, city, compare and collection pages it
+// belongs to, and `facts` its height / season / how to reach (scripts/data/trek-facts.json),
+// so the build can render it to HTML ahead of time.
+export default function TrekView({ trek, links = null, facts = null }) {
   const options = durationOptions(trek.duration_days);
   const duration = options.join(' · ');
   const departures = formatDepartureDays(trek.operating_days);
@@ -24,7 +26,10 @@ export default function TrekView({ trek, links = null }) {
   const places = list(trek.famous_places);
   const destinations = links?.destinations || [];
   const near = links?.near || [];
-  const faqs = trekFaqs(trek, links);
+  const faqs = trekFaqs(trek, links, facts);
+  const rows = factRows(facts);
+  const compare = links?.compare || [];
+  const collections = links?.collections || [];
 
   return (
     <div className="page detail-page">
@@ -45,6 +50,13 @@ export default function TrekView({ trek, links = null }) {
             <InfoCard icon={BookOpen} title="About this Trek">
               <p>{trek.description || trek.summary || `Explore ${trek.name}, a wonderful destination waiting for you.`}</p>
             </InfoCard>
+
+            {rows.length > 0 && (
+              <InfoCard icon={Mountain} title={`${facts.name}: trek facts`}>
+                <FactList plain items={rows.map((r) => ({ label: r.label, value: r.value }))} />
+                <p className="muted-note">Approximate, from public sources. Your organiser confirms the exact route and timings.</p>
+              </InfoCard>
+            )}
 
             {list(trek.activities).length > 0 && (
               <InfoCard icon={Zap} title="Activities">
@@ -84,6 +96,36 @@ export default function TrekView({ trek, links = null }) {
                     </li>
                   ))}
                 </ul>
+              </InfoCard>
+            )}
+
+            {(compare.length > 0 || collections.length > 0) && (
+              <InfoCard icon={Layers} title="Compare and explore">
+                <ul className="link-list">
+                  {compare.map((c) => (
+                    <li key={c.path}>
+                      <Link to={c.path}>
+                        <span>{c.title}</span>
+                        <small>Height, difficulty, season and price side by side</small>
+                      </Link>
+                    </li>
+                  ))}
+                  {collections.filter((c) => c.kind === 'theme').map((c) => (
+                    <li key={c.path}>
+                      <Link to={c.path}>
+                        <span>{c.title}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                {collections.some((c) => c.kind === 'month') && (
+                  <p className="muted-note">
+                    In season:{' '}
+                    {collections.filter((c) => c.kind === 'month').map((c, i) => (
+                      <span key={c.path}>{i > 0 && ', '}<Link to={c.path}>{c.title.replace('Treks in ', '')}</Link></span>
+                    ))}
+                  </p>
+                )}
               </InfoCard>
             )}
 

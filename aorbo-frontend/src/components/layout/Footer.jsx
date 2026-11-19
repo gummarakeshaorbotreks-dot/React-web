@@ -17,6 +17,7 @@ const COLUMNS = [
       { to: '/privacy-policy', label: 'Privacy Policy' },
       { to: '/blogs', label: 'Blogs' },
       { to: '/treks-near', label: 'Treks near you' },
+      { to: '/collections', label: 'Trek collections' },
       { to: '/destinations', label: 'Destinations' },
       { to: '/organisers', label: 'Trek organisers' },
       { to: '/winter-treks', label: 'Winter treks' },

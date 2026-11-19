@@ -22,11 +22,17 @@ export function listingKind(t) {
 
 export const isTrekListing = (t) => listingKind(t) === 'trek';
 
+/** A listing the team still has to confirm (`review: true`): kept off the new page families until then. */
+export const needsReview = (t) => Boolean(LISTINGS[t?.id || t?.slug]?.review);
+
 // Quality bar (SEO plan, 19 Nov 2026): a trek page with almost nothing on it (under 30 words of
 // description, no places listed, no departures) stays out of Google - no-index, not in the
-// sitemap - until it is rebuilt with real facts. Visitors can still open it.
+// sitemap - until it is rebuilt with real facts. Visitors can still open it. A trek with
+// MIN_FACTS or more facts from scripts/data/trek-facts.json (height, season, how to reach...)
+// has real content of its own (phase 2).
 export const MIN_DESCRIPTION_WORDS = 30;
-export function isThinListing(t) {
+export const MIN_FACTS = 4;
+export function isThinListing(t, factCount = 0) {
   const words = String(t?.description || '').trim().split(/\s+/).filter(Boolean).length;
-  return words < MIN_DESCRIPTION_WORDS && !(t?.famous_places || []).length && !(t?.departures || []).length;
+  return words < MIN_DESCRIPTION_WORDS && !(t?.famous_places || []).length && !(t?.departures || []).length && factCount < MIN_FACTS;
 }

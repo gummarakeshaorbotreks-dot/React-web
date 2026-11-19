@@ -17,13 +17,17 @@ import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
   notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, winterMeta, ABOUT_AORBO, ALTERNATE_NAMES,
+  compareMeta, collectionMeta, collectionHubMeta,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildOrganiserPages } from './organiser-pages.mjs';
 import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
-import { isTrekListing, isThinListing } from './listing-kind.mjs';
+import { isTrekListing, isThinListing, needsReview } from './listing-kind.mjs';
+import { factsOf } from './trek-facts.mjs';
+import { factCount } from '../src/seo/trekFacts.js';
+import { buildCollectionPages, buildComparePages, factLinks, trekEntries } from './fact-pages.mjs';
 import { blogArticleHtml, blogListHtml } from './blog-html.mjs';
 import { buildRoutePages } from './route-pages.mjs';
 
@@ -183,6 +187,9 @@ let destinations = { pages: [], hub: null };
 let organisers = { pages: [], hub: null };
 let winter = { pages: [], hub: null };
 let routes = { pages: [] };
+let compare = { pages: [] };
+let collections = { pages: [], hub: null };
+let factLinksById = new Map();
 let ssr = null;
 if (treks.length) {
   const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
@@ -198,6 +205,15 @@ if (treks.length) {
   winter = buildWinterPage(treks, destinations.pages);
   // "<destination> trip from <city>": only where the admin has real departures (scripts/route-pages.mjs).
   routes = buildRoutePages(destinations.pages, treks, places, near.pages);
+  // Compare pages and collections (SEO plan phase 2): treks with facts, never tours, never a
+  // listing the team still has to confirm, never a thin page (scripts/fact-pages.mjs).
+  const factListings = treks
+    .map((t) => ({ ...t, facts: factsOf(t) }))
+    .filter((t) => t.facts && isTrekListing(t) && !needsReview(t) && !isThinListing(t, factCount(t.facts)));
+  const entries = trekEntries(factListings, geo, places);
+  compare = buildComparePages(entries);
+  collections = buildCollectionPages(entries, compare.pages);
+  factLinksById = factLinks(entries, compare.pages, collections.pages);
   ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
 }
 // A page's stylesheet is a separate chunk (loaded with the page's code); inline it so
@@ -246,13 +262,14 @@ const trekCss = ssr ? await cssWith('.detail-hero') : [];
 if (ssr) await mkdir(path.join(DIST, 'data', 'treks'), { recursive: true });
 for (const t of treks) {
   const id = t.id || t.slug;
-  const links = trekLinks.get(id) || { destinations: [], near: [], organisers: [] };
-  const thin = isThinListing(t);
-  const meta = thin ? { ...trekMeta(t, links), noindex: true } : trekMeta(t, links);
+  const facts = factsOf(t);
+  const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }) };
+  const thin = isThinListing(t, factCount(facts));
+  const meta = thin ? { ...trekMeta(t, links, facts), noindex: true } : trekMeta(t, links, facts);
   if (seen.has(meta.path)) continue;
   seen.add(meta.path);
   const file = `/data/treks/${encodeURIComponent(id)}.json`;
-  const content = { trek: t, links };
+  const content = { trek: t, links, facts };
   const hero = /^https?:/.test(t.main_image || '') ? t.main_image : null;
   const extra = ssr ? { main: ssr.renderTrek(content, meta.path), data: { file, content }, css: trekCss, preload: hero } : null;
   if (await writePage(meta.path, meta, extra)) {
@@ -304,6 +321,25 @@ if (ssr) {
   await writeDataPages('organisers', organisers, organiserMeta, ssr.renderOrganiser, organiserHubMeta, ssr.renderOrganiserHub);
   await writeDataPages('seasons', winter, winterMeta, ssr.renderWinter, null, null);
   await writeDataPages('routes', { pages: routes.pages, hub: null }, routeMeta, ssr.renderRoute, null, null);
+  const factCss = [...css, ...(await cssWith('.fact-table'))];
+  const writeFactPages = async (dir, { pages, hub }, meta, render, hubMeta, renderHub) => {
+    await mkdir(path.join(DIST, 'data', dir), { recursive: true });
+    for (const page of pages) {
+      const file = `/data/${dir}/${page.slug}.json`;
+      await writeFile(path.join(DIST, file), JSON.stringify(page));
+      if (await writePage(page.path, meta(page), { main: render(page), data: { file, content: page }, css: factCss })) {
+        urls.push({ loc: absoluteUrl(page.path), priority: '0.6' });
+      }
+    }
+    if (!hub) return;
+    const file = `/data/${dir}/index.json`;
+    await writeFile(path.join(DIST, file), JSON.stringify(hub));
+    if (await writePage(hub.path, hubMeta(hub), { main: renderHub(hub), data: { file, content: hub }, css: factCss })) {
+      urls.push({ loc: absoluteUrl(hub.path), priority: '0.7' });
+    }
+  };
+  await writeFactPages('compare', { pages: compare.pages, hub: null }, compareMeta, ssr.renderCompare, null, null);
+  if (collections.hub) await writeFactPages('collections', collections, collectionMeta, ssr.renderCollection, collectionHubMeta, ssr.renderCollectionHub);
 }
 
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
@@ -327,6 +363,7 @@ if (treks.length) {
     `- [Destinations](${absoluteUrl('/destinations')}): every place and state, with all packages that visit it`,
     `- [Trek organisers](${absoluteUrl('/organisers')}): the companies that run the treks, each with its own page`,
     `- [Treks near you](${absoluteUrl('/treks-near')}): treks near Indian cities and towns, with distances`,
+    `- [Collections and comparisons](${absoluteUrl('/collections')}): treks by month and theme, and two treks side by side (height, difficulty, season, price)`,
     `- [About](${absoluteUrl('/about')}): how Aorbo Treks works and checks organisers`,
     '',
     '## Destinations',
@@ -370,4 +407,4 @@ await writeFile(
   ].join('\n'),
 );
 console.log(`seo-pages: ${thinCount} thin trek pages kept out of Google until rebuilt`);
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages + ${compare.pages.length} compare pages + ${collections.pages.length} collections, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

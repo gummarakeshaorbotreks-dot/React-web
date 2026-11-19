@@ -6,8 +6,12 @@ import App from './App.jsx';
 import { routerReady } from './router';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { initGlobalCrashHandlers } from './utils/crashReporter';
+import { trackVisitSource } from './utils/visitSource';
+import { logClick } from './api/client';
 
 initGlobalCrashHandlers();
+// Which search engine / page brought each booking or app click (utils/visitSource.js).
+trackVisitSource(logClick);
 
 // Keeps the site on the visitor's device so repeat visits open instantly
 // (see public/sw.js). Production only, so development always sees fresh files.
