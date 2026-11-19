@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="56" viewBox="0 0 200 56" role="img" aria-label="Book us on Aorbo Treks">
+  <title>Book us on Aorbo Treks</title>
+  <rect width="200" height="56" rx="12" fill="#16181d"/>
+  <path d="M14 40 L26 18 L33 30 L37 24 L46 40 Z" fill="#ffd60a"/>
+  <circle cx="40" cy="17" r="3" fill="#ffd60a"/>
+  <text x="58" y="24" fill="#ffd60a" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" letter-spacing="1.4">BOOK US ON</text>
+  <text x="58" y="42" fill="#ffffff" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="800">Aorbo Treks</text>
+</svg>
