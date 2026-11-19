@@ -284,14 +284,23 @@ def step_sync():
 
 
 def step_geo():
-    from destinations import build as build_destinations, push as push_destinations
-    from trek_geo import push as push_geo, update as locate
-    geo, _ = locate()
-    changed = push_geo(geo)
-    dests = build_destinations()
-    state_set("destinations", dests)
-    push_destinations(dests)
-    print(f"positions: {len(geo)} treks{' (updated)' if changed else ''}; destinations: {len(dests)}")
+    """Positions and destinations for new pages. Both lean on Gemini (free tier): when it is busy or
+    out of quota the site builds with the last ones, and the next run tries again."""
+    try:
+        from trek_geo import push as push_geo, update as locate
+        geo, _ = locate()
+        changed = push_geo(geo)
+        print(f"positions: {len(geo)} treks{' (updated)' if changed else ''}")
+    except Exception as e:  # noqa: BLE001
+        print("positions not updated:", e)
+    try:
+        from destinations import build as build_destinations, push as push_destinations
+        dests = build_destinations()
+        state_set("destinations", dests)
+        push_destinations(dests)
+        print(f"destinations: {len(dests)}")
+    except Exception as e:  # noqa: BLE001
+        print("destinations not updated:", e)
 
 
 def step_facts():
