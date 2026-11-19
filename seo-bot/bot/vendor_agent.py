@@ -266,6 +266,8 @@ def read_feed():
 def step_check(force=False):
     feed = read_feed()
     digest = feed_digest(feed)
+    # Proof of life (health_guard / a person can see the chain runs): time and size of the last check.
+    state_set("vendor_last_check", {"at": datetime.now().isoformat(timespec="seconds"), "departures": feed.get("count", 0)})
     last = state_get("vendor_feed_digest")
     if last is None and not force:
         state_set("vendor_feed_digest", digest)
