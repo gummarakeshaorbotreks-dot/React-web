@@ -17,12 +17,13 @@ import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
   notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, winterMeta, ABOUT_AORBO, ALTERNATE_NAMES,
-  compareMeta, collectionMeta, collectionHubMeta, roadMeta, roadHubMeta, organisersOf,
+  compareMeta, collectionMeta, collectionHubMeta, roadMeta, roadHubMeta, organisersOf, teTrekMeta, teHubMeta,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
 import { buildOrganiserPages } from './organiser-pages.mjs';
 import { attachReviews, loadReviews, reviewIndex, trekRatings } from './reviews.mjs';
+import { buildTeluguPages, loadNames, teluguAlternates } from './lang-pages.mjs';
 import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
 import { isTrekListing, isThinListing, needsReview } from './listing-kind.mjs';
@@ -39,7 +40,7 @@ const ALLOW_OFFLINE = process.env.SEO_ALLOW_OFFLINE === '1';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-function headBlock({ title, description, path: p, image, type = 'website', noindex = false, jsonLd = null }) {
+function headBlock({ title, description, path: p, image, type = 'website', noindex = false, jsonLd = null, lang = 'en', alternates = [] }) {
   const url = absoluteUrl(p);
   const img = image || `${SITE_URL}/og-image.jpg`;
   const lines = [
@@ -53,7 +54,8 @@ function headBlock({ title, description, path: p, image, type = 'website', noind
     `<meta property="og:type" content="${type}" />`,
     `<meta property="og:url" content="${esc(url)}" />`,
     `<meta property="og:image" content="${esc(img)}" />`,
-    `<meta property="og:locale" content="en_IN" />`,
+    `<meta property="og:locale" content="${lang === 'te' ? 'te_IN' : 'en_IN'}" />`,
+    ...(noindex ? [] : alternates.map((a) => `<link rel="alternate" hreflang="${esc(a.hreflang)}" href="${esc(absoluteUrl(a.path))}" />`)),
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${esc(title)}" />`,
     `<meta name="twitter:description" content="${esc(description)}" />`,
@@ -130,6 +132,7 @@ async function writePage(p, meta, extra = null) {
   const file = p === '/' ? path.join(DIST, 'index.html') : path.join(DIST, p.replace(/^\//, ''), 'index.html');
   await mkdir(path.dirname(file), { recursive: true });
   let html = withHead(withOverride(meta, overrides[p]));
+  if (meta.lang && meta.lang !== 'en') html = html.replace('<html lang="en">', `<html lang="${meta.lang}">`);
   if (extra) {
     html = html
       .replace(EMPTY_MAIN, `<main id="main" data-prerendered="" data-static="">${extra.main}</main>`)
@@ -195,6 +198,8 @@ let roads = { pages: [], hub: null };
 let roadCandidateList = [];
 let roadLinksById = new Map();
 let reviewsIdx = new Map();
+let telugu = { pages: [], hub: null };
+let teById = new Map();
 let factLinksById = new Map();
 let ssr = null;
 if (treks.length) {
@@ -228,6 +233,9 @@ if (treks.length) {
   roads = buildRoadPages(entries, places, await loadRoads(process.env.ROAD_ROUTES_FILE), routes.pages);
   roadCandidateList = roadCandidates(entries, places);
   roadLinksById = roadLinks(roads.pages);
+  // Telugu trek guides (scripts/lang-pages.mjs), each paired with its English page.
+  telugu = buildTeluguPages(entries, await loadNames('./data/names-te.json'));
+  teById = teluguAlternates(telugu.pages);
   ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
 }
 // A page's stylesheet is a separate chunk (loaded with the page's code); inline it so
@@ -279,7 +287,10 @@ for (const t of treks) {
   const facts = factsOf(t);
   const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }), roads: roadLinksById.get(id) || [], ratings: trekRatings(organisersOf(t), organisers.pages, reviewsIdx) };
   const thin = isThinListing(t, factCount(facts));
-  const meta = thin ? { ...trekMeta(t, links, facts), noindex: true } : trekMeta(t, links, facts);
+  const base = thin ? { ...trekMeta(t, links, facts), noindex: true } : trekMeta(t, links, facts);
+  // A Telugu guide for this trek: the pair goes both ways (hreflang).
+  const te = teById.get(id);
+  const meta = te ? { ...base, alternates: [{ hreflang: 'en', path: base.path }, { hreflang: 'te', path: te }, { hreflang: 'x-default', path: base.path }] } : base;
   if (seen.has(meta.path)) continue;
   seen.add(meta.path);
   const file = `/data/treks/${encodeURIComponent(id)}.json`;
@@ -355,6 +366,7 @@ if (ssr) {
   await writeFactPages('compare', { pages: compare.pages, hub: null }, compareMeta, ssr.renderCompare, null, null);
   if (collections.hub) await writeFactPages('collections', collections, collectionMeta, ssr.renderCollection, collectionHubMeta, ssr.renderCollectionHub);
   if (roads.hub) await writeFactPages('roads', roads, roadMeta, ssr.renderRoad, roadHubMeta, ssr.renderRoadHub);
+  if (telugu.hub) await writeFactPages('te', telugu, teTrekMeta, ssr.renderTelugu, teHubMeta, ssr.renderTeluguHub);
   // The pairs a route guide could have: the SEO bot (seo-bot/bot/roads.py) fetches their road data.
   await writeFile(path.join(DIST, 'data', 'road-candidates.json'), JSON.stringify({ pairs: roadCandidateList }));
 }
@@ -424,4 +436,4 @@ await writeFile(
   ].join('\n'),
 );
 console.log(`seo-pages: ${thinCount} thin trek pages kept out of Google until rebuilt`);
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages + ${compare.pages.length} compare pages + ${collections.pages.length} collections + ${roads.pages.length} route guides (${roadCandidateList.length} candidates), sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages + ${compare.pages.length} compare pages + ${collections.pages.length} collections + ${roads.pages.length} route guides (${roadCandidateList.length} candidates) + ${telugu.pages.length} Telugu guides, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

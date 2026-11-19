@@ -18,6 +18,7 @@ import CompareView from './components/near/CompareView';
 import CollectionView from './components/near/CollectionView';
 import CollectionHubView from './components/near/CollectionHubView';
 import RoadView, { RoadHubView } from './components/near/RoadView';
+import TeluguTrekView, { TeluguHubView } from './components/lang/TeluguTrekView';
 
 export async function render(path) {
   const handler = createStaticHandler(routes);
@@ -61,6 +62,15 @@ export function renderRoad(page) {
 
 export function renderRoadHub(hub) {
   return renderToString(<StaticRouter location={hub.path}><RoadHubView hub={hub} /></StaticRouter>);
+}
+
+// Telugu trek guides and their index (scripts/lang-pages.mjs).
+export function renderTelugu(page) {
+  return renderToString(<StaticRouter location={page.path}><TeluguTrekView page={page} /></StaticRouter>);
+}
+
+export function renderTeluguHub(hub) {
+  return renderToString(<StaticRouter location={hub.path}><TeluguHubView hub={hub} /></StaticRouter>);
 }
 
 // The /app page (no data).

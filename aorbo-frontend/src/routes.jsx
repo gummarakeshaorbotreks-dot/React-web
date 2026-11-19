@@ -60,6 +60,8 @@ export const routes = [
           { path: 'organisers/:slug', lazy: page(() => import('./pages/Organisers')) },
           { path: 'winter-treks', lazy: page(() => import('./pages/WinterTreks')) },
           { path: 'compare/:slug', lazy: page(() => import('./pages/Compare')) },
+          { path: 'te', lazy: page(() => import('./pages/Telugu').then((m) => ({ default: m.TeluguHub }))) },
+          { path: 'te/treks/:slug', lazy: page(() => import('./pages/Telugu')) },
           { path: 'routes', lazy: page(() => import('./pages/Roads').then((m) => ({ default: m.RoadsHub }))) },
           { path: 'routes/:slug', lazy: page(() => import('./pages/Roads')) },
           { path: 'collections', lazy: page(() => import('./pages/Collections').then((m) => ({ default: m.CollectionsHub }))) },

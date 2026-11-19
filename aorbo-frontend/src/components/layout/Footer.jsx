@@ -18,6 +18,8 @@ const COLUMNS = [
       { to: '/blogs', label: 'Blogs' },
       { to: '/treks-near', label: 'Treks near you' },
       { to: '/collections', label: 'Trek collections' },
+      { to: '/routes', label: 'Route guides' },
+      { to: '/te', label: 'తెలుగులో ట్రెక్ గైడ్‌లు', lang: 'te' },
       { to: '/destinations', label: 'Destinations' },
       { to: '/organisers', label: 'Trek organisers' },
       { to: '/winter-treks', label: 'Winter treks' },
@@ -70,7 +72,7 @@ export default function Footer() {
               <ul className="site-footer__links">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    {link.to ? <Link to={link.to}>{link.label}</Link> : <a href={link.href}>{link.label}</a>}
+                    {link.to ? <Link to={link.to} lang={link.lang}>{link.label}</Link> : <a href={link.href}>{link.label}</a>}
                   </li>
                 ))}
               </ul>

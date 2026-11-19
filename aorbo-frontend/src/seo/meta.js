@@ -10,6 +10,7 @@ import { allDurations, durationOptions, formatDuration } from '../utils/format.j
 import { factFaqs, factLine, MONTHS } from './trekFacts.js';
 import { collectionFaqs, collectionSummary, compareFaqs, compareSummary } from './factPages.js';
 import { roadFaqs, roadSummary } from './roadPages.js';
+import { teFaqs, teSummary } from './telugu.js';
 
 export const SITE_URL = 'https://aorbotreks.com';
 export const SITE_NAME = 'Aorbo Treks';
@@ -999,6 +1000,39 @@ export function roadHubMeta(hub) {
     description,
     path: hub.path,
     jsonLd: graph({ '@type': 'CollectionPage', name: 'Trek route guides', description, url: absoluteUrl(hub.path) }, breadcrumb([['Home', '/'], ['Route guides', hub.path]])),
+  };
+}
+
+/** Tags for a Telugu trek guide (/te/treks/<key>): Telugu text, paired with the English page (hreflang). */
+export function teTrekMeta(page) {
+  const description = snippet(teSummary(page).join(' ') || `${page.nameTe} ట్రెక్ గురించి తెలుగులో.`);
+  const url = absoluteUrl(page.path);
+  return {
+    title: `${page.nameTe} ట్రెక్ (${page.name}): ఎత్తు, దూరం, సరైన సమయం | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.image || DEFAULT_IMAGE,
+    lang: 'te',
+    alternates: [{ hreflang: 'te', path: page.path }, { hreflang: 'en', path: page.en }, { hreflang: 'x-default', path: page.en }],
+    jsonLd: graph(
+      { '@type': 'WebPage', name: `${page.nameTe} ట్రెక్`, description, url, inLanguage: 'te' },
+      breadcrumb([['Aorbo Treks', '/'], ['తెలుగు ట్రెక్ గైడ్‌లు', '/te'], [`${page.nameTe} ట్రెక్`, page.path]]),
+      faqPage(teFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for /te. */
+export function teHubMeta(hub) {
+  const n = hub.states.reduce((s, x) => s + x.treks.length, 0);
+  const description = snippet(`${n} ట్రెక్‌ల గురించి తెలుగులో: ఎత్తు, నడక దూరం, కష్టం స్థాయి, సరైన సమయం, ఎలా చేరుకోవాలి, Aorbo Treksలో ధరలు.`);
+  return {
+    title: 'ట్రెక్కింగ్ గైడ్‌లు తెలుగులో | Aorbo Treks',
+    description,
+    path: hub.path,
+    lang: 'te',
+    alternates: [{ hreflang: 'te', path: hub.path }, { hreflang: 'en', path: '/' }, { hreflang: 'x-default', path: '/' }],
+    jsonLd: graph({ '@type': 'CollectionPage', name: 'ట్రెక్కింగ్ గైడ్‌లు', description, url: absoluteUrl(hub.path), inLanguage: 'te' }, breadcrumb([['Aorbo Treks', '/'], ['తెలుగు ట్రెక్ గైడ్‌లు', hub.path]])),
   };
 }
 

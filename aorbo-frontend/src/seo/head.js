@@ -25,7 +25,7 @@ function meta(attr, key, content) {
   );
 }
 
-export function applyHead({ title, description, path, image, type = 'website', noindex = false, jsonLd = null }) {
+export function applyHead({ title, description, path, image, type = 'website', noindex = false, jsonLd = null, lang = 'en', alternates = [] }) {
   if (typeof document === 'undefined') return;
   const url = absoluteUrl(path || window.location.pathname);
   const img = image || DEFAULT_IMAGE;
@@ -38,7 +38,19 @@ export function applyHead({ title, description, path, image, type = 'website', n
   meta('property', 'og:type', type);
   meta('property', 'og:url', url);
   meta('property', 'og:image', img);
-  meta('property', 'og:locale', 'en_IN');
+  meta('property', 'og:locale', lang === 'te' ? 'te_IN' : 'en_IN');
+  document.documentElement.lang = lang;
+  // Language pairs (Telugu guide <-> English page): replace whatever the last page had.
+  document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((l) => l.remove());
+  if (!noindex) {
+    for (const a of alternates) {
+      const l = document.createElement('link');
+      l.setAttribute('rel', 'alternate');
+      l.setAttribute('hreflang', a.hreflang);
+      l.setAttribute('href', absoluteUrl(a.path));
+      document.head.appendChild(l);
+    }
+  }
   meta('name', 'twitter:card', 'summary_large_image');
   meta('name', 'twitter:title', title);
   meta('name', 'twitter:description', description);
