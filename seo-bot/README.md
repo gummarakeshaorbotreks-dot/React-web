@@ -15,21 +15,32 @@ Design and playbook: `Desktop\AORBO_SEO_BOT_DESIGN.md`, `Desktop\AORBO_SEO_PLAYB
 | Website reachable? | every 5 min | `bot/uptime.py` | 🔴 down after 2 failed checks (says whether our server or AIC's entry point is at fault), 🟢 back + how long |
 | Trek data check | Monday 08:00 | `bot/data_quality.py` | 🧹 treks with wrong state (vs map position), lowercase names, collisions, missing data |
 | Competitor radar | Sunday 07:00 | `bot/radar.py` | 📡 our Google positions, 📉 drops with the cause + fix or team to-do, 🛡 top-3 defence, 🔥 #1 streaks, 👑 who rules |
-| Vendor agent | every 10 min | `bot/vendor_agent.py` check → sync → geo → facts → deploy → report | 🧭 what organisers added/removed, pages made, trek facts found or left out (only when the feed changed) |
+| Vendor agent | every 2 min | `bot/vendor_agent.py` check → sync → geo → facts → deploy → report | 🧭 what organisers added/removed, pages made, trek facts found or left out (only when the feed changed); reply `/wrong <page> [fact]` to take a fact off |
+| Bot watchdog (root cron, not n8n) | every 5 min | `bot/watchdog.py` | 🐕 n8n down / agent stalled → restarts n8n once; 🔴 still down; 🟢 back. Heartbeat to the web server, whose `ops/site/bot_watch.py` alerts 🔴 if this server goes silent 20 min |
 | Alert when a bot workflow fails | on any crash | `bot/notify.py` | ⚠️ which workflow failed and why |
 
 The scripts send their own alerts; n8n schedules them and catches crashes.
 
 ## Vendor agent (organisers' data -> website, 19 Nov 2026)
 
-n8n chain every 10 minutes; nothing runs past step 1 unless the app's feed of bookable departures
-(`/api/v1/website/departures`) changed. Then: website copies the departures at once (web server `sync`,
-new places get a page), positions + destinations, trek or tour for new listings (their own words), trek
-facts for new trek pages from open data only (height = OpenStreetMap peak + Wikidata agreeing; nearest
-station + IATA airport from OpenStreetMap; district from its address; difficulty = organiser's own), one
-rebuild, Telegram report. Facts go to the web server's `data/trek-facts-auto.json` (SSH `facts`); the
-team's `scripts/data/trek-facts.json` / `listing-kind.json` always win. Unconfirmed facts are left out
-and retried every 3 days. Manual run: `vendor_agent.py all --force`. Tests: `python -m unittest test_vendor_agent`.
+n8n chain every 2 minutes; nothing runs past step 1 unless the app's feed of bookable departures
+(`/api/v1/website/departures`, cached 2 min) changed, the owner sent `/wrong` in Telegram, or a fact is due
+for a re-check (and never while the last run is still working). Then: website copies the departures at once
+(web server `sync`, new places get a page), positions + destinations, trek or tour for new listings (their
+own words), trek facts, one rebuild, Telegram report.
+
+Facts: the organiser's own from the feed (difficulty, best months, trail km, height; entered in Create Trek /
+Edit trip and reviewed by our team; several organisers -> only what they agree on, months = the months they
+share), kept current when organisers edit them. Height: open data's confirmed height (OpenStreetMap peak +
+Wikidata agreeing) wins; the organiser's is used when open data has none or agrees within 10 %. Station +
+airport from our own copies in `/var/lib/n8n/seo-bot/ref/` (OSM stations without metro, OurAirports with
+scheduled flights; refreshed every 30 days, old copy kept if a refresh fails), district from Nominatim.
+Map server busy -> the height is re-checked 6 h later; nothing confirmed -> retried every 3 days.
+`/wrong <page>` or `/wrong <page> height|months|trail|difficulty|station|airport|district` (owner's chat
+only) takes the agent's fact off and never puts it back. Facts go to the web server's
+`data/trek-facts-auto.json` (SSH `facts`); the team's `scripts/data/trek-facts.json` / `listing-kind.json`
+always win. Manual run: `vendor_agent.py all --force`. Tests: `python -m unittest discover -p 'test_*.py'`
+(run by `install.sh` on the server before anything is installed).
 
 ## How the optimizer decides (playbook: Desktop\AORBO_SEO_PLAYBOOK.md)
 
@@ -159,8 +170,8 @@ unpack into `/opt/aorbo-site/src` (keep its `node_modules`), then `/opt/aorbo-si
 python seo-bot/n8n/build_workflows.py            # only if workflows changed
 tar -czf /tmp/seo-bot.tar.gz seo-bot
 scp -P 20135 /tmp/seo-bot.tar.gz root@162.19.81.122:/tmp/
-# on the server
-tar --no-same-owner -xzf /tmp/seo-bot.tar.gz -C /tmp && cp -r /tmp/seo-bot/bot /tmp/seo-bot/n8n /opt/aorbo-bot/
+# on the server: tests first, installs only if they pass (keeps a backup in /root)
+tar --no-same-owner -xzf /tmp/seo-bot.tar.gz -C /tmp && cd /tmp/seo-bot && tar -cf /root/bot.tar bot n8n README.md requirements.txt install.sh && bash install.sh /root/bot.tar
 # workflows changed? stop n8n, re-import, publish, start:
 systemctl stop n8n
 E="env HOME=/var/lib/n8n N8N_USER_FOLDER=/var/lib/n8n NODES_EXCLUDE=[]"

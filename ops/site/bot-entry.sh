@@ -7,6 +7,7 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
   destinations) exec python3 /opt/aorbo-site/put_data.py destinations ;;   # destinations + their packages
   facts)        exec python3 /opt/aorbo-site/put_data.py facts ;;          # vendor agent: trek facts + kinds (JSON on stdin)
   facts-get)    exec python3 /opt/aorbo-site/put_data.py facts-get ;;      # what the team's files cover + the agent's file
+  heartbeat)    exec python3 /opt/aorbo-site/put_data.py heartbeat ;;      # bot watchdog: alive (JSON on stdin); bot_watch.py checks it
   sync)         cd /opt/aorboweb && exec flock -w 120 /run/aorbo-app-sync.lock venv/bin/python manage.py sync_app_departures ;;  # organisers' departures now, not at :17
   last-deploy)  ls -t /opt/aorbo-site/logs/deploy-*.log 2>/dev/null | head -1 | xargs -r tail -n 30 ;;
   status)       systemctl is-active nginx gunicorn-aorboweb postgresql@16-main; df -h / | tail -1; free -h | sed -n 2p ;;

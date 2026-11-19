@@ -6,6 +6,8 @@
     put_data.py facts          the vendor agent's trek facts + trek/trip kinds -> data/trek-facts-auto.json
                                (TREK_FACTS_AUTO_FILE; the team's scripts/data/*.json always win over it)
     put_data.py facts-get      prints what the team's files already cover + the agent's current file
+    put_data.py heartbeat      the bot server's watchdog says it is alive -> data/bot-heartbeat.json
+                               (read by bot_watch.py, which alerts when it stops coming)
 
 Read by the build for the "Treks near <city>" and "<destination> trips" pages. Only
 the expected shape is accepted (positions inside India, short plain strings); anything
@@ -156,8 +158,20 @@ def facts_get():
     }, ensure_ascii=False))
 
 
+def heartbeat(data):
+    """{at, ok, problems[]} from the bot's watchdog; stamped with OUR clock on arrival."""
+    if not isinstance(data, dict) or not isinstance(data.get("ok"), bool):
+        raise ValueError("expected {at, ok, problems}")
+    probs = data.get("problems") or []
+    if not (isinstance(probs, list) and len(probs) <= 3):
+        raise ValueError("problems")
+    import datetime
+    return {"at": text(data.get("at"), 25), "ok": data["ok"], "problems": [text(p, 200) for p in probs],
+            "received": datetime.datetime.now().isoformat(timespec="seconds")}
+
+
 KINDS = {"geo": ("trek-geo.json", geo), "destinations": ("destinations.json", destinations),
-         "facts": ("trek-facts-auto.json", facts)}
+         "facts": ("trek-facts-auto.json", facts), "heartbeat": ("bot-heartbeat.json", heartbeat)}
 
 if len(sys.argv) == 2 and sys.argv[1] == "facts-get":
     facts_get()

@@ -2,27 +2,35 @@
 
 Owner, 19 Nov 2026: "we started onboarding vendors; as soon as their data comes, an agent should work,
 connected through an n8n chain". n8n (workflow "SEO bot: vendor agent") runs the steps in order every
-10 minutes; nothing happens unless the organisers' feed changed:
+2 minutes; nothing happens unless the organisers' feed changed or the owner sent a correction:
 
-    vendor_agent.py check    the app's public feed of bookable departures changed? prints CHANGED / UNCHANGED
+    vendor_agent.py check    feed changed / owner's /wrong in Telegram / a fact due for a re-check?
+                             prints CHANGED / UNCHANGED (and records proof of life for watchdog.py)
     vendor_agent.py sync     website copies the departures now (web server: manage.py sync_app_departures;
                              new places get their own page) instead of at the next hourly run
     vendor_agent.py geo      map positions + destinations for new pages (trek_geo.py, destinations.py)
-    vendor_agent.py facts    trek or tour, and trek facts for new trek pages (below)
+    vendor_agent.py facts    trek or tour, and trek facts for trek pages (below)
     vendor_agent.py deploy   rebuild the site once (sitedeploy.py; IndexNow is pinged by deploy.sh)
     vendor_agent.py report   Telegram: what organisers added or removed, pages made, facts found or missing
     vendor_agent.py all      every step (manual run); --force runs even with an unchanged feed
 
-Facts come from open data only, never invented (the free Gemini key has no web search):
-  - height: a named OpenStreetMap peak near the trek AND its Wikidata entry, kept only when the two
-    agree (within 3 % or 30 m) - the same "two sources agree" rule the team follows;
-  - nearest railway station and airport (with an IATA code) from OpenStreetMap, district from
-    OpenStreetMap's address of the position;
-  - difficulty: the organiser's own choice in the app (feed trip.difficulty).
-A fact that cannot be confirmed is left out and listed in the report. The team's own files
-(aorbo-frontend/scripts/data/trek-facts.json, listing-kind.json) always win over the agent's file.
+Facts, never invented:
+  - the organiser's own (Create Trek / Edit trip in the partner portal, checked by our team before they go
+    live; feed trip.difficulty / best_months / trail_km / altitude_m). Several organisers on one trek:
+    used only when they agree;
+  - height from open data: a named OpenStreetMap peak near the trek AND its Wikidata entry, kept only when
+    the two agree (within 3 % or 30 m). An organiser's height that open data contradicts is left out;
+  - nearest main railway station and airport (scheduled flights, IATA code) from our own copies of
+    OpenStreetMap's stations and OurAirports' airports (refreshed monthly, so a busy map server
+    doesn't hold facts up), district from OpenStreetMap's address of the position.
+A fact that cannot be confirmed is left out and listed in the report; a height not checked because the
+map server was busy is re-checked later. The owner can take any agent fact off a page by replying in
+Telegram:  /wrong <page>   or   /wrong <page> height|months|trail|difficulty|station|airport|district
+The team's own files (aorbo-frontend/scripts/data/trek-facts.json, listing-kind.json) always win.
 """
+import csv
 import hashlib
+import io
 import json
 import math
 import re
@@ -33,15 +41,19 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 
-from common import USER_AGENT, esc, state_get, state_set, telegram
+from common import DATA, USER_AGENT, esc, secret, state_get, state_set, telegram
 from sitedeploy import SSH, deploy, run
 
 FEED = "https://api.aorbotreks.co.in/api/v1/website/departures"
 SITE_API = "https://aorbotreks.com"
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://overpass.private.coffee/api/interpreter"]
+OURAIRPORTS = "https://davidmegginson.github.io/ourairports-data/airports.csv"
+REF = DATA / "ref"          # our copies of India's stations and airports
+REF_DAYS = 30
 MAX_RESEARCH = 6            # new treks researched per run (open-data APIs: be gentle)
 RETRY_DAYS = 3              # a trek with nothing confirmed is tried again after this
+BUSY_HOURS = 6              # map server busy: height re-checked after this
 PEAK_KM, STATION_KM, AIRPORT_KM = 20, 120, 250
 # A trekker travels to a junction or main station, not the nearest wayside halt.
 MAIN_STATION = re.compile(r"\b(junction|jn|central|terminus|terminal|cantonment|cantt|city)\b", re.I)
@@ -49,6 +61,14 @@ DIFFICULTY = {"easy": "easy", "moderate": "moderate", "difficult": "difficult", 
 GENERIC = {"trek", "treks", "trip", "trips", "tour", "tours", "hike", "hiking", "package", "day", "days",
            "night", "nights", "the", "and", "to", "from", "camping", "sunrise", "weekend", "winter", "snow"}
 TREK_WORDS = re.compile(r"\b(trek|treks|trekking|hike|hiking|summit|peak|betta|durga|trail|ridge|base camp|fort)\b", re.I)
+# /wrong <page> [fact]: the owner's word for a fact -> the facts file's key ("*" = every agent fact on the page).
+FACT_WORDS = {"all": "*", "height": "altitude_m", "altitude": "altitude_m", "months": "months", "season": "months",
+              "trail": "trail_km", "distance": "trail_km", "difficulty": "difficulty", "station": "rail", "rail": "rail",
+              "railway": "rail", "airport": "airport", "district": "district"}
+FACT_NAMES = {"altitude_m": "height", "months": "best months", "trail_km": "trail", "difficulty": "difficulty",
+              "rail": "station", "airport": "airport", "district": "district", "top": "summit name"}
+WRONG = re.compile(r"^/wrong(?:@\w+)?\s+([a-z0-9][a-z0-9-]{0,79})(?:\s+([a-z]+))?\s*$", re.I)
+ORGANISER_KEYS = ("difficulty", "months", "trail_km", "altitude_m")
 
 
 # ---------- pure helpers (tested in test_vendor_agent.py) ----------
@@ -135,24 +155,164 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:70] or "trek"
 
 
+def deps_for(feed, name):
+    """The feed's departures to the trek called `name` (same place name)."""
+    want = norm(place_name(name) or name)
+    return [d for d in (feed or {}).get("departures", [])
+            if want and norm(place_name((d.get("destination") or {}).get("name"))) == want]
+
+
+def organiser_facts(deps):
+    """(facts, notes) from the organisers' own trek facts in the feed. One organiser's several cities
+    count once; several organisers: a value is used only when they agree (months: the months they share)."""
+    by_org = {}
+    for d in deps:
+        trip = d.get("trip") or {}
+        org = (d.get("organiser") or {}).get("name") or "?"
+        f = {}
+        if DIFFICULTY.get(trip.get("difficulty")):
+            f["difficulty"] = DIFFICULTY[trip["difficulty"]]
+        months = sorted({int(m) for m in (trip.get("best_months") or []) if str(m).isdigit() and 1 <= int(m) <= 12})
+        if months:
+            f["months"] = months
+        if isinstance(trip.get("trail_km"), (int, float)) and 0 < trip["trail_km"] <= 150:
+            f["trail_km"] = round(float(trip["trail_km"]), 1)
+        if isinstance(trip.get("altitude_m"), (int, float)) and 100 <= trip["altitude_m"] <= 7000:
+            f["altitude_m"] = int(round(trip["altitude_m"]))
+        if f:
+            by_org.setdefault(org, {}).update(f)
+    facts, notes = {}, []
+    given = [by_org[o] for o in sorted(by_org)]
+
+    def agreed(key, same):
+        vals = [g[key] for g in given if key in g]
+        if not vals:
+            return None
+        if all(same(vals[0], v) for v in vals[1:]):
+            return vals[0]
+        notes.append(f"organisers differ on {FACT_NAMES[key]}")
+        return None
+
+    d = agreed("difficulty", lambda a, b: a == b)
+    if d:
+        facts["difficulty"] = d
+    month_sets = [set(g["months"]) for g in given if "months" in g]
+    if month_sets:
+        shared = sorted(set.intersection(*month_sets))
+        if len(shared) >= 2 or len(month_sets) == 1:
+            facts["months"] = shared
+        else:
+            notes.append("organisers' best months don't overlap")
+    t = agreed("trail_km", lambda a, b: abs(a - b) <= 0.15 * max(a, b))
+    if t:
+        facts["trail_km"] = int(t) if float(t).is_integer() else t
+    a = agreed("altitude_m", lambda a, b: abs(a - b) <= max(50, 0.05 * max(a, b)))
+    if a:
+        facts["altitude_m"] = a
+    return facts, notes
+
+
+def parse_wrong(text):
+    """'/wrong kudremukh-trek height' -> ('kudremukh-trek', 'altitude_m'); '/wrong x' -> ('x', '*');
+    an unknown fact word -> ('x', None); not a /wrong command -> None."""
+    m = WRONG.match((text or "").strip())
+    if not m:
+        return None
+    word = (m.group(2) or "all").lower()
+    return m.group(1).lower(), FACT_WORDS.get(word)
+
+
+def without_blocked(facts, blocked):
+    """The facts minus what the owner said is wrong (['*'] = everything the agent found)."""
+    if "*" in (blocked or []):
+        return {"name": facts.get("name")}
+    return {k: v for k, v in facts.items() if k not in (blocked or []) and not (k == "top" and "altitude_m" in (blocked or []))}
+
+
+def nearest(rows, lat, lon, limit_km):
+    """rows [[name, lat, lon, ...]] -> [(name, km)] within limit_km, nearest first."""
+    out = []
+    for r in rows:
+        d = km(lat, lon, r[1], r[2])
+        if d <= limit_km:
+            out.append((r[0], d))
+    return sorted(out, key=lambda x: x[1])
+
+
 # ---------- open data ----------
 def get_json(url, data=None, timeout=60):
     req = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT})
     return json.load(urllib.request.urlopen(req, timeout=timeout))
 
 
-def overpass(lat, lon):
-    """Named peaks with a height, railway stations and IATA airports around a point (OpenStreetMap)."""
-    q = (f'[out:json][timeout:60];(node["natural"~"peak|hill|volcano"]["ele"]["name"](around:{PEAK_KM * 1000},{lat},{lon});'
-         f'node["railway"="station"]["name"](around:{STATION_KM * 1000},{lat},{lon});'
-         f'nwr["aeroway"="aerodrome"]["iata"]["name"](around:{AIRPORT_KM * 1000},{lat},{lon}););out center tags;')
+def overpass_query(q, timeout=90):
     last = None
     for host in OVERPASS:
         try:
-            return get_json(host, data=urllib.parse.urlencode({"data": q}).encode(), timeout=90)["elements"]
+            return get_json(host, data=urllib.parse.urlencode({"data": q}).encode(), timeout=timeout)["elements"]
         except Exception as e:  # noqa: BLE001 - busy mirror: try the next
             last = e
     raise RuntimeError(f"overpass: {last}")
+
+
+def overpass(lat, lon, peaks_only=False):
+    """Named peaks with a height (and, without our own copies, railway stations and IATA airports) near a point."""
+    q = f'[out:json][timeout:60];(node["natural"~"peak|hill|volcano"]["ele"]["name"](around:{PEAK_KM * 1000},{lat},{lon});'
+    if not peaks_only:
+        q += (f'node["railway"="station"]["name"](around:{STATION_KM * 1000},{lat},{lon});'
+              f'nwr["aeroway"="aerodrome"]["iata"]["name"](around:{AIRPORT_KM * 1000},{lat},{lon});')
+    return overpass_query(q + ");out center tags;")
+
+
+def fetch_stations():
+    """India's railway stations from OpenStreetMap (not metro / tram stops): [[name, lat, lon]]."""
+    els = overpass_query('[out:json][timeout:300];area["ISO3166-1"="IN"][admin_level=2]->.in;'
+                         'node["railway"="station"]["name"](area.in);out;', timeout=330)
+    rows = []
+    for e in els:
+        t = e.get("tags", {})
+        if t.get("station") in ("subway", "light_rail", "monorail", "funicular", "miniature") or t.get("usage") == "tourism":
+            continue
+        name = t.get("name:en") if t.get("name:en") and not t["name"].isascii() else t["name"]
+        rows.append([name, round(e["lat"], 5), round(e["lon"], 5)])
+    return rows
+
+
+def fetch_airports():
+    """India's airports with scheduled flights and an IATA code (OurAirports, public domain): [[name, lat, lon, iata]]."""
+    req = urllib.request.Request(OURAIRPORTS, headers={"User-Agent": USER_AGENT})
+    text = urllib.request.urlopen(req, timeout=120).read().decode("utf-8")
+    rows = []
+    for r in csv.DictReader(io.StringIO(text)):
+        if (r.get("iso_country") == "IN" and r.get("scheduled_service") == "yes" and r.get("iata_code")
+                and r.get("type") in ("large_airport", "medium_airport", "small_airport")):
+            rows.append([r["name"], round(float(r["latitude_deg"]), 5), round(float(r["longitude_deg"]), 5), r["iata_code"]])
+    return rows
+
+
+REF_MIN = {"stations": 3000, "airports": 50}
+
+
+def load_ref(name, fetch):
+    """Our copy of a reference list: refreshed when older than REF_DAYS; a failed refresh keeps the old copy."""
+    path = REF / f"{name}.json"
+    fresh = path.exists() and time.time() - path.stat().st_mtime < REF_DAYS * 86400
+    if not fresh:
+        try:
+            rows = fetch()
+            if len(rows) < REF_MIN[name]:
+                raise RuntimeError(f"only {len(rows)} rows")
+            REF.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+            tmp.replace(path)
+            print(f"{name}: our copy refreshed ({len(rows)})")
+        except Exception as e:  # noqa: BLE001 - keep the old copy
+            print(f"{name}: copy not refreshed ({e})")
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
 
 
 def wikidata_heights(name, lat, lon):
@@ -189,18 +349,11 @@ def peak_ele(tags):
     return float(m.group(1)) if m else None
 
 
-def research(name, lat, lon, difficulty=None):
-    """(facts, notes): only facts confirmed by open data; notes say what was left out and why."""
-    place = place_name(name) or name
-    facts, notes = {"name": place}, []
-    elements = overpass(lat, lon)
-
+def open_height(place, lat, lon, elements):
+    """(metres, summit name, note): a nearby OSM peak with the trek's name confirmed by Wikidata, else (None, None, why)."""
     def dist(e):
-        c = e.get("center") or e
-        return km(lat, lon, c["lat"], c["lon"])
-
-    # Height: a nearby OSM peak with the trek's name, confirmed by Wikidata.
-    peaks = [e for e in elements if e.get("tags", {}).get("natural") and norm(place) and
+        return km(lat, lon, e["lat"], e["lon"])
+    peaks = [e for e in elements if e.get("tags", {}).get("natural") and "lat" in e and norm(place) and
              (norm(place) in norm(e["tags"]["name"]) or norm(e["tags"]["name"]) in norm(place))]
     osm = min(peaks, key=dist) if peaks else None
     osm_m = peak_ele(osm["tags"]) if osm else None
@@ -209,31 +362,79 @@ def research(name, lat, lon, difficulty=None):
     # Of the Wikidata entries near the trek, the one that agrees with OpenStreetMap (a town of the same name has a height too).
     wd_m = next((m for _, m in wd if heights_agree(osm_m, m)), wd[0][1] if wd else None)
     if heights_agree(osm_m, wd_m):
-        facts["altitude_m"] = int(round(wd_m))
-        facts["top"] = osm["tags"]["name"]
-    elif osm_m or wd_m:
-        notes.append(f"height not confirmed (OpenStreetMap {osm_m or '-'} m, Wikidata {round(wd_m) if wd_m else '-'} m)")
-    else:
-        notes.append("no height in open data")
+        return int(round(wd_m)), osm["tags"]["name"], None, (osm_m, wd_m)
+    if osm_m or wd_m:
+        return None, None, f"height not confirmed (OpenStreetMap {osm_m or '-'} m, Wikidata {round(wd_m) if wd_m else '-'} m)", (osm_m, wd_m)
+    return None, None, "no height in open data", (None, None)
 
-    airports = sorted((e for e in elements if e.get("tags", {}).get("aeroway")), key=dist)
-    if airports:
-        facts["airport"] = airports[0]["tags"].get("name:en") or airports[0]["tags"]["name"]
+
+def settle_height(facts, notes, meta, org_alt, found):
+    """Open data's confirmed height wins; the organiser's is used when open data has none or agrees (10 %)."""
+    metres, top, note, (osm_m, wd_m) = found
+    if metres:
+        facts["altitude_m"], facts["top"], meta["altitude_m"] = metres, top, "open-data"
+        if org_alt and abs(org_alt - metres) > max(50, 0.05 * metres):
+            notes.append(f"organiser's height {org_alt} m differs from open data {metres} m: open data kept")
+        return
+    single = [x for x in (osm_m, wd_m) if x]
+    if org_alt and (not single or any(abs(org_alt - x) <= 0.1 * x for x in single)):
+        facts["altitude_m"], meta["altitude_m"] = org_alt, "organiser"
+        return
+    if org_alt:
+        notes.append(f"organiser's height {org_alt} m not matched by open data ({note})")
+    elif note:
+        notes.append(note)
+
+
+def research(name, lat, lon, org=None, refs=None):
+    """(facts, notes, meta, height_checked): the organiser's facts + what open data confirms.
+    meta says where each organiser/open-data fact came from (to keep them current later)."""
+    org, refs = dict(org or {}), refs or {}
+    place = place_name(name) or name
+    facts, notes, meta = {"name": place}, [], {}
+    for k in ("difficulty", "months", "trail_km"):
+        if k in org:
+            facts[k], meta[k] = org[k], "organiser"
+    have_refs = bool(refs.get("stations")) and bool(refs.get("airports"))
+    height_checked = True
+    try:
+        elements = overpass(lat, lon, peaks_only=have_refs)
+    except Exception as e:  # noqa: BLE001 - without our copies nothing else can be found either
+        if not have_refs:
+            raise
+        elements, height_checked = [], False
+        notes.append(f"height not checked yet (map server busy: {e.__class__.__name__})")
+    if height_checked:
+        settle_height(facts, notes, meta, org.get("altitude_m"), open_height(place, lat, lon, elements))
+    elif org.get("altitude_m"):
+        facts["altitude_m"], meta["altitude_m"] = org["altitude_m"], "organiser"
+
     try:
         district = district_of(lat, lon)
         if district:
             facts["district"] = district
     except Exception as e:  # noqa: BLE001 - district is optional
         notes.append(f"district not found ({e.__class__.__name__})")
-    station = best_station([(e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("railway") == "station"],
-                           facts.get("district"))
+    if have_refs:
+        stations = nearest(refs["stations"], lat, lon, STATION_KM)
+        airports = nearest(refs["airports"], lat, lon, AIRPORT_KM)
+    else:
+        def dist(e):
+            c = e.get("center") or e
+            return km(lat, lon, c["lat"], c["lon"])
+        stations = [(e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("railway") == "station"]
+        airports = sorted(((e["tags"].get("name:en") or e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("aeroway")),
+                          key=lambda x: x[1])
+    station = best_station(stations, facts.get("district"))
     if station:
         facts["rail"] = station
-    if DIFFICULTY.get(difficulty):
-        facts["difficulty"] = DIFFICULTY[difficulty]
-    else:
+    if airports:
+        facts["airport"] = airports[0][0]
+    if "difficulty" not in facts:
         notes.append("no difficulty from the organiser")
-    return facts, notes
+    if "months" not in facts:
+        notes.append("no best months from the organiser")
+    return facts, notes, meta, height_checked
 
 
 # ---------- web server ----------
@@ -257,6 +458,42 @@ def detail(tid):
     return get_json(f"{SITE_API}/api/treks/{urllib.parse.quote(tid)}/")
 
 
+# ---------- the owner's corrections (Telegram) ----------
+def inbox():
+    """Read the owner's /wrong replies (only the owner's chat counts). Returns what was noted."""
+    try:
+        token, chat = secret("telegram-bot-token"), int(secret("telegram-chat-id"))
+        offset = int(state_get("telegram_offset", 0) or 0)
+        res = get_json(f"https://api.telegram.org/bot{token}/getUpdates?timeout=0&offset={offset + 1}"
+                       "&allowed_updates=%5B%22message%22%5D", timeout=20)
+    except Exception as e:  # noqa: BLE001 - Telegram down: next run
+        print("telegram inbox not read:", e.__class__.__name__)
+        return []
+    blocked = state_get("vendor_facts_blocked", {})
+    noted = []
+    for u in res.get("result", []):
+        offset = max(offset, int(u.get("update_id", 0)))
+        msg = u.get("message") or {}
+        if (msg.get("chat") or {}).get("id") != chat:
+            continue
+        w = parse_wrong(msg.get("text"))
+        if not w:
+            continue
+        tid, field = w
+        if field is None:
+            telegram("Use: <code>/wrong page</code> or <code>/wrong page height|months|trail|difficulty|station|airport|district</code>")
+            continue
+        have = blocked.setdefault(tid, [])
+        if field not in have:
+            have.append(field)
+        noted.append(f"{tid}: {'all agent facts' if field == '*' else FACT_NAMES.get(field, field)}")
+    state_set("telegram_offset", offset)
+    if noted:
+        state_set("vendor_facts_blocked", blocked)
+        telegram("👍 Noted, taking off the site in a few minutes:\n" + "\n".join(esc(x) for x in noted), silent=True)
+    return noted
+
+
 # ---------- steps ----------
 def read_feed():
     body = get_json(FEED)
@@ -266,8 +503,12 @@ def read_feed():
 def step_check(force=False):
     feed = read_feed()
     digest = feed_digest(feed)
-    # Proof of life (health_guard / a person can see the chain runs): time and size of the last check.
+    # Proof of life (watchdog.py alerts when this goes stale): time and size of the last check.
     state_set("vendor_last_check", {"at": datetime.now().isoformat(timespec="seconds"), "departures": feed.get("count", 0)})
+    if busy(state_get("vendor_run")):
+        print("UNCHANGED (the last run is still working)")
+        return False
+    corrections = inbox()
     last = state_get("vendor_feed_digest")
     if last is None and not force:
         state_set("vendor_feed_digest", digest)
@@ -276,13 +517,27 @@ def step_check(force=False):
         return False
     pending = state_get("vendor_facts_pending", {})
     due = [k for k, v in pending.items() if v.get("next", "") <= datetime.now().isoformat()]
-    if digest == last and not due and not force:
+    if digest == last and not due and not corrections and not force:
         print(f"UNCHANGED ({feed.get('count', 0)} departures)")
         return False
     state_set("vendor_feed_new", feed)
-    state_set("vendor_run", {"started": datetime.now().isoformat(timespec="seconds"), "sync": "", "facts": [], "deployed": None})
-    print(f"CHANGED ({feed.get('count', 0)} departures{', facts to retry: ' + str(len(due)) if due else ''})")
+    state_set("vendor_run", {"started": datetime.now().isoformat(timespec="seconds"), "sync": "", "facts": [], "deployed": None,
+                             "corrections": corrections})
+    why = [f"{feed.get('count', 0)} departures"] + ([f"facts to re-check: {len(due)}"] if due else []) + \
+          ([f"owner corrections: {len(corrections)}"] if corrections else [])
+    print(f"CHANGED ({', '.join(why)})")
     return True
+
+
+def busy(run_state, now=None):
+    """A run started under 30 minutes ago and not finished (report not reached): don't start another."""
+    r = run_state or {}
+    if not r.get("started") or r.get("finished"):
+        return False
+    try:
+        return ((now or datetime.now()) - datetime.fromisoformat(r["started"])).total_seconds() < 1800
+    except ValueError:
+        return False
 
 
 def _run_state():
@@ -290,8 +545,11 @@ def _run_state():
 
 
 def step_sync():
-    code, out = run("sync", timeout=600)
     r = _run_state()
+    if feed_digest(state_get("vendor_feed_new")) == state_get("vendor_feed_digest"):
+        print("feed unchanged: nothing to copy")  # a re-check or a correction only
+        return
+    code, out = run("sync", timeout=600)
     r["sync"] = "\n".join(ln for ln in out.splitlines() if ln.strip())[-2500:]
     state_set("vendor_run", r)
     print(out)
@@ -302,6 +560,9 @@ def step_sync():
 def step_geo():
     """Positions and destinations for new pages. Both lean on Gemini (free tier): when it is busy or
     out of quota the site builds with the last ones, and the next run tries again."""
+    if feed_digest(state_get("vendor_feed_new")) == state_get("vendor_feed_digest"):
+        print("feed unchanged: positions kept")
+        return
     try:
         from trek_geo import push as push_geo, update as locate
         geo, _ = locate()
@@ -319,6 +580,16 @@ def step_geo():
         print("destinations not updated:", e)
 
 
+def fact_value(k, v):
+    if k == "months":
+        return ", ".join(datetime(2000, m, 1).strftime("%b") for m in v)
+    return f"{v}{ {'altitude_m': ' m', 'trail_km': ' km'}.get(k, '')}"
+
+
+def _shown(facts, keys):
+    return ", ".join(f"{FACT_NAMES.get(k, k)} {fact_value(k, facts[k])}" for k in keys)
+
+
 def step_facts():
     info = json.loads(ssh_json("facts-get", timeout=120))
     static, auto = info["static"], info["auto"]
@@ -327,15 +598,75 @@ def step_facts():
     feed = state_get("vendor_feed_new") or {}
     geo = json.loads(state_get("trek_geo_pushed") or "{}")
     pending = state_get("vendor_facts_pending", {})
+    meta = state_get("vendor_facts_meta", {})
+    blocked = state_get("vendor_facts_blocked", {})
+    refs = {"stations": load_ref("stations", fetch_stations), "airports": load_ref("airports", fetch_airports)}
+    now = datetime.now()
+    report = []
+
+    # 1. The owner's corrections (/wrong in Telegram) first.
+    for tid, fields in blocked.items():
+        if tid in static["listings"]:
+            continue  # the team's own facts: reported once below
+        key = auto["listings"].get(tid)
+        if "*" in fields and key:
+            auto["listings"].pop(tid)
+            if key in auto["treks"] and key not in auto["listings"].values():
+                auto["treks"].pop(key)
+        elif key in auto["treks"]:
+            auto["treks"][key] = without_blocked(auto["treks"][key], fields)
+    for c in _run_state().get("corrections") or []:
+        tid = c.split(":")[0]
+        report.append(f"🗑 {c}" + (" — this page uses the team's facts file; fix it there" if tid in static["listings"] else " — taken off"))
+
+    # 2. Agent-made treks: keep the organisers' facts current; re-check heights the map server held up.
+    for tid, key in sorted(auto["listings"].items()):
+        if key not in auto["treks"] or "*" in blocked.get(tid, []):
+            continue
+        cur = auto["treks"][key]
+        m = meta.setdefault(key, {})
+        org, org_notes = organiser_facts(deps_for(feed, cur.get("name")))
+        new = dict(cur)
+        for k in ("difficulty", "months", "trail_km"):
+            if k in org:
+                new[k], m[k] = org[k], "organiser"
+            elif m.get(k) == "organiser":
+                new.pop(k, None)
+                m.pop(k, None)
+        if m.get("altitude_m") != "open-data":
+            if org.get("altitude_m"):
+                new["altitude_m"], m["altitude_m"] = org["altitude_m"], "organiser"
+            elif m.get("altitude_m") == "organiser":
+                new.pop("altitude_m", None)
+                m.pop("altitude_m", None)
+        p = pending.get(tid, {})
+        if p.get("height") and p.get("next", "") <= now.isoformat() and p.get("pos"):
+            try:
+                elements = overpass(p["pos"]["lat"], p["pos"]["lon"], peaks_only=True)
+                h_notes = []
+                settle_height(new, h_notes, m, org.get("altitude_m"), open_height(cur.get("name"), p["pos"]["lat"], p["pos"]["lon"], elements))
+                pending.pop(tid, None)
+                report.append(f"📐 {cur.get('name')} ({tid}): height re-checked: "
+                              + (f"{new['altitude_m']} m" if "altitude_m" in new else "; ".join(h_notes) or "none confirmed"))
+            except Exception as e:  # noqa: BLE001 - still busy
+                pending[tid] = {**p, "next": (now + timedelta(hours=BUSY_HOURS)).isoformat(), "why": str(e)[:120]}
+        new = without_blocked(new, blocked.get(tid))
+        if new != cur:
+            auto["treks"][key] = new
+            changed_keys = sorted(k for k in set(new) | set(cur) if new.get(k) != cur.get(k) and k != "top")
+            if changed_keys:
+                report.append(f"✏️ {cur.get('name')} ({tid}): " + ", ".join(
+                    f"{FACT_NAMES.get(k, k)} {'removed' if k not in new else 'now ' + fact_value(k, new[k])}"
+                    for k in changed_keys) + (f" — {'; '.join(org_notes)}" if org_notes else ""))
+
+    # 3. New listings: trek or tour, then facts.
     names = {norm(place_name(n)): k for k, n in static["names"].items() if n}
     names.update({norm(place_name(f.get("name"))): k for k, f in auto["treks"].items()})
-    report = []
-    treks = website_treks()
     researched = 0
-    for tid, t in sorted(treks.items()):
+    for tid, t in sorted(website_treks().items()):
         known_kind = static["kinds"].get(tid) or auto["kinds"].get(tid)
         has_facts = tid in static["listings"] or tid in auto["listings"]
-        if known_kind and (known_kind == "trip" or has_facts):
+        if (known_kind and (known_kind == "trip" or has_facts)) or "*" in blocked.get(tid, []):
             continue
         d = detail(tid)
         if not known_kind:
@@ -347,42 +678,51 @@ def step_facts():
         key = names.get(norm(place_name(d.get("name"))))
         if key:
             auto["listings"][tid] = key
-            report.append(f"🔗 {d.get('name')}: same trek as {key}, its facts reused")
+            report.append(f"🔗 {d.get('name')} ({tid}): same trek as {key}, its facts reused")
             continue
         if researched >= MAX_RESEARCH:
             continue
         p = pending.get(tid, {})
-        if p.get("next", "") > datetime.now().isoformat():
+        if p.get("next", "") > now.isoformat():
             continue
-        dep = next((x for x in feed.get("departures", []) if norm(place_name((x.get("destination") or {}).get("name")))
-                    == norm(place_name(d.get("name")))), None)
-        pos = geo.get(tid) or ((dep or {}).get("destination") or {}).get("position")
+        deps = deps_for(feed, d.get("name"))
+        pos = geo.get(tid) or next(((x.get("destination") or {}).get("position") for x in deps
+                                    if (x.get("destination") or {}).get("position")), None)
         if not pos:
-            pending[tid] = {"next": (datetime.now() + timedelta(days=RETRY_DAYS)).isoformat(), "why": "no map position yet"}
-            report.append(f"⏳ {d.get('name')}: no map position yet, facts later")
+            pending[tid] = {"next": (now + timedelta(days=RETRY_DAYS)).isoformat(), "why": "no map position yet"}
+            report.append(f"⏳ {d.get('name')} ({tid}): no map position yet, facts later")
             continue
         researched += 1
+        org, org_notes = organiser_facts(deps)
         try:
-            facts, notes = research(d.get("name"), pos["lat"], pos["lon"], ((dep or {}).get("trip") or {}).get("difficulty"))
-        except Exception as e:  # noqa: BLE001 - open-data API down: next run
-            pending[tid] = {"next": (datetime.now() + timedelta(hours=6)).isoformat(), "why": str(e)[:120]}
-            report.append(f"⏳ {d.get('name')}: open data unavailable ({e.__class__.__name__}), retry later")
+            facts, notes, fmeta, height_checked = research(d.get("name"), pos["lat"], pos["lon"], org, refs)
+        except Exception as e:  # noqa: BLE001 - open-data API down and no copies yet: next run
+            pending[tid] = {"next": (now + timedelta(hours=BUSY_HOURS)).isoformat(), "why": str(e)[:120]}
+            report.append(f"⏳ {d.get('name')} ({tid}): open data unavailable ({e.__class__.__name__}), retry later")
             continue
-        found = [k for k in ("altitude_m", "difficulty", "district", "rail", "airport") if k in facts]
+        facts = without_blocked(facts, blocked.get(tid))
+        notes = org_notes + notes
+        found = [k for k in ("altitude_m", "difficulty", "months", "trail_km", "district", "rail", "airport") if k in facts]
         if not found:
-            pending[tid] = {"next": (datetime.now() + timedelta(days=RETRY_DAYS)).isoformat(), "why": "; ".join(notes)}
-            report.append(f"❔ {d.get('name')}: nothing confirmed ({'; '.join(notes)})")
+            pending[tid] = {"next": (now + timedelta(days=RETRY_DAYS)).isoformat(), "why": "; ".join(notes)}
+            report.append(f"❔ {d.get('name')} ({tid}): nothing confirmed ({'; '.join(notes)})")
             continue
         key = slug(facts["name"])
         while key in static["names"] or (key in auto["treks"] and auto["treks"][key].get("name") != facts["name"]):
             key = f"{key}-2"
         auto["treks"][key] = facts
         auto["listings"][tid] = key
+        meta[key] = fmeta
         names[norm(facts["name"])] = key
-        pending.pop(tid, None)
-        shown = ", ".join(f"{k.replace('_m', '')} {facts[k]}{' m' if k == 'altitude_m' else ''}" for k in found)
-        report.append(f"📐 {d.get('name')}: {shown}" + (f" — left out: {'; '.join(notes)}" if notes else ""))
+        if height_checked:
+            pending.pop(tid, None)
+        else:
+            pending[tid] = {"next": (now + timedelta(hours=BUSY_HOURS)).isoformat(), "why": "height not checked", "height": True, "pos": pos}
+        report.append(f"📐 {d.get('name')} ({tid}): {_shown(facts, found)}"
+                      + (f" — left out: {'; '.join(notes)}" if notes else "") + f" · wrong? /wrong {tid}")
+
     state_set("vendor_facts_pending", pending)
+    state_set("vendor_facts_meta", meta)
     changed = json.dumps(auto, sort_keys=True) != before
     if changed:
         print(ssh_json("facts", auto, timeout=120).strip())
@@ -433,6 +773,8 @@ def step_report():
         telegram("\n\n".join(parts), silent=not changes)
     state_set("vendor_feed_digest", feed_digest(new))
     state_set("vendor_feed_last", new)
+    r["finished"] = datetime.now().isoformat(timespec="seconds")
+    state_set("vendor_run", r)
     print("\n".join(changes) or "no organiser changes", "|", deployed)
 
 

@@ -8,13 +8,13 @@
      "interval": [
       {
        "field": "cronExpression",
-       "expression": "*/10 * * * *"
+       "expression": "*/2 * * * *"
       }
      ]
     }
    },
-   "id": "759282f0-14f8-5d35-b7df-0d79bdcd77f5",
-   "name": "Every 10 minutes",
+   "id": "41162621-be8d-5078-9216-e169ddd4dfd9",
+   "name": "Every 2 minutes",
    "type": "n8n-nodes-base.scheduleTrigger",
    "typeVersion": 1.2,
    "position": [
@@ -123,7 +123,7 @@
   }
  ],
  "connections": {
-  "Every 10 minutes": {
+  "Every 2 minutes": {
    "main": [
     [
      {

@@ -90,7 +90,17 @@ def state_get(key, default=None):
 
 
 def state_set(key, value):
+    """Read-modify-write under a lock: n8n runs several scripts at once (the vendor agent checks every
+    2 minutes while a rebuild runs), and an unlocked write could put back another script's old values."""
     p = DATA / "state.json"
-    s = json.loads(p.read_text()) if p.exists() else {}
-    s[key] = value
-    p.write_text(json.dumps(s, indent=1))
+    with open(DATA / "state.lock", "a") as lock:
+        try:
+            import fcntl
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        except ImportError:  # Windows (tests): no other writers
+            pass
+        s = json.loads(p.read_text()) if p.exists() else {}
+        s[key] = value
+        tmp = p.with_suffix(".tmp")
+        tmp.write_text(json.dumps(s, indent=1))
+        tmp.replace(p)

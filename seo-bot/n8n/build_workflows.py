@@ -93,7 +93,7 @@ WORKFLOWS = {
     # Vendor agent (owner, 19 Nov 2026): organisers' new treks and dates on the website within minutes.
     # A chain: check the app feed; only when it changed, run the next steps in order.
     "vendor-agent": workflow("aorboVendorAgnt1", "SEO bot: vendor agent (organisers' new treks and dates -> website)", [
-        cron("Every 10 minutes", "*/10 * * * *", [0, 0]),
+        cron("Every 2 minutes", "*/2 * * * *", [0, 0]),
         run("1. Organisers' feed changed?", "vendor_agent.py check", [240, 0]),
         node("Only when it changed", "n8n-nodes-base.if", {"conditions": {"string": [
             {"value1": "={{ $json.stdout }}", "operation": "startsWith", "value2": "CHANGED"}]}}, [480, 0]),
@@ -102,7 +102,7 @@ WORKFLOWS = {
         run("4. Trek or tour + trek facts", "vendor_agent.py facts", [1200, 0]),
         run("5. Rebuild the site", "vendor_agent.py deploy", [1440, 0]),
         run("6. Telegram report", "vendor_agent.py report", [1680, 0]),
-    ], {**link(("Every 10 minutes", "1. Organisers' feed changed?"), ("1. Organisers' feed changed?", "Only when it changed"),
+    ], {**link(("Every 2 minutes", "1. Organisers' feed changed?"), ("1. Organisers' feed changed?", "Only when it changed"),
                ("2. Copy departures to the website", "3. Map positions + destinations"),
                ("3. Map positions + destinations", "4. Trek or tour + trek facts"),
                ("4. Trek or tour + trek facts", "5. Rebuild the site"), ("5. Rebuild the site", "6. Telegram report")),
