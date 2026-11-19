@@ -6,6 +6,8 @@
     put_data.py facts          the vendor agent's trek facts + trek/trip kinds -> data/trek-facts-auto.json
                                (TREK_FACTS_AUTO_FILE; the team's scripts/data/*.json always win over it)
     put_data.py facts-get      prints what the team's files already cover + the agent's current file
+    put_data.py roads          road distance + driving time per city -> trek pair (seo-bot/bot/roads.py, OSRM)
+                               -> data/road-routes.json (ROAD_ROUTES_FILE: the route guides /routes/...)
     put_data.py heartbeat      the bot server's watchdog says it is alive -> data/bot-heartbeat.json
                                (read by bot_watch.py, which alerts when it stops coming)
 
@@ -158,6 +160,26 @@ def facts_get():
     }, ensure_ascii=False))
 
 
+ROAD_KEY = re.compile(r"[a-z0-9-]{1,40}\|[a-z0-9-]{1,80}")
+
+
+def roads(data):
+    """{pairs: {"bangalore|kudremukh": {km, min, via, snap_km, at}}}: numbers in range, short plain text."""
+    if not isinstance(data, dict) or not isinstance(data.get("pairs"), dict):
+        raise ValueError("expected {pairs}")
+    out = {}
+    for key, r in data["pairs"].items():
+        if not (isinstance(key, str) and ROAD_KEY.fullmatch(key) and isinstance(r, dict)):
+            raise ValueError(f"bad pair {str(key)[:40]!r}")
+        k, m, snap = r.get("km"), r.get("min"), r.get("snap_km")
+        if not (isinstance(k, (int, float)) and 1 <= k <= 3000 and isinstance(m, (int, float)) and 1 <= m <= 4000
+                and isinstance(snap, (int, float)) and 0 <= snap <= 200):
+            raise ValueError(f"bad numbers for {key}")
+        out[key] = {"km": round(float(k), 1), "min": round(float(m)), "snap_km": round(float(snap), 2),
+                    "via": text(r.get("via") or "", 120), "at": text(r.get("at") or "", 10)}
+    return {"pairs": out}
+
+
 def heartbeat(data):
     """{at, ok, problems[]} from the bot's watchdog; stamped with OUR clock on arrival."""
     if not isinstance(data, dict) or not isinstance(data.get("ok"), bool):
@@ -171,7 +193,8 @@ def heartbeat(data):
 
 
 KINDS = {"geo": ("trek-geo.json", geo), "destinations": ("destinations.json", destinations),
-         "facts": ("trek-facts-auto.json", facts), "heartbeat": ("bot-heartbeat.json", heartbeat)}
+         "facts": ("trek-facts-auto.json", facts), "heartbeat": ("bot-heartbeat.json", heartbeat),
+         "roads": ("road-routes.json", roads)}
 
 if len(sys.argv) == 2 and sys.argv[1] == "facts-get":
     facts_get()

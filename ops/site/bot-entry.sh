@@ -8,6 +8,8 @@ case "${SSH_ORIGINAL_COMMAND:-}" in
   facts)        exec python3 /opt/aorbo-site/put_data.py facts ;;          # vendor agent: trek facts + kinds (JSON on stdin)
   facts-get)    exec python3 /opt/aorbo-site/put_data.py facts-get ;;      # what the team's files cover + the agent's file
   outclicks)    cd /opt/aorboweb && exec venv/bin/python manage.py out_clicks 2>/dev/null ;;               # weekly scorecard: book/app clicks (read only)
+  roads)        exec python3 /opt/aorbo-site/put_data.py roads ;;          # route guides: road data (JSON on stdin)
+  roads-get)    cat /opt/aorbo-site/data/road-routes.json 2>/dev/null || echo '{"pairs": {}}' ;;
   heartbeat)    exec python3 /opt/aorbo-site/put_data.py heartbeat ;;      # bot watchdog: alive (JSON on stdin); bot_watch.py checks it
   sync)         cd /opt/aorboweb && exec flock -w 120 /run/aorbo-app-sync.lock venv/bin/python manage.py sync_app_departures ;;  # organisers' departures now, not at :17
   last-deploy)  ls -t /opt/aorbo-site/logs/deploy-*.log 2>/dev/null | head -1 | xargs -r tail -n 30 ;;

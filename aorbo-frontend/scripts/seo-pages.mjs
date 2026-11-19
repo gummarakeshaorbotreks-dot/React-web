@@ -17,7 +17,7 @@ import { pathToFileURL } from 'node:url';
 import {
   SITE_URL, STATIC_PAGES, absoluteUrl, blogMeta, destinationHubMeta, destinationMeta, nearHubMeta, nearMeta,
   notFoundMeta, organiserHubMeta, organiserMeta, routeMeta, staticPageMeta, trekMeta, winterMeta, ABOUT_AORBO, ALTERNATE_NAMES,
-  compareMeta, collectionMeta, collectionHubMeta,
+  compareMeta, collectionMeta, collectionHubMeta, roadMeta, roadHubMeta,
 } from '../src/seo/meta.js';
 import { indexOverrides, withOverride } from '../src/seo/overrides.js';
 import { buildDestinationPages, loadDestinations } from './destination-pages.mjs';
@@ -28,6 +28,7 @@ import { isTrekListing, isThinListing, needsReview } from './listing-kind.mjs';
 import { factsOf, positionFixes } from './trek-facts.mjs';
 import { factCount } from '../src/seo/trekFacts.js';
 import { buildCollectionPages, buildComparePages, factLinks, trekEntries } from './fact-pages.mjs';
+import { buildRoadPages, loadRoads, roadCandidates, roadLinks } from './road-pages.mjs';
 import { blogArticleHtml, blogListHtml } from './blog-html.mjs';
 import { buildRoutePages } from './route-pages.mjs';
 
@@ -189,6 +190,9 @@ let winter = { pages: [], hub: null };
 let routes = { pages: [] };
 let compare = { pages: [] };
 let collections = { pages: [], hub: null };
+let roads = { pages: [], hub: null };
+let roadCandidateList = [];
+let roadLinksById = new Map();
 let factLinksById = new Map();
 let ssr = null;
 if (treks.length) {
@@ -215,6 +219,10 @@ if (treks.length) {
   compare = buildComparePages(entries);
   collections = buildCollectionPages(entries, compare.pages);
   factLinksById = factLinks(entries, compare.pages, collections.pages);
+  // Route guides (SEO plan phase 3): only pairs with real road data from the bot (scripts/road-pages.mjs).
+  roads = buildRoadPages(entries, places, await loadRoads(process.env.ROAD_ROUTES_FILE), routes.pages);
+  roadCandidateList = roadCandidates(entries, places);
+  roadLinksById = roadLinks(roads.pages);
   ssr = await import(pathToFileURL(path.resolve('node_modules/.cache/prerender/entry-prerender.js')).href);
 }
 // A page's stylesheet is a separate chunk (loaded with the page's code); inline it so
@@ -264,7 +272,7 @@ if (ssr) await mkdir(path.join(DIST, 'data', 'treks'), { recursive: true });
 for (const t of treks) {
   const id = t.id || t.slug;
   const facts = factsOf(t);
-  const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }) };
+  const links = { ...(trekLinks.get(id) || { destinations: [], near: [], organisers: [] }), ...(factLinksById.get(id) || { compare: [], collections: [] }), roads: roadLinksById.get(id) || [] };
   const thin = isThinListing(t, factCount(facts));
   const meta = thin ? { ...trekMeta(t, links, facts), noindex: true } : trekMeta(t, links, facts);
   if (seen.has(meta.path)) continue;
@@ -341,6 +349,9 @@ if (ssr) {
   };
   await writeFactPages('compare', { pages: compare.pages, hub: null }, compareMeta, ssr.renderCompare, null, null);
   if (collections.hub) await writeFactPages('collections', collections, collectionMeta, ssr.renderCollection, collectionHubMeta, ssr.renderCollectionHub);
+  if (roads.hub) await writeFactPages('roads', roads, roadMeta, ssr.renderRoad, roadHubMeta, ssr.renderRoadHub);
+  // The pairs a route guide could have: the SEO bot (seo-bot/bot/roads.py) fetches their road data.
+  await writeFile(path.join(DIST, 'data', 'road-candidates.json'), JSON.stringify({ pairs: roadCandidateList }));
 }
 
 await writeFile(path.join(DIST, '404.html'), withHead(notFoundMeta()));
@@ -408,4 +419,4 @@ await writeFile(
   ].join('\n'),
 );
 console.log(`seo-pages: ${thinCount} thin trek pages kept out of Google until rebuilt`);
-console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages + ${compare.pages.length} compare pages + ${collections.pages.length} collections, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
+console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages + ${compare.pages.length} compare pages + ${collections.pages.length} collections + ${roads.pages.length} route guides (${roadCandidateList.length} candidates), sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);

@@ -9,6 +9,7 @@
 import { allDurations, durationOptions, formatDuration } from '../utils/format.js';
 import { factFaqs, factLine, MONTHS } from './trekFacts.js';
 import { collectionFaqs, collectionSummary, compareFaqs, compareSummary } from './factPages.js';
+import { roadFaqs, roadSummary } from './roadPages.js';
 
 export const SITE_URL = 'https://aorbotreks.com';
 export const SITE_NAME = 'Aorbo Treks';
@@ -941,6 +942,35 @@ export function collectionHubMeta(hub) {
     description,
     path: hub.path,
     jsonLd: graph({ '@type': 'CollectionPage', name: 'Trek collections and comparisons', description, url: absoluteUrl(hub.path) }, breadcrumb([['Home', '/'], ['Collections', hub.path]])),
+  };
+}
+
+/** Tags for a route guide (/routes/<city>-to-<trek>). */
+export function roadMeta(page) {
+  const description = snippet(roadSummary(page).join(' '));
+  const url = absoluteUrl(page.path);
+  return {
+    title: `${page.title} Distance (${page.road.km.toLocaleString('en-IN')} km) & How to Reach | Aorbo Treks`,
+    description,
+    path: page.path,
+    image: page.trek.image || DEFAULT_IMAGE,
+    jsonLd: graph(
+      { '@type': 'WebPage', name: `${page.title}: distance and how to reach`, description, url },
+      breadcrumb([['Home', '/'], ['Route guides', '/routes'], [page.title, page.path]]),
+      faqPage(roadFaqs(page)),
+    ),
+  };
+}
+
+/** Tags for /routes. */
+export function roadHubMeta(hub) {
+  const n = hub.cities.reduce((s, c) => s + c.routes.length, 0);
+  const description = snippet(`How to reach ${n} treks from ${hub.cities.map((c) => c.name).join(', ')}: distance by road, driving time, nearest railway station and airport, and trips with pickup in your city.`);
+  return {
+    title: 'Trek Route Guides: Distance & How to Reach From Your City | Aorbo Treks',
+    description,
+    path: hub.path,
+    jsonLd: graph({ '@type': 'CollectionPage', name: 'Trek route guides', description, url: absoluteUrl(hub.path) }, breadcrumb([['Home', '/'], ['Route guides', hub.path]])),
   };
 }
 

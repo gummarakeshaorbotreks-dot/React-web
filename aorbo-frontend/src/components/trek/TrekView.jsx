@@ -30,6 +30,7 @@ export default function TrekView({ trek, links = null, facts = null }) {
   const rows = factRows(facts);
   const compare = links?.compare || [];
   const collections = links?.collections || [];
+  const roads = links?.roads || [];
 
   return (
     <div className="page detail-page">
@@ -92,6 +93,21 @@ export default function TrekView({ trek, links = null, facts = null }) {
                       <Link to={`/treks-near/${c.slug}`}>
                         <span>Treks near {c.name}</span>
                         <small>{trek.name} is about {c.km} km away</small>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </InfoCard>
+            )}
+
+            {roads.length > 0 && (
+              <InfoCard icon={Layers} title="How to reach">
+                <ul className="link-list">
+                  {roads.map((r) => (
+                    <li key={r.path}>
+                      <Link to={r.path}>
+                        <span>{r.title}</span>
+                        <small>About {Number(r.km).toLocaleString('en-IN')} km · station, airport, trips</small>
                       </Link>
                     </li>
                   ))}

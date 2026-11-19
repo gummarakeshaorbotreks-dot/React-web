@@ -17,6 +17,7 @@ import WinterView from './components/near/WinterView';
 import CompareView from './components/near/CompareView';
 import CollectionView from './components/near/CollectionView';
 import CollectionHubView from './components/near/CollectionHubView';
+import RoadView, { RoadHubView } from './components/near/RoadView';
 
 export async function render(path) {
   const handler = createStaticHandler(routes);
@@ -51,6 +52,15 @@ export function renderCollection(page) {
 
 export function renderCollectionHub(hub) {
   return renderToString(<StaticRouter location={hub.path}><CollectionHubView hub={hub} /></StaticRouter>);
+}
+
+// Route guides and their index (scripts/road-pages.mjs).
+export function renderRoad(page) {
+  return renderToString(<StaticRouter location={page.path}><RoadView page={page} /></StaticRouter>);
+}
+
+export function renderRoadHub(hub) {
+  return renderToString(<StaticRouter location={hub.path}><RoadHubView hub={hub} /></StaticRouter>);
 }
 
 // The /app page (no data).

@@ -1,0 +1,60 @@
+{
+ "id": "aorboSeoRoads001",
+ "name": "SEO bot: route guide road data (Sunday)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 5 * * 0"
+      }
+     ]
+    }
+   },
+   "id": "d0298865-4b58-58b7-91e2-37c6b141d35c",
+   "name": "Sunday 05:30 IST",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "command": "cd /opt/aorbo-bot/bot && /opt/aorbo-bot/venv/bin/python roads.py"
+   },
+   "id": "7e5bde69-9a82-532e-8aef-5c742d81fb4b",
+   "name": "Fetch new pairs, save, rebuild",
+   "type": "n8n-nodes-base.executeCommand",
+   "typeVersion": 1,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Sunday 05:30 IST": {
+   "main": [
+    [
+     {
+      "node": "Fetch new pairs, save, rebuild",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "none",
+  "saveDataErrorExecution": "all",
+  "errorWorkflow": "aorboSeoErrors01"
+ },
+ "active": false,
+ "pinData": {}
+}

@@ -114,6 +114,12 @@ WORKFLOWS = {
         run("Measure + Telegram", "scorecard.py", [260, 0]),
     ], link(("Monday 08:30 IST", "Measure + Telegram"))),
 
+    # Route guides (19 Nov 2026): road data (OSRM) for new city -> trek pairs, weekly.
+    "roads": workflow("aorboSeoRoads001", "SEO bot: route guide road data (Sunday)", [
+        cron("Sunday 05:30 IST", "30 5 * * 0", [0, 0]),
+        run("Fetch new pairs, save, rebuild", "roads.py", [260, 0]),
+    ], link(("Sunday 05:30 IST", "Fetch new pairs, save, rebuild"))),
+
     "gsc-pull": workflow("aorboSeoGscPull1", "SEO bot: Google Search daily pull", [
         cron("Every day 09:00 IST", "0 9 * * *", [0, 0]),
         run("Pull Search Console data + report", "gsc_pull.py", [260, 0]),
