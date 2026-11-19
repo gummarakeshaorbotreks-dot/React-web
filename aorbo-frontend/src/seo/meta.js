@@ -7,7 +7,7 @@
 // very first HTML of every address already carries the right tags).
 
 import { allDurations, durationOptions, formatDuration } from '../utils/format.js';
-import { factFaqs, factLine, MONTHS } from './trekFacts.js';
+import { DIFFICULTY, factFaqs, factLine, MONTHS } from './trekFacts.js';
 import { collectionFaqs, collectionSummary, compareFaqs, compareSummary } from './factPages.js';
 import { roadFaqs, roadSummary } from './roadPages.js';
 import { teFaqs, teSummary } from './telugu.js';
@@ -267,6 +267,25 @@ export function trekFaqs(trek, links = null, facts = null) {
 }
 
 /** Tags for a trek page, from the website API's trek object (links: see trekFaqs). */
+/**
+ * A trek page's title (20 Nov 2026): the facts people choose by - height, difficulty, price - right in the
+ * search result, when the facts file has them ("Kudremukh Trek (1,894 m): Moderate, from ₹3,999"); kept
+ * short enough for Google to show whole (~65 characters before " | Aorbo Treks"), else the plain title.
+ */
+export function trekTitle(trek, facts = null) {
+  const plain = `${trek.name}${trek.state ? `, ${trek.state}` : ''} | Book with Aorbo Treks`;
+  if (!facts) return plain;
+  const name = /\btrek\b/i.test(trek.name) ? trek.name : `${trek.name} Trek`;
+  const height = facts.altitude_m ? ` (${Number(facts.altitude_m).toLocaleString('en-IN')} m)` : '';
+  const bits = [facts.difficulty && DIFFICULTY[facts.difficulty], trek.price_start != null && `from ₹${Number(trek.price_start).toLocaleString('en-IN')}`].filter(Boolean);
+  if (!height && !bits.length) return plain;
+  for (const t of [`${name}${height}: ${bits.join(', ')}`, `${name}${height}: ${bits.at(-1) || ''}`, `${name}${height}`]) {
+    const clean = t.replace(/: $/, '');
+    if (clean.length <= 65 && clean !== name) return `${clean} | Aorbo Treks`;
+  }
+  return plain;
+}
+
 export function trekMeta(trek, links = null, facts = null) {
   const path = `/treks/${trek.id || trek.slug}`;
   const where = trek.state ? ` in ${trek.state}` : '';
@@ -280,7 +299,7 @@ export function trekMeta(trek, links = null, facts = null) {
   const description = snippet(
     trek.description
       ? `${trek.name}${where}${price}.${line ? ` ${line}.` : ''} ${trek.description}`
-      : `Book the ${trek.name}${where}${price} with verified trek organisers on Aorbo Treks. Compare dates, prices and itineraries.`,
+      : `Book the ${trek.name}${where}${price} with trek organisers on Aorbo Treks. Compare dates, prices and itineraries.`,
   );
   const trip = {
     '@type': 'TouristTrip',
@@ -306,11 +325,25 @@ export function trekMeta(trek, links = null, facts = null) {
     ? [['Home', '/'], ['Destinations', '/destinations'], [destinationHeading(dest), `/destinations/${dest.slug}`], [trek.name, path]]
     : [['Home', '/'], ['Treks', '/'], [trek.name, path]];
   return {
-    title: `${trek.name}${trek.state ? `, ${trek.state}` : ''} | Book with Aorbo Treks`,
+    title: trekTitle(trek, facts),
     description,
     path,
     image,
-    jsonLd: graph(trip, breadcrumb(crumbs), faqPage(trekFaqs(trek, links, facts))),
+    // The package as something you can buy, with its "from" price: lets Google show the price in the
+    // result (product snippet). Only the real starting price; no rating here (ratings belong to the
+    // organiser, marked up on their own page).
+    jsonLd: graph(trip, trek.price_start != null ? {
+      '@type': 'Product',
+      name: /\btrek\b/i.test(trek.name) ? trek.name : `${trek.name} trek`,
+      description,
+      image,
+      url: absoluteUrl(path),
+      ...(organisers.length === 1 ? { brand: { '@type': 'Brand', name: organisers[0].name } } : {}),
+      offers: {
+        '@type': 'AggregateOffer', lowPrice: Number(trek.price_start), priceCurrency: 'INR', offerCount: Math.max(1, organisers.length),
+        availability: 'https://schema.org/InStock', url: absoluteUrl(path),
+      },
+    } : null, breadcrumb(crumbs), faqPage(trekFaqs(trek, links, facts))),
   };
 }
 

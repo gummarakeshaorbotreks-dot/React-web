@@ -64,6 +64,9 @@ if ! python3 $HERE/post_check.py; then
   echo "POST-CHECK FAILED - ROLLED BACK to the previous site"; exit 12
 fi
 
+# Accurate sitemap dates: only pages whose content really changed get today's date (ops/site/lastmod.py).
+python3 $HERE/lastmod.py "$LIVE" "$HERE/logs/changed-$ts.txt" "$HERE/data/page-dates.json" || echo "lastmod skipped (site is deployed)"
+
 ls -d $W/aorbo-frontend.bak-* | sort | head -n -2 | xargs -r rm -rf
 find $HERE/logs -type f -mtime +30 -delete
 

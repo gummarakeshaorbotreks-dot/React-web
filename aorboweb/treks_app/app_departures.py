@@ -69,7 +69,7 @@ def page_places(name):
     """A website package's places: 'Ooty-Coonoor-Isha Foundation' -> ['ooty', 'coonoor', 'ishafoundation'];
     'Coorg 4-Day Trip' -> ['coorg']; 'Kedarkantha Trek' -> ['kedarkantha']."""
     out = []
-    for part in re.split(r"\s*(?:-|,|&|/|and|to)\s*", name or "", flags=re.I):
+    for part in re.split(r"\s*(?:-|,|&|/|\band\b|\bto\b)\s*", name or "", flags=re.I):
         words = [w for w in part.split() if w.lower() not in GENERIC and not re.fullmatch(r"\d+", w)]
         if words:
             k = place_key(" ".join(words))

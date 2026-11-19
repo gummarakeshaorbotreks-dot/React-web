@@ -67,3 +67,17 @@ test('driving time is never faster than 50 km/h; one route per summit', () => {
   assert.deepEqual(groups.map((g) => g.name).sort(), ['Kudremukh', 'Visapur Fort']);
   assert.equal(groups.find((g) => g.name === 'Visapur Fort').listings.length, 2);
 });
+
+test('trek titles carry the facts people choose by; price markup only with a real price', async () => {
+  const { trekTitle, trekMeta } = await import('../src/seo/meta.js');
+  const f = { altitude_m: 1894, difficulty: 'moderate' };
+  assert.equal(trekTitle({ name: 'Kudremukh', state: 'Karnataka', price_start: 3999 }, f), 'Kudremukh Trek (1,894 m): Moderate, from ₹3,999 | Aorbo Treks');
+  assert.equal(trekTitle({ name: 'Kedarkantha Trek', price_start: 9999 }, { difficulty: 'easy-moderate' }), 'Kedarkantha Trek: Easy to moderate, from ₹9,999 | Aorbo Treks');
+  assert.equal(trekTitle({ name: 'Coorg', state: 'Karnataka', price_start: 2000 }, null), 'Coorg, Karnataka | Book with Aorbo Treks');
+  const long = trekTitle({ name: 'Bhimashankar, Jivdhan and the reverse waterfall', state: 'Maharashtra', price_start: 1500 }, { altitude_m: 1145, difficulty: 'moderate' });
+  assert.ok(long.replace(' | Aorbo Treks', '').length <= 65 || long.endsWith('Book with Aorbo Treks'));
+  const ld = JSON.stringify(trekMeta({ id: 'k', name: 'Kudremukh', state: 'Karnataka', price_start: 3999, operators: ['Blue Ridge'] }, null, f).jsonLd);
+  assert.match(ld, /"@type":"AggregateOffer","lowPrice":3999,"priceCurrency":"INR"/);
+  assert.doesNotMatch(ld, /aggregateRating/);
+  assert.doesNotMatch(JSON.stringify(trekMeta({ id: 'k', name: 'Kudremukh' }, null, f).jsonLd), /"Product"/);
+});

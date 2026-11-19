@@ -33,6 +33,10 @@ class PagePlaces(unittest.TestCase):
             "Char Dham Yatra": ["chardham"],
             "Araku-Vizag": ["araku", "visakhapatnam"],
             "Leh Ladakh": ["lehladakh"],
+            # "and" / "to" between places split them (the pattern held control characters until 20 Nov 2026).
+            "Jog Waterfall and Murudeshwara": ["jogwaterfall", "murudeshwara"],
+            "Rajgad to Torna Fort": ["rajgad", "tornafort"],
+            "Kanyakumari Tour": ["kanyakumari"],
         }
         for name, places in cases.items():
             with self.subTest(name=name):
