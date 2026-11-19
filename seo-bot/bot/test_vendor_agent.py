@@ -40,6 +40,11 @@ class VendorAgentTest(unittest.TestCase):
         self.assertFalse(va.heights_agree(1712, 1226))
         self.assertFalse(va.heights_agree(None, 1500))
 
+    def test_station_is_a_junction_when_there_is_one(self):
+        self.assertEqual(va.best_station([("Shrivagilu", 20), ("Mysuru Junction", 105), ("Hunsur", 70)]), "Mysuru Junction")
+        self.assertEqual(va.best_station([("Kasara", 25), ("Igatpuri", 30)]), "Kasara")
+        self.assertIsNone(va.best_station([("Far Halt", 90)]))
+
     def test_osm_height_parsing(self):
         self.assertEqual(va.peak_ele({"ele": "1646"}), 1646.0)
         self.assertEqual(va.peak_ele({"ele": "1894 m"}), 1894.0)

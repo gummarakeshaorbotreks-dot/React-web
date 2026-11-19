@@ -42,7 +42,9 @@ OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.sy
             "https://overpass.private.coffee/api/interpreter"]
 MAX_RESEARCH = 6            # new treks researched per run (open-data APIs: be gentle)
 RETRY_DAYS = 3              # a trek with nothing confirmed is tried again after this
-PEAK_KM, STATION_KM, AIRPORT_KM = 20, 60, 250
+PEAK_KM, STATION_KM, AIRPORT_KM = 20, 120, 250
+# A trekker travels to a junction or main station, not the nearest wayside halt.
+MAIN_STATION = re.compile(r"\b(junction|jn|central|terminus|terminal|cantonment|cantt|city)\b", re.I)
 DIFFICULTY = {"easy": "easy", "moderate": "moderate", "difficult": "difficult", "extreme": "difficult"}
 GENERIC = {"trek", "treks", "trip", "trips", "tour", "tours", "hike", "hiking", "package", "day", "days",
            "night", "nights", "the", "and", "to", "from", "camping", "sunrise", "weekend", "winter", "snow"}
@@ -112,6 +114,15 @@ def kind_of(listing):
     if re.search(r"trek|hik", acts, re.I):
         return "trek"
     return "trek" if TREK_WORDS.search(listing.get("name") or "") else "trip"
+
+
+def best_station(stations):
+    """[(name, km)] -> the nearest junction / main station, else the nearest station within 60 km."""
+    main = sorted((s for s in stations if MAIN_STATION.search(s[0])), key=lambda s: s[1])
+    if main:
+        return main[0][0]
+    near = sorted((s for s in stations if s[1] <= 60), key=lambda s: s[1])
+    return near[0][0] if near else None
 
 
 def heights_agree(a, b):
@@ -203,9 +214,9 @@ def research(name, lat, lon, difficulty=None):
     else:
         notes.append("no height in open data")
 
-    stations = sorted((e for e in elements if e.get("tags", {}).get("railway") == "station"), key=dist)
-    if stations:
-        facts["rail"] = stations[0]["tags"]["name"]
+    station = best_station([(e["tags"]["name"], dist(e)) for e in elements if e.get("tags", {}).get("railway") == "station"])
+    if station:
+        facts["rail"] = station
     airports = sorted((e for e in elements if e.get("tags", {}).get("aeroway")), key=dist)
     if airports:
         facts["airport"] = airports[0]["tags"].get("name:en") or airports[0]["tags"]["name"]
