@@ -25,7 +25,7 @@ import { buildOrganiserPages } from './organiser-pages.mjs';
 import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
 import { isTrekListing, isThinListing, needsReview } from './listing-kind.mjs';
-import { factsOf } from './trek-facts.mjs';
+import { factsOf, positionFixes } from './trek-facts.mjs';
 import { factCount } from '../src/seo/trekFacts.js';
 import { buildCollectionPages, buildComparePages, factLinks, trekEntries } from './fact-pages.mjs';
 import { blogArticleHtml, blogListHtml } from './blog-html.mjs';
@@ -193,7 +193,8 @@ let factLinksById = new Map();
 let ssr = null;
 if (treks.length) {
   const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
-  const geo = await loadGeo(process.env.TREK_GEO_FILE);
+  // Map positions, with the facts file's corrections on top (scripts/data/trek-facts.json `pos`).
+  const geo = { ...(await loadGeo(process.env.TREK_GEO_FILE)), ...positionFixes() };
   // "Treks near <town>" lists treks only, never tours (SEO plan, 19 Nov 2026: scripts/listing-kind.mjs).
   // nearBefore = the towns the old all-listings rule gave a page; those that lose theirs keep the
   // address (old links, Google) as a no-index page pointing to the city list.

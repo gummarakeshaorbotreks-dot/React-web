@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { DIFFICULTY } from '../src/seo/trekFacts.js';
 
 export const THEMES = ['snow', 'waterfall', 'fort', 'night', 'sunrise', 'cave', 'temple', 'lake', 'meadow', 'forest', 'summit'];
-const FIELDS = new Set(['name', 'peak', 'top', 'altitude_m', 'trail_km', 'trail_note', 'difficulty', 'months', 'start', 'district', 'rail', 'airport', 'themes']);
+const FIELDS = new Set(['name', 'peak', 'top', 'altitude_m', 'trail_km', 'trail_note', 'difficulty', 'months', 'start', 'district', 'rail', 'airport', 'themes', 'pos']);
 
 /** Problems in a facts file ([] = fine). */
 export function checkFacts(data) {
@@ -19,6 +19,7 @@ export function checkFacts(data) {
     if (f.trail_km != null && !(f.trail_km > 0 && f.trail_km <= 200)) errors.push(`${at}: trail_km ${f.trail_km}`);
     if (f.difficulty != null && !DIFFICULTY[f.difficulty]) errors.push(`${at}: difficulty ${f.difficulty}`);
     if (f.months != null && !(Array.isArray(f.months) && f.months.every((m) => Number.isInteger(m) && m >= 1 && m <= 12) && new Set(f.months).size === f.months.length)) errors.push(`${at}: months`);
+    if (f.pos != null && !(Array.isArray(f.pos) && f.pos.length === 2 && f.pos[0] >= 6 && f.pos[0] <= 37 && f.pos[1] >= 68 && f.pos[1] <= 98)) errors.push(`${at}: pos`);
     if (f.themes != null && !(Array.isArray(f.themes) && f.themes.every((t) => THEMES.includes(t)))) errors.push(`${at}: themes`);
   }
   for (const [id, key] of Object.entries(data?.listings || {})) if (!treks[key]) errors.push(`trek-facts listing ${id}: unknown trek ${key}`);
@@ -29,6 +30,16 @@ const FILE = new URL('./data/trek-facts.json', import.meta.url);
 const DATA = JSON.parse(readFileSync(FILE, 'utf8'));
 const problems = checkFacts(DATA);
 if (problems.length) throw new Error(`scripts/data/trek-facts.json:\n  ${problems.join('\n  ')}`);
+
+/** Positions the facts file corrects: { listingId: { lat, lon } } (applied over the map positions). */
+export function positionFixes() {
+  const out = {};
+  for (const [id, key] of Object.entries(DATA.listings)) {
+    const pos = DATA.treks[key].pos;
+    if (pos) out[id] = { lat: pos[0], lon: pos[1], source: 'trek-facts' };
+  }
+  return out;
+}
 
 /** The facts of a website listing ({ key, ...facts }), or null. */
 export function factsOf(t) {

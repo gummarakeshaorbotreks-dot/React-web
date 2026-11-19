@@ -132,3 +132,10 @@ test('month pages: each month says what it is like, per region on the page', asy
   assert.equal(notes.size, 36, 'no two months say the same');
   assert.deepEqual(monthNotes(7, ['Maharashtra']).map((x) => x.region), ['sahyadri']);
 });
+
+test('position fixes: the facts file corrects a wrong map position', async () => {
+  const { positionFixes } = await import('./trek-facts.mjs');
+  const fix = positionFixes()['channagiri-hills'];
+  assert.ok(fix && fix.lat > 13.3 && fix.lat < 13.5 && fix.lon > 77.6 && fix.lon < 77.7, 'Channagiri Betta is next to Nandi Hills');
+  assert.match(checkFacts({ treks: { x: { name: 'X', pos: [51.5, -0.1] } }, listings: {} })[0], /pos/);
+});
