@@ -18,6 +18,8 @@ Daily, after gsc_pull.py:
 """
 import argparse
 import json
+import os
+import shlex
 import re
 import sys
 import urllib.request
@@ -33,7 +35,14 @@ WINDOW_DAYS = 28
 MIN_IMPRESSIONS = 30        # per page over the window; below this the numbers are noise
 # Claims we can't back up. "best time / season / route" is fine; "best trek" is not.
 FORBIDDEN = re.compile(r"\b(best(?!\s+(?:time|season|months?|way|route|period))|no\.?\s*1|number one|certified"
-                       r"|24/7|24x7|guaranteed?|cheapest|seats?)\b|#1", re.I)
+                       r"|24/7|24x7|guaranteed?|cheapest|seats?"
+                       # 19 Nov 2026: the bot wrote "Book Verified Treks" into live titles. Our KYC checks
+                       # an organiser's identity, not a trek: no verified / trusted / safe claims.
+                       r"|verified|trusted|safe|safest)\b|#1|100\s*%", re.I)
+# 19 Nov 2026 (owner, SEO plan decision 4): the bot PROPOSES, a person publishes. Titles, descriptions
+# and FAQs written by the AI go to Telegram with a ready command; nothing reaches the site unless
+# AORBO_OPTIMIZER_PUBLISH=1 is set on purpose.
+PUBLISH = os.environ.get("AORBO_OPTIMIZER_PUBLISH") == "1"
 # Typical organic CTR by position (rounded industry averages); below 60% of this = weak snippet.
 EXPECTED_CTR = {1: .28, 2: .15, 3: .11, 4: .08, 5: .07, 6: .05, 7: .04, 8: .035, 9: .03, 10: .025}
 
@@ -249,6 +258,8 @@ def apply(con, page, kind, stats, reason, start, end, dry_run=False, extra=()):
         return f"🛑 {esc(page)}: AI text failed the checks, not published ({esc('; '.join(problems[:3]))})"
     if dry_run:
         return f"[dry run] {page} {kind}: {json.dumps(fields, ensure_ascii=False, indent=1)}"
+    if not PUBLISH:
+        return proposal(page, kind, fields, reason)
     upsert(page, f"bot {kind}: {reason}", **fields, active=True)
     con.execute("INSERT INTO changes (at, page, kind, reason, before, after, result) VALUES (?,?,?,?,?,?, 'pending')",
                 (datetime.now().isoformat(timespec="seconds"), page, kind, reason,
@@ -257,6 +268,21 @@ def apply(con, page, kind, stats, reason, start, end, dry_run=False, extra=()):
     if kind == "ctr":
         return f"✏️ <b>{esc(page)}</b>: new title \"{esc(fields['title'])}\"\n<i>{esc(reason)}</i>"
     return f"❓ <b>{esc(page)}</b>: added {len(fields['faqs'])} FAQs\n<i>{esc(reason)}</i>"
+
+
+def proposal(page, kind, fields, reason):
+    """Propose-only mode: what the AI suggests, and the one command that publishes it after a check."""
+    if kind == "ctr":
+        cmd = (f"python3 /opt/aorbo-bot/bot/overrides.py set {page} --title {shlex.quote(fields['title'])} "
+               f"--description {shlex.quote(fields['description'])} --note 'checked by NAME'")
+        return (f"💡 <b>{esc(page)}</b>: suggested title \"{esc(fields['title'])}\"\n"
+                f"description: {esc(fields['description'])}\n<i>{esc(reason)}</i>\n"
+                f"Check every fact, then publish:\n<code>{esc(cmd)}</code>")
+    faqs = json.dumps(fields["faqs"], ensure_ascii=False)
+    cmd = f"python3 /opt/aorbo-bot/bot/overrides.py set {page} --faqs {shlex.quote(faqs)} --note 'checked by NAME'"
+    lines = "\n".join(f"• {esc(f.get('q', ''))}: {esc(f.get('a', ''))}" for f in fields["faqs"])
+    return (f"💡 <b>{esc(page)}</b>: {len(fields['faqs'])} suggested FAQs\n{lines}\n<i>{esc(reason)}</i>\n"
+            f"Check every fact, then publish:\n<code>{esc(cmd)}</code>")
 
 
 def main():

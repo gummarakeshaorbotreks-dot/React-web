@@ -23,6 +23,8 @@ import { buildDestinationPages, loadDestinations } from './destination-pages.mjs
 import { buildOrganiserPages } from './organiser-pages.mjs';
 import { buildWinterPage } from './season-pages.mjs';
 import { buildNearPages, loadGeo } from './near-pages.mjs';
+import { isTrekListing, isThinListing } from './listing-kind.mjs';
+import { blogArticleHtml, blogListHtml } from './blog-html.mjs';
 import { buildRoutePages } from './route-pages.mjs';
 
 const DIST = process.env.PRERENDER_DIST || 'dist';
@@ -176,6 +178,7 @@ try {
 // HTML built with the app's own components (the SSR bundle), plus a JSON file per
 // page for in-app navigation.
 let near = { pages: [], hub: null, candidates: 0 };
+let nearBefore = { pages: [] };
 let destinations = { pages: [], hub: null };
 let organisers = { pages: [], hub: null };
 let winter = { pages: [], hub: null };
@@ -183,7 +186,12 @@ let routes = { pages: [] };
 let ssr = null;
 if (treks.length) {
   const places = JSON.parse(await readFile(new URL('./data/india-places.json', import.meta.url), 'utf8')).places;
-  near = buildNearPages(treks, await loadGeo(process.env.TREK_GEO_FILE), places);
+  const geo = await loadGeo(process.env.TREK_GEO_FILE);
+  // "Treks near <town>" lists treks only, never tours (SEO plan, 19 Nov 2026: scripts/listing-kind.mjs).
+  // nearBefore = the towns the old all-listings rule gave a page; those that lose theirs keep the
+  // address (old links, Google) as a no-index page pointing to the city list.
+  nearBefore = buildNearPages(treks, geo, places);
+  near = buildNearPages(treks.filter(isTrekListing), geo, places);
   destinations = buildDestinationPages(await loadDestinations(process.env.DESTINATIONS_FILE), treks, places, near.pages);
   organisers = buildOrganiserPages(treks, destinations.pages);
   // Winter treks & snow trips: rebuilt every build, the season label moves on each July.
@@ -224,16 +232,23 @@ for (const l of trekLinks.values()) {
 const urls = [];
 for (const p of Object.keys(STATIC_PAGES)) {
   // /app has no data: its content is pre-built too, so search engines read it without JavaScript.
-  const extra = p === '/app' && ssr ? { main: ssr.renderApp(), css: await cssWith('.near-lead') } : null;
+  // Pre-built bodies (SEO plan, 19 Nov 2026): /app, /about and the /blogs list carry their own text,
+  // not the home page's.
+  let extra = null;
+  if (p === '/app' && ssr) extra = { main: ssr.renderApp(), css: await cssWith('.near-lead') };
+  else if (p === '/about' && ssr?.renderAbout) extra = { main: ssr.renderAbout(), css: await cssWith('.about-') };
+  else if (p === '/blogs' && blogs.length) extra = { main: blogListHtml(blogs), css: await cssWith('.blog-card') };
   if (await writePage(p, staticPageMeta(p), extra)) urls.push({ loc: absoluteUrl(p), priority: p === '/' ? '1.0' : '0.6' });
 }
 const seen = new Set();
+let thinCount = 0;
 const trekCss = ssr ? await cssWith('.detail-hero') : [];
 if (ssr) await mkdir(path.join(DIST, 'data', 'treks'), { recursive: true });
 for (const t of treks) {
   const id = t.id || t.slug;
   const links = trekLinks.get(id) || { destinations: [], near: [], organisers: [] };
-  const meta = trekMeta(t, links);
+  const thin = isThinListing(t);
+  const meta = thin ? { ...trekMeta(t, links), noindex: true } : trekMeta(t, links);
   if (seen.has(meta.path)) continue;
   seen.add(meta.path);
   const file = `/data/treks/${encodeURIComponent(id)}.json`;
@@ -241,13 +256,15 @@ for (const t of treks) {
   const hero = /^https?:/.test(t.main_image || '') ? t.main_image : null;
   const extra = ssr ? { main: ssr.renderTrek(content, meta.path), data: { file, content }, css: trekCss, preload: hero } : null;
   if (await writePage(meta.path, meta, extra)) {
-    urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
+    if (thin) thinCount += 1;
+    else urls.push({ loc: absoluteUrl(meta.path), priority: '0.9', image: meta.image });
     if (ssr) await writeFile(path.join(DIST, 'data', 'treks', `${id}.json`), JSON.stringify(content));
   }
 }
+const blogCss = blogs.length ? await cssWith('.blog-post') : [];
 for (const b of blogs) {
   const meta = blogMeta(b);
-  if (await writePage(meta.path, meta)) {
+  if (await writePage(meta.path, meta, { main: blogArticleHtml(b), css: blogCss })) {
     urls.push({ loc: absoluteUrl(meta.path), priority: '0.7', lastmod: (b.updated_at || b.created_at || '').slice(0, 10), image: meta.image });
   }
 }
@@ -271,6 +288,18 @@ if (ssr) {
     }
   };
   await writeDataPages('near', near, nearMeta, ssr.renderNear, nearHubMeta, ssr.renderNearHub);
+  // Towns that had a page under the old rule but not enough real treks now: same address,
+  // the city list on it, kept out of Google (noindex, not in the sitemap).
+  if (near.hub) {
+    const kept = new Set(near.pages.map((pg) => pg.path));
+    let retired = 0;
+    for (const old of nearBefore.pages) {
+      if (kept.has(old.path)) continue;
+      if (await writePage(old.path, { ...nearHubMeta(near.hub), path: old.path, noindex: true },
+        { main: ssr.renderNearHub(near.hub), data: { file: '/data/near/index.json', content: near.hub }, css })) retired += 1;
+    }
+    console.log(`seo-pages: ${retired} "treks near" towns retired (no-index, city list) by the treks-only rule`);
+  }
   await writeDataPages('destinations', destinations, destinationMeta, ssr.renderDestination, destinationHubMeta, ssr.renderDestinationHub);
   await writeDataPages('organisers', organisers, organiserMeta, ssr.renderOrganiser, organiserHubMeta, ssr.renderOrganiserHub);
   await writeDataPages('seasons', winter, winterMeta, ssr.renderWinter, null, null);
@@ -340,4 +369,5 @@ await writeFile(
     '',
   ].join('\n'),
 );
+console.log(`seo-pages: ${thinCount} thin trek pages kept out of Google until rebuilt`);
 console.log(`seo-pages: ${Object.keys(STATIC_PAGES).length} pages + ${seen.size} treks + ${blogs.length} blog posts + ${near.pages.length} of ${near.candidates} city pages + ${destinations.pages.length} destination pages + ${routes.pages.length} trip-from-city pages + ${organisers.pages.length} organiser pages, sitemap ${urls.length} URLs, ${Object.keys(overrides).length} override(s), 404.html, robots.txt`);
