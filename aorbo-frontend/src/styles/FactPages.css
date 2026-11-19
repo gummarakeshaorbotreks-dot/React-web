@@ -86,6 +86,35 @@
   color: var(--text);
 }
 
+.month-notes {
+  margin: 0 0 var(--stack);
+}
+
+.month-notes dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.month-notes dl > div {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.month-notes dt {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.month-notes dd {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
 .collection-hub__state {
   margin: 16px 0 8px;
   font-size: var(--fs-base);
