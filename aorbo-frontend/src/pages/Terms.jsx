@@ -6,7 +6,7 @@ import { staticPageMeta } from '../seo/meta';
 export default function Terms() {
   useSeo(staticPageMeta('/terms'));
   return (
-    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="18 November 2026" contentKind="terms" numberSection={(i) => 18 + i + 1}>
+    <LegalPage title="Terms and Conditions" audience="For customers of the Aorbo Treks website and mobile app" updated="21 November 2026" contentKind="terms" numberSection={(i) => 18 + i + 1}>
 
       {/* 1. Introduction */}
       <h3 id="introduction">1. Introduction</h3>
@@ -412,7 +412,7 @@ export default function Terms() {
       <h3 id="intellectual-property">10. Intellectual Property</h3>
       <p>
         All content on the Platform—including but not limited to logos, text, graphics, and images—is the property of
-        Aorbo Infocom or its licensors and is protected by applicable intellectual property laws. No part of the
+        AORBO INFOCOM PRIVATE LIMITED or its licensors and is protected by applicable intellectual property laws. No part of the
         Platform content may be reproduced or distributed without prior written consent.
       </p>
       <h4>Ratings and Reviews</h4>
@@ -428,7 +428,7 @@ export default function Terms() {
       {/* 11. Limitation of Liability */}
       <h3 id="liability">11. Limitation of Liability</h3>
       <p>
-        Aorbo Treks, operated by AORBO INFOCOM, is a technology platform that facilitates connections between Users and
+        Aorbo Treks, operated by AORBO INFOCOM PRIVATE LIMITED, is a technology platform that facilitates connections between Users and
         independent third-party Vendors offering trekking, travel, and adventure-related services. We do not operate,
         manage, or control the services provided by these Vendors.
       </p>
@@ -505,15 +505,15 @@ export default function Terms() {
       <h3 id="contact">16. Contact Information</h3>
       <p>16.1 If the User has any questions or concerns regarding this Agreement or the services provided by Aorbo Treks, they can contact us at:</p>
       <ul>
-        <li><p>Company: AORBO INFOCOM</p></li>
+        <li><p>Company: AORBO INFOCOM PRIVATE LIMITED (CIN U79900TS2026PTC226197)</p></li>
         <li><p>Platform: Aorbo Treks (www.aorbotreks.com)</p></li>
         <li><p>Support Email: care@aorbotreks.com</p></li>
         <li><p>Phone and WhatsApp: +91 79892 51063</p></li>
-        <li><p>Address: Sri Krupa Market, Malakpet, Hyderabad, Telangana 500036, India</p></li>
+        <li><p>Registered office: Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India</p></li>
       </ul>
       <p>
-        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM, care@aorbotreks.com, +91 79892 51063, Sri Krupa
-        Market, Malakpet, Hyderabad, Telangana 500036, India. We acknowledge a grievance within 24 hours and resolve it
+        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM PRIVATE LIMITED, care@aorbotreks.com, +91 79892 51063,
+        Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India. We acknowledge a grievance within 24 hours and resolve it
         within 15 days.
       </p>
 
@@ -530,7 +530,7 @@ export default function Terms() {
         </li>
         <li>
           <h5>17.3 Entire Agreement</h5>
-          <p>These Terms, together with the Refund &amp; Cancellation Policy, the User Agreement and the Privacy Policy, constitute the entire agreement between you and AORBO INFOCOM regarding Platform use.</p>
+          <p>These Terms, together with the Refund &amp; Cancellation Policy, the User Agreement and the Privacy Policy, constitute the entire agreement between you and AORBO INFOCOM PRIVATE LIMITED regarding Platform use.</p>
         </li>
         <li>
           <h5>17.4 Termination and Suspension</h5>
@@ -545,7 +545,7 @@ export default function Terms() {
         </li>
         <li>
           <h5>17.6 Transfer</h5>
-          <p>Aorbo Treks may transfer its rights and duties under these Terms to any entity that takes over the Aorbo Treks business, including the company being formed by the owners of AORBO INFOCOM. You may not transfer your account or your rights under these Terms.</p>
+          <p>Aorbo Treks may transfer its rights and duties under these Terms to any entity that takes over the Aorbo Treks business. You may not transfer your account or your rights under these Terms.</p>
         </li>
       </ul>
 

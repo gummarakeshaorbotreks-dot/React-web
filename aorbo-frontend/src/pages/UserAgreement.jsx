@@ -6,12 +6,12 @@ import { staticPageMeta } from '../seo/meta';
 export default function UserAgreement() {
   useSeo(staticPageMeta('/user-agreement'));
   return (
-    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="18 November 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
+    <LegalPage title="User Agreement" audience="For customers of the Aorbo Treks website and mobile app" updated="21 November 2026" contentKind="agreement" numberSection={(i) => 14 + i + 1}>
       
       {/* 1. DEFINITIONS AND INTERPRETATION */}
       <h3>1. DEFINITIONS AND INTERPRETATION</h3>
       <p>
-        1.1 <strong>“Aorbo Treks”</strong> refers to the business entity operated by <strong>Aorbo Infocom</strong>,
+        1.1 <strong>“Aorbo Treks”</strong> refers to the business entity operated by <strong>AORBO INFOCOM PRIVATE LIMITED</strong> (CIN U79900TS2026PTC226197),
         offering services related to trekking, travel bookings, and other related activities through its platform,
         including the Website and mobile applications.
       </p>
@@ -206,7 +206,7 @@ export default function UserAgreement() {
       <h3>9. INTELLECTUAL PROPERTY RIGHTS</h3>
       <p>
         9.1 The Website and all its content, including but not limited to logos, text, images, videos, and software,
-        are owned by AORBO INFOCOM or its licensors and are protected by intellectual property laws.
+        are owned by AORBO INFOCOM PRIVATE LIMITED or its licensors and are protected by intellectual property laws.
       </p>
       <p>
         9.2 The User is granted a limited, non-exclusive, non-transferable license to access and use the Website for
@@ -251,18 +251,17 @@ export default function UserAgreement() {
       <h3>13. AMENDMENTS</h3>
       <p>
         13.1 Changes to this Agreement are made as set out in clause 2.2. Aorbo Treks may transfer this Agreement to
-        any entity that takes over the Aorbo Treks business, including the company being formed by the owners of
-        AORBO INFOCOM.
+        any entity that takes over the Aorbo Treks business.
       </p>
 
       {/* 14. CONTACT INFORMATION */}
       <h3>14. CONTACT INFORMATION</h3>
       <p className="emphasis">
-        Company: AORBO INFOCOM<br />
+        Company: AORBO INFOCOM PRIVATE LIMITED (CIN U79900TS2026PTC226197)<br />
         Platform: Aorbo Treks (www.aorbotreks.com)<br />
         Support Email: care@aorbotreks.com<br />
         Phone and WhatsApp: +91 79892 51063<br />
-        Address: Sri Krupa Market, Malakpet, Hyderabad, Telangana 500036, India<br />
+        Registered office: Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India<br />
         Grievance Officer: Abhishek Sakunam (care@aorbotreks.com, +91 79892 51063). We acknowledge a grievance within
         24 hours and resolve it within 15 days.
       </p>
