@@ -13,10 +13,10 @@ const letterAfterN = (i) => String.fromCharCode('N'.charCodeAt(0) + i + 1);
 export default function PrivacyPolicy() {
   useSeo(staticPageMeta('/privacy-policy'));
   return (
-    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="18 November 2026" contentKind="privacy" numberSection={letterAfterN}>
+    <LegalPage title="Privacy Policy" audience="How Aorbo Treks handles the personal information of its customers" updated="21 November 2026" contentKind="privacy" numberSection={letterAfterN}>
       <h3>A. WHO WE ARE AND WHAT THIS POLICY COVERS</h3>
       <p>
-        Aorbo Treks is run by AORBO INFOCOM, Sri Krupa Market, Malakpet, Hyderabad, Telangana 500036, India
+        Aorbo Treks is run by AORBO INFOCOM PRIVATE LIMITED (CIN U79900TS2026PTC226197), registered office Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India
         (&ldquo;Aorbo Treks&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;). We are the Data Fiduciary for the personal data
         described here under the Digital Personal Data Protection Act, 2023. This policy covers customers of the Aorbo Treks
         app and visitors to aorbotreks.com. Organisers are covered by our Partner Privacy Policy. This policy is part of
@@ -121,10 +121,10 @@ export default function PrivacyPolicy() {
       </p>
 
       <h3>N. CHANGES, TRANSFER AND GRIEVANCES</h3>
-      <p>We may update this policy; the date at the top shows the latest version, and we will ask you to accept important changes in the app. If the Aorbo Treks business is moved, merged or sold, including to the company being formed by the owners of AORBO INFOCOM, your data may pass to the new owner, which will be bound by this policy.</p>
+      <p>We may update this policy; the date at the top shows the latest version, and we will ask you to accept important changes in the app. If the Aorbo Treks business is moved, merged or sold, your data may pass to the new owner, which will be bound by this policy.</p>
       <p>
-        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM, {careLink}, {carePhone}, Sri Krupa Market,
-        Malakpet, Hyderabad, Telangana 500036, India. We acknowledge a grievance within 24 hours and resolve it within 15
+        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM PRIVATE LIMITED, {careLink}, {carePhone},
+        Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India. We acknowledge a grievance within 24 hours and resolve it within 15
         days. You must first use this process (Digital Personal Data Protection Act, 2023, section 13(3)); if you are not
         satisfied, you may complain to the Data Protection Board of India.
       </p>

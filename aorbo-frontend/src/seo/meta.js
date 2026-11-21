@@ -50,13 +50,20 @@ const organization = {
   // Other ways people write the name: Google links them to this brand ("aorbo" alone was
   // being read as a typo of "vrbo" / "arbo").
   alternateName: ALTERNATE_NAMES,
-  legalName: 'AORBO INFOCOM',
+  legalName: 'AORBO INFOCOM PRIVATE LIMITED',
   description: ABOUT_AORBO,
   slogan: 'Your Trek, Just a Click Away!!',
   url: SITE_URL,
   logo: `${SITE_URL}/images/favicon-192x192.png`,
   email: 'care@aorbotreks.com',
-  address: { '@type': 'PostalAddress', addressLocality: 'Hyderabad', addressRegion: 'Telangana', addressCountry: 'IN' },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur',
+    addressLocality: 'Hyderabad',
+    addressRegion: 'Telangana',
+    postalCode: '500081',
+    addressCountry: 'IN',
+  },
   sameAs: [
     PLAY_STORE_URL,
     'https://www.instagram.com/aorbo_treks_official',

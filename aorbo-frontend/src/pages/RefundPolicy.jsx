@@ -13,7 +13,7 @@ const careWhatsApp = <a href="https://wa.me/917989251063" target="_blank" rel="n
 export default function RefundPolicy() {
   useSeo(staticPageMeta('/refund-policy'));
   return (
-    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="18 November 2026">
+    <LegalPage title="Refund & Cancellation Policy" audience="For bookings made on the Aorbo Treks website and mobile app" updated="21 November 2026">
       <p>
         This policy explains how to cancel a trek booked on Aorbo Treks and how much of your money is refunded.
         It is part of our <Link to="/terms">Terms and Conditions</Link>.
@@ -271,8 +271,8 @@ export default function RefundPolicy() {
         you have under the law, including under the Consumer Protection Act, 2019.
       </p>
       <p>
-        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM, {careLink}, {carePhone}, Sri Krupa Market,
-        Malakpet, Hyderabad, Telangana 500036, India. We acknowledge a grievance within 24 hours and resolve it within 15 days.
+        <strong>Grievance Officer:</strong> Abhishek Sakunam, AORBO INFOCOM PRIVATE LIMITED, {careLink}, {carePhone},
+        Plot No. 56, H.No. 1-101/8, Srinivasa Nilayam, 4th Floor, Madhapur, Shaikpet, Hyderabad, Telangana 500081, India. We acknowledge a grievance within 24 hours and resolve it within 15 days.
       </p>
     </LegalPage>
   );

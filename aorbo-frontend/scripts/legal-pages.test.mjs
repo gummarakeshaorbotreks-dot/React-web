@@ -17,7 +17,9 @@ test('every legal page names the Grievance Officer with the 24 h / 15 day promis
     assert.match(s, /Grievance Officer:?<\/strong>|Grievance Officer:/, name);
     assert.match(s, /Abhishek Sakunam/, name);
     assert.match(s, /within 24 hours and resolve it within 15 ?days/, name);
-    assert.match(s, /500036/, name);
+    assert.match(s, /AORBO INFOCOM PRIVATE LIMITED/, name);
+    assert.match(s, /500081/, name);
+    assert.doesNotMatch(s, /Malakpet|500036|being formed/, name);
   }
 });
 

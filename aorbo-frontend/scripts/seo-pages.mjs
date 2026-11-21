@@ -383,7 +383,7 @@ if (treks.length) {
     '',
     `> ${ABOUT_AORBO}`,
     '',
-    `Also written as: ${ALTERNATE_NAMES.join(', ')}. Company: AORBO INFOCOM, Hyderabad, India. Contact: care@aorbotreks.com.`,
+    `Also written as: ${ALTERNATE_NAMES.join(', ')}. Company: AORBO INFOCOM PRIVATE LIMITED (CIN U79900TS2026PTC226197), Hyderabad, India. Contact: care@aorbotreks.com.`,
     `Today: ${seen.size} treks and trips from ${organisers.pages.length} organisers, ${destinations.pages.length} destination pages, `
       + `${near.pages.length} "treks near <city>" pages. Prices are per person, in Indian rupees.`,
     '',
